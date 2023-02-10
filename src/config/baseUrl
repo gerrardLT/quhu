@@ -1,0 +1,24 @@
+/*
+ * @Author: gerrardlt 305690790@qq.com
+ * @Date: 2023-01-15 02:09:59
+ * @LastEditors: gerrardlt 305690790@qq.com
+ * @LastEditTime: 2023-01-30 11:40:14
+ * @FilePath: \quhu\src\config\baseUrl
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
+const url_api_dev = '/abc' // 服务器地址
+const url_steem_dev = '/steem' // steem代理
+
+let baseUrl = {
+  api: '',
+  steem: ''
+}
+if (process.env.NODE_ENV === 'development') {
+  // 开发环境
+  baseUrl.api = url_api_dev
+  baseUrl.steem = url_steem_dev
+} else if (process.env.NODE_ENV === 'production') {
+  baseUrl.api = 'https://api.onlyfun.city'
+  baseUrl.steem = 'https://node.onlyfun.city'
+}
+export default baseUrl
