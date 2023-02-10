@@ -181,22 +181,23 @@ export default {
       }
     },
     passwordLogin() {
-      // getUserInfo({ id: '0xd538be09d562cd9644a486d499cdf1e706259994' }).then(
-      //   (data) => {
-      //     console.log(data)
-      //   }
-      // )
       this.$refs.loginFormRef.validate(async (valid) => {
         if (!valid) return
-        const user = this.loginForm.user
-        const password = this.loginForm.password
-        const reg = /^[a-zA-Z0-9_-]{4,16}$/
+        const user = this.loginForm.user.trim()
+        const password = this.loginForm.password.trim()
+        const reg = /^[a-zA-Z0-9_\u4e00-\u9fa5]{2,12}$/
+        const pwdReg =
+          /(?!^(\d+|[a-zA-Z]+|[~!@#$%^&*()_.]+)$)^[\w~!@#$%^&*()_.]{8,16}$/
         if (user === '') {
           this.$message.error('请输入账号')
         } else if (password === '') {
           this.$message.error('请输入密码')
         } else if (!reg.test(user)) {
-          this.$message.error('请输入4到16位字母，数字，下划线，减号')
+          this.$message.error('请输入2到12位字符的汉字，字母，数字，下划线')
+        } else if (!pwdReg.test(password)) {
+          this.$message.error(
+            '密码应为字母，数字，特殊符号(~!@#$%^&*()_.)，两种及以上组合，8-16位字符串，如：xyl37@baa'
+          )
         } else {
           if (this.userType === 'login') {
             login({

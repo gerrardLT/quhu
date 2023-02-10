@@ -80,12 +80,8 @@ export default {
     }
   },
   computed: {
-    // userInfo() {
-    //   return JSON.parse(localStorage.getItem('quhu-userInfo')) || {}
-    // },
     isEthLogin() {
-      const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
-      return userInfo.user === 'none'
+      return sessionStorage.getItem('login-type') === 'eth'
     },
     ...mapState({
       userInfo: (state) => state.userInfo
@@ -93,8 +89,8 @@ export default {
   },
   created() {},
   mounted() {
-    console.log(this.$store.state)
-    console.log(this.userInfo)
+    // console.log(this.$store.state)
+    // console.log(this.userInfo)
   },
   methods: {
     closeDialog() {
@@ -107,7 +103,18 @@ export default {
       // const reg = /^[a-zA-Z0-9\u4e00-\u9fa5]{2,9}$/
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
       const self = this
-      if (userInfo.user === 'none') {
+      if (this.currentChange === 'user') {
+        if (!this.validate(this.user)) {
+          return
+        }
+      }
+
+      if (this.currentChange === 'user_name') {
+        if (!this.validate(this.user_name)) {
+          return
+        }
+      }
+      if (this.isEthLogin) {
         if (window.ethereum) {
           if (typeof window.ethereum.isMetaMask === 'undefined') {
             self.$message.error('请安装 MetaMask！')
@@ -146,10 +153,7 @@ export default {
                           type: 'user'
                         })
                       }
-                      self.dialogVisible = false
-                      self.user_name = ''
-                      self.user = ''
-                      self.password = ''
+                      self.closeDialog()
                     }
                   }
                 )
@@ -159,49 +163,65 @@ export default {
           self.$message.error('请安装 MetaMask！')
         }
       } else {
+        const { user_name, user, password } = this
+
         if (this.currentChange === 'user_name') {
-          this.$store.dispatch('updateUser', {
-            user_name: this.user_name,
-            password: MD5(this.password),
-            type: 'user_name'
-          })
+          if (this.validate(this.user_name.trim())) {
+            this.$store.dispatch('updateUser', {
+              user_name,
+              password: MD5(password),
+              type: 'user_name'
+            })
+          } else {
+            return
+          }
         }
         if (this.currentChange === 'user') {
-          this.$store.dispatch('updateUser', {
-            user: this.user,
-            password: MD5(this.password),
-            type: 'user'
-          })
+          if (this.validate(this.user.trim())) {
+            this.$store.dispatch('updateUser', {
+              user,
+              password: MD5(password),
+              type: 'user'
+            })
+          } else {
+            return
+          }
         }
-        this.dialogVisible = false
-        this.user_name = ''
-        this.user = ''
-        this.password = ''
+        self.closeDialog()
       }
+    },
+    validate(value) {
+      let flag = true
+      const reg = /^[a-zA-Z0-9_\u4e00-\u9fa5]{2,12}$/
+      if (this.currentChange === 'user') {
+        if (value.trim() === '') {
+          this.$message.error('请输入要修改的用户名')
+          flag = false
+        } else {
+          flag = true
+        }
+      }
+      if (this.currentChange === 'user_name') {
+        if (value.trim() === '') {
+          this.$message.error('请输入要修改的昵称')
+          flag = false
+        } else {
+          flag = true
+        }
+      }
+      if (!reg.test(value)) {
+        this.$message.error('请输入2到12位字符的汉字，字母，数字，下划线')
+        flag = false
+      } else {
+        flag = true
+      }
+      return flag
     },
     handleChange(val) {
       if (val.id === 0) {
         // 昵称修改
         this.currentChange = 'user_name'
         this.dialogVisible = true
-        // this.$prompt('请输入昵称', '提示', {
-        //   confirmButtonText: '确定',
-        //   cancelButtonText: '取消',
-        //   inputPattern: /^[a-zA-Z0-9\u4e00-\u9fa5]{2,9}$/,
-        //   inputErrorMessage:
-        //     '昵称格式不正确，只能用字母、数字、汉字、下划线，总长度限制在4-16位的昵称'
-        // })
-        //   .then(({ value }) => {
-        //     this.$store.dispatch('updateUser', {
-        //       user_name: value
-        //     })
-        //   })
-        //   .catch(() => {
-        //     this.$message({
-        //       type: 'info',
-        //       message: '取消输入'
-        //     })
-        //   })
       }
 
       if (val.id === 1) {

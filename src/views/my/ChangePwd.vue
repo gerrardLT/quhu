@@ -29,7 +29,7 @@ export default {
   },
   computed: {
     isEthLogin() {
-      return JSON.parse(localStorage.getItem('quhu-userInfo')).user === 'none'
+      return sessionStorage.getItem('login-type') === 'eth'
     }
   },
   created() {},
@@ -40,6 +40,13 @@ export default {
       const token = getToken()
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
       const loginType = sessionStorage.getItem('login-type')
+      if (
+        (!this.isEthLogin && !this.validate(this.old_password)) ||
+        !this.validate(this.new_password) ||
+        !this.validate(this.pwd_again)
+      ) {
+        return
+      }
       if (this.new_password === this.pwd_again) {
         if (loginType === 'password') {
           changePwd({
@@ -97,6 +104,22 @@ export default {
       } else {
         this.$message.error('密码不一致，请重新输入')
       }
+    },
+    validate(val) {
+      let flag = true
+      const reg =
+        /(?!^(\d+|[a-zA-Z]+|[~!@#$%^&*()_.]+)$)^[\w~!@#$%^&*()_.]{8,16}$/
+      if (!val.trim()) {
+        flag = false
+        this.$message.error('请输入密码')
+        return
+      } else if (!reg.test(val.trim())) {
+        flag = false
+        this.$message.error(
+          '密码应为字母，数字，特殊符号(~!@#$%^&*()_.)，两种及以上组合，8-16位字符串，如：xyl37@baa'
+        )
+      }
+      return flag
     }
   }
 }
