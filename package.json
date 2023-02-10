@@ -1,22 +1,31 @@
 {
-  "name": "vue_shop",
+  "name": "quhu-front",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "report": "vue-cli-service build --report --mode production"
   },
   "dependencies": {
     "axios": "^0.21.1",
+    "compression-webpack-plugin": "^10.0.0",
     "core-js": "^3.6.5",
-    "echarts": "^5.0.2",
     "element-ui": "^2.4.5",
+    "hot-hash-webpack-plugin": "^1.0.2",
+    "js-cookie": "^3.0.1",
     "lodash": "^4.17.21",
+    "md5": "^2.3.0",
+    "quill-image-drop-module": "^1.0.3",
+    "quill-image-resize-module": "^3.0.0",
+    "svg-sprite-loader": "^6.0.11",
+    "uglifyjs-webpack-plugin": "^2.2.0",
     "vue": "^2.6.11",
     "vue-quill-editor": "^3.0.6",
     "vue-router": "^3.2.0",
     "vue-table-with-tree-grid": "^0.2.4",
+    "vuex": "^4.1.0",
     "web3": "^1.8.1"
   },
   "devDependencies": {
@@ -27,6 +36,7 @@
     "@vue/eslint-config-standard": "^5.1.2",
     "babel-eslint": "^10.1.0",
     "babel-plugin-component": "^1.1.1",
+    "compression-webpack-plugin": "^10.0.0",
     "eslint": "^6.7.2",
     "eslint-plugin-import": "^2.20.2",
     "eslint-plugin-node": "^11.1.0",
@@ -35,8 +45,11 @@
     "eslint-plugin-vue": "^6.2.2",
     "less": "^4.1.1",
     "less-loader": "^8.0.0",
+    "sass": "^1.57.1",
+    "sass-loader": "^13.2.0",
     "vue-cli-plugin-element": "^1.0.1",
     "vue-template-compiler": "^2.6.11",
-    "webpack": "^4.0.0"
+    "webpack": "^4.37.0",
+    "webpackbar": "^5.0.2"
   }
 }
