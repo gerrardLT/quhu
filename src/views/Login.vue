@@ -104,6 +104,7 @@ export default {
                     }).then((data) => {
                       setToken(data.token)
                       self.$message.success('登录成功！')
+                      sessionStorage.setItem('login-type', 'eth')
                       self.$store.dispatch('getUserInfo', {
                         id: accounts[0],
                         token: data.token
@@ -203,6 +204,7 @@ export default {
               data: [user, MD5(password)]
             }).then((data) => {
               setToken(data.token)
+              sessionStorage.setItem('login-type', 'password')
               this.$message.success('登录成功！')
               this.$store.dispatch('getUserInfo', {
                 id: user,

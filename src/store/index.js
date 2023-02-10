@@ -76,8 +76,9 @@ const store = new Vuex.Store({
     }, d) {
       console.log(d)
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+      const loginType = sessionStorage.getItem('login-type')
       const changeInfo = d.type === 'user' ? { user: d.user } : { user_name: d.user_name }
-      const params = userInfo.user === 'none' ? {
+      const params = loginType === 'eth' ? {
         id: userInfo.eth_account,
         token: getToken(),
         sign: d.sign,

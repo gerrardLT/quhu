@@ -39,11 +39,9 @@ export default {
       const self = this
       const token = getToken()
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+      const loginType = sessionStorage.getItem('login-type')
       if (this.new_password === this.pwd_again) {
-        if (
-          userInfo.user !== 'none' ||
-          (userInfo.user !== 'none' && userInfo.eth_account !== 'none')
-        ) {
+        if (loginType === 'password') {
           changePwd({
             id: userInfo.user,
             token,
@@ -54,10 +52,7 @@ export default {
             // this.$isTabPage = false
             this.$router.go(-1)
           })
-        } else if (
-          userInfo.user === 'none' &&
-          userInfo.eth_account !== 'none'
-        ) {
+        } else if (loginType === 'eth') {
           if (window.ethereum) {
             if (typeof window.ethereum.isMetaMask === 'undefined') {
               self.$message.error('请安装 MetaMask！')

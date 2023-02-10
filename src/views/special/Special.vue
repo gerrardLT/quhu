@@ -229,8 +229,14 @@
     <el-dialog title="创建圈子" :visible.sync="dialogVisible" width="30%" :before-close="handleSubscriptionsClose">
       <el-input placeholder="请输入圈子名称" v-model="subscriptionsInfo.name">
       </el-input>
-      <el-input class="margin-top-10" placeholder="请输入圈子价格" v-model="subscriptionsInfo.price">
-      </el-input>
+      <div class="margin-top-10 sub_price">
+        <el-input placeholder="请输入圈子价格" v-model="subscriptionsInfo.price">
+        </el-input>
+        <el-select class="price_select" v-model="subscriptionsInfo.currency" clearable placeholder="请选择币种">
+          <el-option v-for="item in payTypes" :key="item.value" :label="item.label" :value="item.value">
+          </el-option>
+        </el-select>
+      </div>
       <el-input class="margin-top-10" type="textarea" :rows="2" placeholder="请输入圈子介绍" v-model="subscriptionsInfo.introduction">
       </el-input>
       <span slot="footer" class="dialog-footer">
@@ -282,6 +288,21 @@ export default {
   },
   data() {
     return {
+      subscriptionPrice: '',
+      payTypes: [
+        {
+          value: 'poys',
+          label: 'poys'
+        },
+        {
+          value: 'op',
+          label: 'op'
+        },
+        {
+          value: 'ofc',
+          label: 'ofc'
+        }
+      ],
       searchResult: [],
       searchValue: '',
       articleList: [],
@@ -299,7 +320,8 @@ export default {
         name: '',
         price: '',
         introduction: '',
-        image: ''
+        image: '',
+        currency: ''
       },
       dialogVisible: false,
       subscriptionsList: {},
@@ -336,11 +358,9 @@ export default {
     },
     async updateColumn() {
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+      const loginType = sessionStorage.getItem('login-type')
       const currentInfo = await getUser({
-        id:
-          userInfo.eth_account !== 'none'
-            ? userInfo.eth_account
-            : userInfo.user,
+        id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
         token: getToken()
       })
       if (currentInfo.success === 'ok') {
@@ -352,13 +372,11 @@ export default {
     },
     async getArticlesByColumn(v) {
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+      const loginType = sessionStorage.getItem('login-type')
       this.selectedColumn = v
       if (localStorage.getItem('quhu-userInfo')) {
         const res = await getArticles({
-          id:
-            userInfo.eth_account !== 'none'
-              ? userInfo.eth_account
-              : userInfo.user,
+          id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
           jsonrpc: '2.0',
           method: 'bridge.get_ranked_posts',
           params: { sort: 'created', tag: 's' + MD5(v).substring(0, 10) }
@@ -386,24 +404,24 @@ export default {
         name: '',
         price: '',
         introduction: '',
-        image: ''
+        image: '',
+        currency: ''
       }
     },
     async submitSubscriptions() {
-      const { name, introduction, image, price } = this.subscriptionsInfo
+      const { name, introduction, image, price, currency } =
+        this.subscriptionsInfo
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+      const loginType = sessionStorage.getItem('login-type')
       const res = await subscriptions({
-        id:
-          userInfo.eth_account !== 'none'
-            ? userInfo.eth_account
-            : userInfo.user,
+        id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
         token: getToken(),
         user_name: userInfo.user_name,
         steem_id: userInfo.steem_id,
         subscriptions_name: name,
         introduction: introduction,
         image: image,
-        price: price
+        price: price + currency
       })
       if (res.success === 'ok') {
         this.updateColumn()
@@ -422,12 +440,10 @@ export default {
     },
     async submitReply(v, i) {
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+      const loginType = sessionStorage.getItem('login-type')
       const res = await post({
         type: 'comment',
-        id:
-          userInfo.eth_account !== 'none'
-            ? userInfo.eth_account
-            : userInfo.user,
+        id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
         token: getToken(),
         user_name: userInfo.user_name,
         steem_id: userInfo.steem_id,
@@ -454,9 +470,10 @@ export default {
     },
     async submit() {
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+      const loginType = sessionStorage.getItem('login-type')
       const res = await post({
         type: 'post',
-        id: userInfo.user !== 'none' ? userInfo.user : userInfo.eth_account,
+        id: loginType === 'password' ? userInfo.user : userInfo.eth_account,
         token: getToken(),
         user_name: userInfo.user_name,
         steem_id: userInfo.steem_id,
@@ -488,8 +505,9 @@ export default {
     },
     async goDetail(val, index) {
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+      const loginType = sessionStorage.getItem('login-type')
       const res = await getArticleDetail({
-        id: userInfo.user !== 'none' ? userInfo.user : userInfo.eth_account,
+        id: loginType === 'password' ? userInfo.user : userInfo.eth_account,
         jsonrpc: '2.0',
         method: 'bridge.get_discussion',
         params: { author: val.author, permlink: val.permlink }
@@ -540,6 +558,13 @@ export default {
 </script>
 
 <style scoped>
+.price_select {
+  width: 150px;
+  min-width: 50px;
+}
+.sub_price {
+  display: flex;
+}
 .searchBar {
   margin: 0 20px;
   padding: 20px;
