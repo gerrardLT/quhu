@@ -38,9 +38,9 @@ export default {
     })
   },
   mounted() {
-    this.$refs.app.style.paddingBottom = this.$route.meta.isTabPage
-      ? '40px'
-      : '0'
+    // this.$refs.app.style.paddingBottom = this.$route.meta.isTabPage
+    //   ? '40px'
+    //   : '0'
   },
   computed: {
     isTabP() {

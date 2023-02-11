@@ -28,9 +28,9 @@
         </div>
       </el-row>
     </div>
-    <el-dialog title="提示" :visible.sync="dialogVisible" center :before-close="closeDialog" class="dialogBox" width="80%">
-      <el-input v-if="currentChange==='user'" v-model="user" placeholder="请输入用户名" clearable></el-input>
-      <el-input v-if="currentChange==='user_name'" v-model="user_name" placeholder="请输入昵称" clearable></el-input>
+    <el-dialog title="提示" :visible.sync="dialogVisible" center :before-close="closeDialog" class="dialogBox border-radius" width="80%">
+      <el-input class="input" v-if="currentChange==='user'" v-model="user" placeholder="请输入用户名" clearable></el-input>
+      <el-input class="input" v-if="currentChange==='user_name'" v-model="user_name" placeholder="请输入昵称" clearable></el-input>
       <el-input v-if="!isEthLogin" v-model="password" placeholder="请输入密码" show-password clearable></el-input>
       <span slot="footer" class="dialog-footer">
         <el-button @click="closeDialog">取 消</el-button>
@@ -74,6 +74,10 @@ export default {
         },
         {
           id: 3,
+          title: '退出登录'
+        },
+        {
+          id: 4,
           title: '注销'
         }
       ]
@@ -236,9 +240,14 @@ export default {
       }
 
       if (val.id === 3) {
-        // 注销
+        // 退出登录
         this.$store.dispatch('loginOutFalse')
       }
+
+      // if (val.id === 4) {
+      //   // 注销
+      //   this.$store.dispatch('loginOutFalse')
+      // }
     }
   },
 
@@ -253,6 +262,12 @@ export default {
 </script>
 
 <style scoped>
+.border-radius {
+  border-radius: 10px;
+}
+.input {
+  margin-bottom: 10px;
+}
 .dialogBox {
   min-width: 200px;
 }
@@ -263,9 +278,9 @@ export default {
   position: relative;
   display: flex;
 }
-.row-bg {
+/* .row-bg {
   border: 0.5px solid #c0c0c0;
-}
+} */
 .user_space {
   padding: 20px 0;
 }

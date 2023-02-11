@@ -8,7 +8,7 @@
 -->
 <template>
   <div class="setting-bar" v-if="info" @click="go(info)">
-    <div class="content">
+    <div class="content pointer">
       <Icon :name="info.icon" color="blue" />
       <div class="menu">
         {{info.title}}
@@ -45,6 +45,9 @@ export default {
 </script>
 
 <style scoped>
+.pointer {
+  cursor: pointer;
+}
 .setting-bar {
   height: 56px;
   background: #fff;

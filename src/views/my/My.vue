@@ -5,11 +5,11 @@
         <el-col :span="4" class="user_avatar">
           <img :src="require(`../../assets/defaultAvatarUrl.png`)" alt="" />
         </el-col>
-        <el-col class="nick_name" :span="4">
+        <el-col class="nick_name" :span="8">
           {{ userInfo.user_name === 'none'?'': userInfo.user_name}}
         </el-col>
       </el-row>
-      <el-row type="flex" class="user_history row-bg">
+      <el-row type="flex" class="user_history row-bg pointer">
         <el-col :span="6">
           <div @click="goDetail('history')">
             <svg style="width:20px;height: 20px">
@@ -131,6 +131,9 @@ export default {
 </script>
 
 <style scoped>
+.pointer {
+  cursor: pointer;
+}
 .user_page {
   width: 100%;
   height: 100vh;
@@ -156,9 +159,10 @@ export default {
   border-radius: 50%;
 }
 .nick_name {
+  padding-left: 20px;
   display: inline-block;
   line-height: 60px;
-  text-align: center;
+  text-align: left;
 }
 .user_history {
   height: 100px;

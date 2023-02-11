@@ -96,8 +96,8 @@ const store = new Vuex.Store({
     },
     loginOutFalse () {
       localStorage.removeItem('quhu-userInfo')
+      sessionStorage.removeItem('login-type')
       removeToken('quhu-Token')
-      console.log(router)
       router.push('/login')
     },
     loginOutTrue () {

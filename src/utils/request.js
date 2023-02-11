@@ -13,6 +13,7 @@ import baseUrl from '@/config/baseUrl'
 import { MessageBox, Loading, Message } from 'element-ui'
 import { getToken } from '@/utils/auth'
 import store from '@/store'
+const md5 = require('@/utils/md5.js')
 
 // 创建axios实例
 const service = axios.create({
@@ -35,31 +36,22 @@ let hasPermission = false // 当401时会弹层提示 此字段用来防止二�
 // 请求拦截器
 service.interceptors.request.use((config) => {
   const token = getToken()
+  const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
 
-  const userInfo = store.state.userInfo
-
-  // if (token && userInfo.user && token !== userInfo.token) {
-  //   location.href = indexPath;
-  // }
-  // 请求头中添加当前组织id
-  // config.headers.CURRENT_ORG_ID = userInfo && userInfo.currentOrg
-
-  if (userInfo && userInfo.token) {
-    config.headers['X-AUTH-TOKEN'] = token
-  }
-  // 判断是否需要价值动画
-  const flag = (config.params && config.params.ElementLoading) ? config.params : (config.data && config.data.ElementLoading) ? config.data : null
-
-  if (flag) {
-    if (flag) {
-      delete flag.ElementLoading
+  if (config.url === '/register') {
+    config.headers['QUHU-AUTH-TOKEN'] = md5(config.data.user || '')
+  } else {
+    if (userInfo) {
+      const authId = userInfo.eth_account === 'none' ? userInfo.user : userInfo.eth_account
+      config.headers['QUHU-AUTH-TOKEN'] = md5(authId)
     }
-    loading = Loading.service({
-      text: '操作中...',
-      spinner: 'el-icon-loading ElementLoading',
-      background: 'rgba(0, 0, 0, 0.2)'
-    })
   }
+
+  // loading = Loading.service({
+  //   text: '加载中...',
+  //   spinner: 'el-icon-loading ElementLoading',
+  //   background: 'rgba(0, 0, 0, 0.2)'
+  // })
   return config
 },
   (error) => {

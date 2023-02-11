@@ -7,6 +7,14 @@
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
+
+  <!-- <div class="tb-toolbar-container" data-spm="toolbar"><span class="tab"><span class="home-selected "></span></span><span class="tab"><span class="tb-toolbar tb-toolbar-icon-cart"></span>
+      <p class="text ">购物车</p>
+    </span><span class="tab"><span class="tb-toolbar tb-toolbar-icon-my"></span>
+      <p class="text ">我的淘宝</p>
+    </span></div>
+
+  <div> -->
   <div>
     <div class="footer_tab" v-if="!isLoginPage">
       <div class="tab" ref="tabRef" v-for="(item,index) in list" :key="item.id" id="item.id" @click="tabClick(item,index)">
@@ -25,7 +33,6 @@ export default {
   components: {},
   mounted() {
     const path = this.$route.path.replace('/', '')
-    console.log(path, this.nameList.indexOf(path))
     this.toggleStyle(this.nameList.indexOf(path))
   },
   data() {
@@ -88,11 +95,11 @@ export default {
           if (index === i) {
             this.$refs.tabRef[index].style.color = '#409EFF'
             this.$refs.svgRef[index].style.fill = '#409EFF'
-            this.$refs.tabRef[index].style.backgroundColor = '#E4E7ED'
+            // this.$refs.tabRef[index].style.backgroundColor = '#E4E7ED'
           } else {
             this.$refs.tabRef[index].style.color = ''
             this.$refs.svgRef[index].style.fill = ''
-            this.$refs.tabRef[index].style.backgroundColor = 'white'
+            // this.$refs.tabRef[index].style.backgroundColor = 'white'
           }
         })
       }
@@ -116,9 +123,9 @@ export default {
 .tab {
   flex: 1;
   height: 40px;
-  border-right: 1px solid #c0c0c0;
+  /* border-right: 1px solid #c0c0c0; */
   border-top: 1px solid #c0c0c0;
-  border-bottom: 1px solid #c0c0c0;
+  /* border-bottom: 1px solid #c0c0c0; */
   cursor: pointer;
   text-align: center;
   line-height: 40px;

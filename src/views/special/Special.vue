@@ -9,22 +9,22 @@
 <template>
   <div class="main-content-container">
     <el-row class="tab">
-      <el-col :span="4">
+      <el-col :span="6">
         <!-- <h5>星球导航</h5> -->
-        <el-menu default-active="1-0" :default-openeds="['1','2']" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose" background-color="#F5F7FA" text-color="#8b8e9d" active-text-color="#409EFF">
+        <el-menu default-active="1-0" :default-openeds="['1','2']" class="" @open="handleOpen" @close="handleClose" background-color="#F5F7FA" text-color="#8b8e9d" active-text-color="#409EFF">
           <el-submenu index="1">
             <template slot="title">
-              <i class="el-icon-location"></i>
-              <span style="color:#c5c6cb;">我の圈子</span>
+              <!-- <i class="el-icon-location"></i> -->
+              <span style="fontSize:12px;">我的圈子</span>
             </template>
-            <el-menu-item style="minWidth:100px;" v-for="(item,index) in subscriptionsList.my" :key="index" :index="'1-'+index" @click="getArticlesByColumn(item,index)">{{ item }}</el-menu-item>
+            <el-menu-item style="minWidth:90px;" v-for="(item,index) in subscriptionsList.my" :key="index" :index="'1-'+index" @click="getArticlesByColumn(item,index)">{{ item }}</el-menu-item>
           </el-submenu>
           <el-submenu index="2">
             <template slot="title">
-              <i class="el-icon-menu"></i>
-              <span style="color:#c5c6cb;">我加入の圈子</span>
+              <!-- <i class="el-icon-menu"></i> -->
+              <span style="fontSize:12px;">加入的圈子</span>
             </template>
-            <el-menu-item style="minWidth:100px;" v-for="(item,index) in subscriptionsList.join" :key="index" :index="'1-'+index" @click="getArticlesByColumn(item,index)">{{ item }}</el-menu-item>
+            <el-menu-item style="minWidth:90px;" v-for="(item,index) in subscriptionsList.join" :key="index" :index="'1-'+index" @click="getArticlesByColumn(item,index)">{{ item }}</el-menu-item>
           </el-submenu>
         </el-menu>
       </el-col>
@@ -226,7 +226,7 @@
         </div>
       </el-col>
     </el-row>
-    <el-dialog title="创建圈子" :visible.sync="dialogVisible" width="30%" :before-close="handleSubscriptionsClose">
+    <el-dialog title="创建圈子" :visible.sync="dialogVisible" width="80%" :before-close="handleSubscriptionsClose">
       <el-input placeholder="请输入圈子名称" v-model="subscriptionsInfo.name">
       </el-input>
       <div class="margin-top-10 sub_price">
@@ -557,7 +557,10 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+::v-deep .el-submenu__icon-arrow {
+  right: 5px !important;
+}
 .price_select {
   width: 150px;
   min-width: 50px;
@@ -566,10 +569,7 @@ export default {
   display: flex;
 }
 .searchBar {
-  margin: 0 20px;
   padding: 20px;
-  width: 100%;
-  margin-bottom: 10px;
 }
 .margin-top-10 {
   margin-top: 10px;
