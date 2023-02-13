@@ -89,6 +89,10 @@ const routes = [
     path: '/special',
     component: Special,
     meta: { isTabPage: true }
+  },
+  {
+    path: '/invite',
+    component: Invite
   }
 ]
 
