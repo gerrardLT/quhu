@@ -15,6 +15,7 @@ import { getToken } from '@/utils/auth'
 import store from '@/store'
 const md5 = require('@/utils/md5.js')
 
+console.log(md5('abcdef'))
 // 创建axios实例
 const service = axios.create({
   // axios中请求配置有baseURL选项，表示请求URL公共部分
@@ -40,6 +41,8 @@ service.interceptors.request.use((config) => {
 
   if (config.url === '/register') {
     config.headers['QUHU-AUTH-TOKEN'] = md5(config.data.user || '')
+  } else if (config.url === '/login') {
+    config.headers['QUHU-AUTH-TOKEN'] = md5(config.data[0] || '')
   } else {
     if (userInfo) {
       const authId = userInfo.eth_account === 'none' ? userInfo.user : userInfo.eth_account
