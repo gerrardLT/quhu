@@ -42,7 +42,9 @@ service.interceptors.request.use((config) => {
   if (config.url === '/register') {
     config.headers['QUHU-AUTH-TOKEN'] = md5(config.data.user || '')
   } else if (config.url === '/login') {
-    config.headers['QUHU-AUTH-TOKEN'] = md5(config.data[0] || '')
+    config.headers['QUHU-AUTH-TOKEN'] = md5(config.data.data[0] || '')
+  } else if (config.url === '/user') {
+    config.headers['QUHU-AUTH-TOKEN'] = md5(config.data.id || '')
   } else {
     if (userInfo) {
       const authId = userInfo.eth_account === 'none' ? userInfo.user : userInfo.eth_account
