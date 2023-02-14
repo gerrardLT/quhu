@@ -12,6 +12,7 @@ import Login from '../views/Login.vue'
 import Home from '../views/Home.vue'
 import My from '../views/my/My.vue'
 import Special from '../views/special/Special.vue'
+import ColumnDetail from '../views/special/ColumnDetail.vue'
 import Activation from '../views/my/Activation.vue'
 import Setting from '../views/my/Setting.vue'
 import Voucher from '../views/my/Voucher.vue'
@@ -89,6 +90,10 @@ const routes = [
     path: '/special',
     component: Special,
     meta: { isTabPage: true }
+  },
+  {
+    path: '/columnDetail',
+    component: ColumnDetail
   },
   {
     path: '/invite',

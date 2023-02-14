@@ -36,7 +36,15 @@ module.exports = {
         pathRewrite: {
           '/steem': ''
         }
-      }
+      },
+      '/dep': {
+        target: 'http://178.18.253.86:668',
+        // target: 'https://node.onlyfun.city',
+        changeOrigin: true,
+        pathRewrite: {
+          '/dep': ''
+        }
+      },
     },
     port: 8888,
     host: '0.0.0.0',
@@ -108,26 +116,26 @@ module.exports = {
       // 将每个依赖包打包成单独的js文件
       let optimization = {
         minimizer: [new UglifyPlugin({
-            uglifyOptions: {
-                warnings: false,
-                compress: {
-                  drop_console: true, 
-                  drop_debugger: false,
-                  pure_funcs: ['console.log'] 
-                }
+          uglifyOptions: {
+            warnings: false,
+            compress: {
+              drop_console: true,
+              drop_debugger: false,
+              pure_funcs: ['console.log']
             }
-         })]
+          }
+        })]
       }
 
       config.plugins.push(
         new CompressionWebpackPlugin({
-            asset: '[path].gz[query]', // 提示示compression-webpack-plugin@3.0.0的话asset改为filename
-            algorithm: 'gzip',
-            test: new RegExp('\\.(' + productionGzipExtensions.join('|') + ')$'),
-            threshold: 10240,
-            minRatio: 0.8
+          filename: '[path].gz[query]', // 提示示compression-webpack-plugin@3.0.0的话asset改为filename
+          algorithm: 'gzip',
+          test: new RegExp('\\.(' + productionGzipExtensions.join('|') + ')$'),
+          threshold: 10240,
+          minRatio: 0.8
         })
-    );
+      );
 
       Object.assign(config, {
         optimization

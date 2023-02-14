@@ -33,6 +33,7 @@
           <el-autocomplete class="searchBar" clearable v-model="searchValue" :fetch-suggestions="querySearch" placeholder="请输入圈子名称" @select="handleSelect">
             <!-- <el-button slot="append" icon="el-icon-search"></el-button> -->
           </el-autocomplete>
+
           <div @click="postArticle" class="post-topic-head">
             <div class="tip">点击发表主题...</div>
           </div>
@@ -45,6 +46,11 @@
                 </div>
                 <div class="common post-article" @click="createColumn">
                   <span>创建圈子</span>
+                </div>
+                <div class="common post-article" @click="removeOut">
+                  <span v-if="!isOwnColumn">
+                    退出圈子
+                  </span>
                 </div>
               </div>
             </div>
@@ -326,14 +332,32 @@ export default {
       dialogVisible: false,
       subscriptionsList: {},
       selectedColumn: '',
-      timeout: ''
+      timeout: '',
+      isOwnColumn: true
     }
   },
+  computed: {},
   async created() {
     this.updateColumn()
   },
   async mounted() {},
   methods: {
+    async removeOut() {
+      const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+      const loginType = sessionStorage.getItem('login-type')
+      const params = {
+        id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
+        token: getToken(),
+        subscriptions_name: this.selectedColumn
+      }
+      const res = await removeColumn(params)
+      // console.log(res)
+      if (res.success === 'ok') {
+        this.$message.success('退出圈子成功')
+      } else {
+        this.$message.error(res.error)
+      }
+    },
     async querySearch(queryString, cb) {
       const res = await searchColumn({
         subscriptions_name: this.searchValue.trim()
@@ -349,9 +373,15 @@ export default {
       }
     },
     handleSelect(item) {
-      const arr = this.subscriptionsList.my.concat(this.subscriptionsList.join)
-      console.log(arr)
-      this.getArticlesByColumn(item.value)
+      // const arr = this.subscriptionsList.my.concat(this.subscriptionsList.join)
+      // console.log(arr)
+      // this.getArticlesByColumn(item.value)
+      this.$router.push({
+        path: '/columnDetail',
+        query: {
+          subName: item.value
+        }
+      })
     },
     editComment(item, index) {
       item.isEditReply = !item.isEditReply
@@ -374,6 +404,7 @@ export default {
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
       const loginType = sessionStorage.getItem('login-type')
       this.selectedColumn = v
+      this.isOwnColumn = this.subscriptionsList.my.indexOf(v) !== -1
       if (localStorage.getItem('quhu-userInfo')) {
         const res = await getArticles({
           id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
@@ -394,7 +425,6 @@ export default {
         }
       }
     },
-    async getColumn() {},
     createColumn() {
       this.dialogVisible = true
     },
@@ -558,6 +588,9 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.remove_column {
+  margin-left: 100px;
+}
 ::v-deep .el-submenu__icon-arrow {
   right: 5px !important;
 }
