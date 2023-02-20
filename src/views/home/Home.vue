@@ -9,29 +9,39 @@
 <template>
   <div class="main-content-container">
     <el-row class="tab">
-      <el-col :span="6">
-        <!-- <h5>星球导航</h5> -->
-        <el-menu default-active="1-0" :default-openeds="['1','2']" class="" @open="handleOpen" @close="handleClose" background-color="#F5F7FA" text-color="#8b8e9d" active-text-color="#409EFF">
-          <el-submenu index="1">
-            <template slot="title">
-              <!-- <i class="el-icon-location"></i> -->
-              <span style="fontSize:12px;">我的圈子</span>
-            </template>
-            <el-menu-item style="minWidth:90px;" v-for="(item,index) in subscriptionsList.my" :key="index" :index="'1-'+index" @click="getArticlesByColumn(item,index)">{{ item }}</el-menu-item>
-          </el-submenu>
-          <el-submenu index="2">
-            <template slot="title">
-              <!-- <i class="el-icon-menu"></i> -->
-              <span style="fontSize:12px;">加入的圈子</span>
-            </template>
-            <el-menu-item style="minWidth:90px;" v-for="(item,index) in subscriptionsList.join" :key="index" :index="'1-'+index" @click="getArticlesByColumn(item,index)">{{ item }}</el-menu-item>
-          </el-submenu>
-        </el-menu>
+      <el-col :span="4" class="nav_container">
+        <div class="nav_left">
+          <el-menu class="nav_menu" default-active="1-0" :default-openeds="['1','2']" @open="handleOpen" @close="handleClose" background-color="#fff" active-text-color="#4fbdd4">
+            <div class="short_article" @click="toAticle">
+              我的短文
+            </div>
+            <el-submenu index="1">
+              <template slot="title">
+                <!-- <i class="el-icon-location"></i> -->
+                <span style="fontSize:14px;">我的圈子</span>
+              </template>
+              <el-menu-item style="minWidth:90px;" v-for="(item,index) in subscriptionsList.my" :key="index" :index="'1-'+index" @click="getArticlesByColumn(item,index)">{{ item }}</el-menu-item>
+            </el-submenu>
+            <el-submenu index="2">
+              <template slot="title">
+                <!-- <i class="el-icon-menu"></i> -->
+                <span style="fontSize:14px;">加入的圈子</span>
+              </template>
+              <el-menu-item style="minWidth:90px;" v-for="(item,index) in subscriptionsList.join" :key="index" :index="'1-'+index" @click="getArticlesByColumn(item,index)">{{ item }}</el-menu-item>
+            </el-submenu>
+          </el-menu>
+        </div>
       </el-col>
-      <el-col :span="18">
+      <el-col :span="14" class="mid_container">
         <div class="post-container">
-          <el-autocomplete class="searchBar" clearable v-model="searchValue" :fetch-suggestions="querySearch" placeholder="请输入圈子名称" @select="handleSelect">
-            <!-- <el-button slot="append" icon="el-icon-search"></el-button> -->
+          <el-autocomplete class="searchBar" clearable v-model="searchValue" :fetch-suggestions="querySearch" placeholder="请输入圈子名称" @select="handleSelect" :popper-append-to-body="false">
+            <i class="el-icon-search el-input__icon" slot="suffix">
+            </i>
+            <template slot-scope="{ item }">
+              <i class="el-icon-search search_arrow_icon">
+              </i>
+              <div class="name">{{ item.value }}</div>
+            </template>
           </el-autocomplete>
 
           <div @click="postArticle" class="post-topic-head">
@@ -47,11 +57,18 @@
                 <div class="common post-article" @click="createColumn">
                   <span>创建圈子</span>
                 </div>
-                <div class="common post-article" @click="removeOut">
-                  <span v-if="!isOwnColumn">
+                <div slot="reference" class="common post-article" @click="hanldeRemove">
+                  <span v-if="hasColumn">
                     退出圈子
                   </span>
                 </div>
+                <el-dialog title="删除提示" :visible.sync="removePopVisible" width="30%" center>
+                  <span>确认退出当前圈子吗？</span>
+                  <span slot="footer" class="dialog-footer">
+                    <el-button @click="centerDialogVisible = false">取 消</el-button>
+                    <el-button type="primary" @click="removeOut">确 定</el-button>
+                  </span>
+                </el-dialog>
               </div>
             </div>
           </div>
@@ -86,6 +103,7 @@
                     <Icon name="collect" />
                   </div>
                 </div>
+                <a class="steemLink" :href="'https://steemdb.io/tag/@'+item.author+'/'+item.permlink">View on Blockbrowser</a>
                 <div class="details-container" @click="goDetail(item,index)">
                   <div class="text">查看详情</div>
                   <div class="icon">
@@ -206,7 +224,7 @@
               <div class="horizontal-line"></div>
               <div class="content-container"><img class="avatar" src="../../assets/heima.png">
                 <div style="width: calc(100% - 40px); min-height: 110px; margin: 5px 0px; max-height: 497px;">
-                  <quill-editor v-model="content" :options="editorOption" spellcheck="false" class="quill-editor">
+                  <quill-editor v-model="content" ref="myQuillEditor" :options="editorOption" spellcheck="false" class="quill-editor" @ready="onEditorReady()">
                   </quill-editor>
                 </div>
               </div>
@@ -231,8 +249,35 @@
           </div>
         </div>
       </el-col>
+      <el-col :span="6">
+        <div class="recommend_container">
+          <div class="wbpro-side woo-panel-main woo-panel-top woo-panel-right woo-panel-bottom woo-panel-left Card_wrap_2ibWe Card_bottomGap_2Xjqi">
+            <div>
+              <div class="wbpro-side-tit woo-box-flex woo-box-alignCenter">
+                <div class="f14 cla woo-box-item-flex" style="align-self: center;"> 热门圈子 </div>
+                <div class="woo-box-flex woo-box-alignCenter"><i class="el-icon-refresh"></i><span class="f12 clb">点击刷新</span></div>
+              </div>
+              <div class="woo-divider-main woo-divider-x">
+              </div>
+              <div class="wbpro-side-card7">
+                <div class="wbpro-side-panel">
+                  <div class="con woo-box-flex woo-box-alignCenter">
+                    <div class="rank top f18">1</div>
+                    <div title="" class="wbpro-textcut f14 cla">这是热门圈子第一条aaaaaaaaaaa </div>
+                    <div class="icon"><span class="wbpro-icon-search-tp1" style="background: rgb(255, 148, 6);">热</span></div>
+                  </div>
+                  <div class="woo-divider-main woo-divider-x">
+                  </div>
+                </div>
+              </div>
+              <div class="woo-divider-main woo-divider-x">
+              </div>
+            </div>
+          </div>
+        </div>
+      </el-col>
     </el-row>
-    <el-dialog title="创建圈子" :visible.sync="dialogVisible" width="80%" :before-close="handleSubscriptionsClose">
+    <el-dialog title="创建圈子" :visible.sync="dialogVisible" width="60%" :before-close="handleSubscriptionsClose">
       <el-input placeholder="请输入圈子名称" v-model="subscriptionsInfo.name">
       </el-input>
       <div class="margin-top-10 sub_price">
@@ -247,29 +292,14 @@
       </el-input>
       <span slot="footer" class="dialog-footer">
         <el-button @click="handleSubscriptionsClose">取 消</el-button>
-        <el-button type="primary" @click="submitSubscriptions">确 定</el-button>
+        <el-button class="sub_confirm" type="primary" @click="submitSubscriptions">确 定</el-button>
       </span>
     </el-dialog>
 
+    <el-upload action="https://jsonplaceholder.typicode.com/posts/" ref="upload" v-show="false" class="avatar-uploader" :data='fileUpload' :show-file-list="true" :http-request="onUploadHandler">
+    </el-upload>
     <!-- <quill-editor v-model="content" ref="myQuillEditor" :options="editorOption" @blur="onEditorBlur($event)" @focus="onEditorFocus($event)" @ready="onEditorReady($event)">
     </quill-editor> -->
-    <!-- <el-row class="special_container">
-      <el-col :span="10" v-for="(item, index) in articleList" :key="index" :offset="index % 2 !==0? 4 : 0">
-        <el-card :body-style="{ padding: '0px' }">
-          <img v-if="index!==articleList.length-1" src="../../assets/quhu.png" class="image">
-          <div v-if="index!==articleList.length-1" style="padding: 8px;">
-            <span>趣乎专栏</span>
-            <div class="bottom clearfix">
-              <span>趣乎专栏</span>
-              <el-button type="text" class="button">操作</el-button>
-            </div>
-          </div>
-          <div v-if="index===articleList.length-1" class="empty">
-            <el-button type="text" class="button">创建专栏</el-button>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row> -->
   </div>
 </template>
 
@@ -294,6 +324,8 @@ export default {
   },
   data() {
     return {
+      fileUpload: {},
+      removePopVisible: false,
       subscriptionPrice: '',
       payTypes: [
         {
@@ -315,9 +347,27 @@ export default {
       content: '',
       editorOption: {
         modules: {
-          toolbar: ''
+          'emoji-toolbar': true,
+          'emoji-shortname': true,
+          toolbar: {
+            container: [['emoji'], ['image']],
+            handlers: {
+              image: (value) => {
+                if (value) {
+                  // value === true
+                  console.log(this.$refs.upload.$el)
+                  console.log(document.querySelector('.avatar-uploader input'))
+                  this.$refs.upload.$el.click()
+                  document.querySelector('.avatar-uploader input').click()
+                } else {
+                  this.quill.format('image', false)
+                }
+              }
+            }
+          }
         },
-        placeholder: '请输入正文'
+        placeholder: '请输入正文',
+        theme: 'snow'
       },
       showEditor: false,
       titleText: '',
@@ -333,7 +383,7 @@ export default {
       subscriptionsList: {},
       selectedColumn: '',
       timeout: '',
-      isOwnColumn: true
+      hasColumn: true
     }
   },
   computed: {},
@@ -342,6 +392,33 @@ export default {
   },
   async mounted() {},
   methods: {
+    hanldeRemove() {
+      this.removePopVisible = true
+    },
+    toAticle() {
+      this.$router.push('/article')
+    },
+    async onUploadHandler(e) {
+      const imageUrl = '../../assets/quhu-logo.jpg'
+
+      // 获取光标所在位置
+      let quill = this.$refs.myQuillEditor.quill
+      let length = quill.getSelection().index
+      // 插入图片
+      quill.insertEmbed(length, 'image', imageUrl)
+      // 调整光标到最后
+      quill.setSelection(length + 1)
+      // this.content += url
+    },
+    onEditorReady() {
+      // document.querySelector('.ql-formats .ql-uploadImg').innerText = '图'
+      // document.querySelector('.ql-formats .ql-uploadFile').innerText = '文';
+    },
+    onEditorBlur() {},
+    onEditorFocus() {},
+    onUploadImage() {
+      console.log('触发上传')
+    },
     async removeOut() {
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
       const loginType = sessionStorage.getItem('login-type')
@@ -357,6 +434,7 @@ export default {
       } else {
         this.$message.error(res.error)
       }
+      this.removePopVisible = false
     },
     async querySearch(queryString, cb) {
       const res = await searchColumn({
@@ -404,7 +482,9 @@ export default {
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
       const loginType = sessionStorage.getItem('login-type')
       this.selectedColumn = v
-      this.isOwnColumn = this.subscriptionsList.my.indexOf(v) !== -1
+      this.hasColumn =
+        this.subscriptionsList.my.length !== 0 ||
+        this.subscriptionsList.join.length !== 0
       if (localStorage.getItem('quhu-userInfo')) {
         const res = await getArticles({
           id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
@@ -563,9 +643,6 @@ export default {
       }
       console.log(val)
     },
-    onEditorBlur() {},
-    onEditorFocus() {},
-    onEditorReady() {},
     eval(fn) {
       const Fn = Function
       return new Fn('return ' + fn)()
@@ -588,6 +665,38 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.recommend_container {
+  min-height: 500px;
+  background-color: #fff;
+  margin-left: 20px;
+}
+.sub_confirm {
+  background: #4fbdd4;
+}
+.nav_container {
+}
+.nav_left {
+  width: 100%;
+  // display: flex;
+  // justify-content: center;
+  .nav_menu {
+    border-radius: 10px;
+    width: 190px;
+    background: $bgcolor;
+    height: 800px;
+  }
+  .short_article {
+    width: calc(100% - 20px);
+    height: 50px;
+    font-size: 14px;
+    padding-left: 20px;
+    line-height: 50px;
+    cursor: pointer;
+  }
+  .short_article:hover {
+    background: #d3d3d5;
+  }
+}
 .remove_column {
   margin-left: 100px;
 }
@@ -601,8 +710,20 @@ export default {
 .sub_price {
   display: flex;
 }
-.searchBar {
+::v-deep .searchBar {
   padding: 20px;
+  .name {
+    height: 50px;
+    line-height: 50px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .search_arrow_icon {
+    line-height: 50px;
+    position: absolute;
+    right: 10px;
+  }
 }
 .margin-top-10 {
   margin-top: 10px;
@@ -621,7 +742,7 @@ export default {
   white-space: pre-wrap;
 }
 .comment-item-container .text .group-owner-light {
-  color: #fda956;
+  color: #4fbdd4;
   cursor: pointer;
 }
 .comment-item-container .operations {
@@ -630,7 +751,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   height: 16px;
-  font-size: 12px;
+  font-size: 14px;
   color: #c5c6cb;
 }
 .reply_input input {
@@ -677,10 +798,14 @@ export default {
   cursor: pointer;
 }
 .main-content-container {
-  margin: 10px 0 0 0;
-  background: #f5f7fa;
+  max-width: 1250px;
+  margin: auto;
   height: 100%;
+  padding-top: 20px;
 }
+// .mid_container {
+//   margin-left: 20px;
+// }
 .post-container {
   margin-bottom: 5px;
   background-color: #fff;
@@ -750,13 +875,14 @@ export default {
   height: 30px;
   line-height: 30px;
   text-align: center;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   color: #8b8e9d;
   cursor: pointer;
 }
 
 .topic-container {
+  margin-top: 10px;
   background: #fff;
   margin-bottom: 10px;
   border-radius: 4px;
@@ -789,7 +915,7 @@ export default {
   height: 20px;
   line-height: 20px;
   cursor: pointer;
-  color: #fda956;
+  // color: #4fbdd4;
 }
 
 .info .date {
@@ -812,6 +938,7 @@ export default {
 }
 
 .topic-container .operation-icon-container {
+  position: relative;
   padding-left: 56px;
   padding-right: 20px;
   display: flex;
@@ -827,6 +954,12 @@ export default {
   height: 21px;
   margin-right: 30px;
   cursor: pointer;
+}
+.steemLink {
+  color: #c5c6cb;
+  font-size: 12px;
+  position: absolute;
+  right: 100px;
 }
 .topic-container .operation-icon-container .details-container {
   display: flex;
@@ -985,7 +1118,7 @@ export default {
   box-sizing: border-box;
   line-height: 24px;
   text-align: center;
-  background: #16b998;
+  background: #4fbdd4;
   box-shadow: 0 1px 2px #0000000d;
   border-radius: 2px;
   color: #fff;
@@ -1035,5 +1168,79 @@ export default {
 
 .clearfix:after {
   clear: both;
+}
+.wbpro-side-tit {
+  height: 40px;
+  line-height: 40px;
+  padding: 0 18px;
+  display: flex;
+  position: relative;
+}
+.f18 {
+  font-size: 18px;
+}
+.wbpro-side .f14 {
+  cursor: pointer;
+  width: 172px;
+  font-size: 14px;
+}
+.wbpro-side-panel {
+  padding: 0 18px;
+  position: absolute;
+}
+.wbpro-side-card7 .con {
+  position: relative;
+  height: 40px;
+  padding: 0 30px 0 24px;
+}
+.wbpro-side-card7 .top {
+  color: #f26d5f;
+}
+.wbpro-side-card7 .rank {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 20px;
+  -webkit-transform: translateY(-50%);
+  transform: translateY(-50%);
+  text-align: center;
+  color: #ff8200;
+}
+.wbpro-side-card7 .wbpro-textcut {
+  margin-right: 10px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.wbpro-side .f12 {
+  cursor: pointer;
+  margin-left: 4px;
+  font-size: 12px;
+  line-height: 16px;
+}
+.wbpro-side-card7 .icon {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  margin: -10px 0 0;
+}
+.wbpro-icon-search-tp1 {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  line-height: 20px;
+  text-align: center;
+  font-size: 14px;
+  color: #fff;
+  background: rgb(255, 148, 6);
+}
+.woo-box-alignCenter {
+  align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+}
+.woo-box-flex {
+  display: flex;
 }
 </style>

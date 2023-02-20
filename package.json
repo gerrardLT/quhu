@@ -16,6 +16,7 @@
     "js-cookie": "^3.0.1",
     "lodash": "^4.17.21",
     "md5": "^2.3.0",
+    "quill-emoji": "^0.2.0",
     "quill-image-drop-module": "^1.0.3",
     "quill-image-resize-module": "^3.0.0",
     "sass-loader": "10.4.1",

@@ -37,11 +37,7 @@ export default {
       sessionStorage.setItem('store', JSON.stringify(this.$store.state))
     })
   },
-  mounted() {
-    // this.$refs.app.style.paddingBottom = this.$route.meta.isTabPage
-    //   ? '40px'
-    //   : '0'
-  },
+  mounted() {},
   computed: {
     isTabP() {
       return this.$route.meta.isTabPage
@@ -49,7 +45,15 @@ export default {
   },
   watch: {
     isTabP: {
-      handler(newVal, oldVal) {},
+      handler(newVal, oldVal) {
+        if (this.$refs.app) {
+          if (!this.isTabP) {
+            this.$refs.app.style.paddingTop = 0
+          } else {
+            this.$refs.app.style.paddingTop = '60px'
+          }
+        }
+      },
       deep: true,
       immediate: true
     }
@@ -57,5 +61,5 @@ export default {
 }
 </script>
 
-<style>
+<style >
 </style>

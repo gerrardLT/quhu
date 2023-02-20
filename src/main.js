@@ -26,17 +26,18 @@ import VueQuillEditor from 'vue-quill-editor'
 import 'quill/dist/quill.core.css'
 import 'quill/dist/quill.snow.css'
 import 'quill/dist/quill.bubble.css'
+import quillEmoji from 'quill-emoji'
+import 'quill-emoji/dist/quill-emoji.css'
 import * as Quill from 'quill'
-// import { ImageDrop } from 'quill-image-drop-module'
 // import ImageResize from 'quill-image-resize-module'
 
 // 实现quill-editor编辑器拖拽上传图片
 Vue.use(VueQuillEditor)
-// Quill.register('modules/imageDrop', ImageDrop)
 
 // 实现quill-editor编辑器调整图片尺寸
 
 // Quill.register('modules/imageResize', ImageResize)
+Quill.register('modules/quillEmoji', quillEmoji)
 Vue.use(ElementUI)
 
 Vue.prototype.Web3 = Web3

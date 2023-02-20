@@ -9,10 +9,11 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Login from '../views/Login.vue'
-import Home from '../views/Home.vue'
+import Home from '../views/home/Home.vue'
 import My from '../views/my/My.vue'
-import Special from '../views/special/Special.vue'
-import ColumnDetail from '../views/special/ColumnDetail.vue'
+import Article from '../views/article/Article.vue'
+import Auction from '../views/auction/Auction.vue'
+import ColumnDetail from '../views/home/ColumnDetail.vue'
 import Activation from '../views/my/Activation.vue'
 import Setting from '../views/my/Setting.vue'
 import Voucher from '../views/my/Voucher.vue'
@@ -30,7 +31,7 @@ Vue.use(VueRouter)
 const routes = [
   {
     path: '/',
-    redirect: '/login'
+    redirect: '/home'
   },
   {
     path: '/login',
@@ -39,6 +40,16 @@ const routes = [
   {
     path: '/home',
     component: Home,
+    meta: { isTabPage: true }
+  },
+  {
+    path: '/article',
+    component: Article,
+    meta: { isTabPage: true }
+  },
+  {
+    path: '/auction',
+    component: Auction,
     meta: { isTabPage: true }
   },
   {
@@ -87,17 +98,8 @@ const routes = [
     component: MySpecial
   },
   {
-    path: '/special',
-    component: Special,
-    meta: { isTabPage: true }
-  },
-  {
     path: '/columnDetail',
     component: ColumnDetail
-  },
-  {
-    path: '/invite',
-    component: Invite
   }
 ]
 

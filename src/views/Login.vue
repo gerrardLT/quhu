@@ -230,8 +230,10 @@ export default {
               captcha: '',
               invitedId: this.invitedId || ''
             }).then((data) => {
-              this.$message.success('注册成功！')
-              this.toggle()
+              if (data.success === 'ok') {
+                this.$message.success('注册成功！')
+                this.toggle()
+              }
             })
           }
         }
@@ -249,9 +251,13 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .login_container {
-  background-color: #409eff;
+  // background-image: url('../assets/quhu.png');
+  background-image: url('../assets/quhu-bglogo.jpg');
+  background-position: center;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
   height: 100%;
 }
 
@@ -305,7 +311,7 @@ img {
   cursor: pointer;
 }
 .login_area .wallet_login:hover {
-  color: #409eff;
+  color: $mainColor;
 }
 .login_form {
   position: absolute;
@@ -345,6 +351,6 @@ img {
 }
 
 .form_container .register_btn:hover {
-  color: #409eff;
+  color: $mainColor;
 }
 </style>

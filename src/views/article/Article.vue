@@ -8,7 +8,7 @@
 -->
 <template>
   <div>
-    <div class="invite_container">
+    <div class="Article_container">
 
     </div>
   </div>
@@ -17,32 +17,15 @@
 <script>
 import { getToken, setToken, removeToken } from '@/utils/auth'
 export default {
-  name: 'Invite',
-  created() {
-    // if (this.$route.query.user) {
-    //   this.$store.dispatch('getUserInfo', {
-    //     id: decodeURIComponent(this.$route.query.user),
-    //     token: getToken()
-    //   })
-    // }
-  },
-  mounted() {
-    console.log(this.$store.state)
-  },
+  name: 'Article',
+  created() {},
+  mounted() {},
   data() {
     return {}
   },
-  methods: {
-    logout() {
-      // window.sessionStorage.clear()
-      // this.$router.push('/login')
-      // this.$message.warning('已退出')
-    }
-  }
+  methods: {}
 }
 </script>
 
 <style scoped lang="scss">
-.invite_container {
-}
 </style>

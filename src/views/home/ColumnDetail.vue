@@ -16,15 +16,22 @@
         </el-col>
       </el-row>
       <el-row type="flex" class="add_column" justify="center">
-        <el-button class="add_btn" type="primary" @click="apply" round>
+        <el-button v-if="!isJoined" class="add_btn" type="primary" @click="apply" round>
           价格：{{detail_info.price }}
           <br />
           <br />
           申请加入
         </el-button>
-        <el-button v-if="!isOwnColumn" class="remove_btn" type="primary" @click="remove" round>
+        <el-button v-if="isJoined" slot="reference" class="remove_btn" type="primary" @click="removeSub" round>
           退出圈子
         </el-button>
+        <el-dialog title="删除提示" :visible.sync="removePopVisible" width="30%" center>
+          <span>确认退出当前圈子吗？</span>
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="centerDialogVisible = false">取 消</el-button>
+            <el-button type="primary" @click="remove">确 定</el-button>
+          </span>
+        </el-dialog>
       </el-row>
     </div>
   </div>
@@ -48,16 +55,28 @@ export default {
         image: '',
         price: '',
         time_stamp: ''
-      }
+      },
+      removePopVisible: false
     }
   },
   computed: {
-    isOwnColumn() {
+    isJoined() {
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
-      return this.detail_info.master === userInfo.steem_id
+      if (userInfo.buy_article) {
+        return false
+      } else {
+        return (
+          userInfo.buy_article.join.indexOf(
+            this.detail_info.subscriptions_name
+          ) !== -1
+        )
+      }
     }
   },
   methods: {
+    removeSub() {
+      this.removePopVisible = true
+    },
     async remove() {
       const { subscriptions_name } = this.detail_info
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
@@ -102,6 +121,7 @@ export default {
       console.log(res)
       if (res.success === 'ok') {
         this.$message.success('加入圈子成功')
+        this.$router.go(-1)
       } else {
         this.$message.error(res.error)
       }
