@@ -85,7 +85,7 @@ export default {
   },
   computed: {
     isEthLogin() {
-      return sessionStorage.getItem('login-type') === 'eth'
+      return localStorage.getItem('login-type') === 'eth'
     },
     ...mapState({
       userInfo: (state) => state.userInfo

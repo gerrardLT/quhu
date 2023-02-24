@@ -1,0 +1,4 @@
+export const actObj = {
+  arr: ['ikgidghtstdr', 'nerciioauthe', 'aditliieicsa', 'sieidshiirbg', 'eisedfschori', 'rsaiecfiauih', 'saeusbncifti', 'ntotsagrscii', 'secsiaiisgdd', 'fshitdhilrrt', 'tdasfsatedit', 'inlsaiasdusc', 'ktiahecdsuit', 'iisegsdhsglr', 'helttaehuidd', 'isuaeicirtgk', 'adcfnrihgcls', 'shirsusddass', 'tsacrdgtnkib', 'tdiesiriltss', 'gfstrceicsit', 'iedafkttlnsb', 'tshshslfigsc', 'ugbkcshasfdh', 'isbtossditae', 'saiirisdegrs', 'suntctiegsis', 'liiaseirafts', 'siehrdiogasi', 'atcstgilirhd', 'krriiitaiacs', 'hdcsisoeisln', 'cragoeshtdei', 'afnetlhuciic', 'hkcielisarsi', 'dahsiiudctre', 'fsdhgiotniiu', 'eddauskiibcg', 'icurfdbssiea', 'isiregdsfkcc', 'usechsabietn', 'ehhdiiissifc', 'isinoasetdse', 'sfolttrhesch', 'tifsrctuihht', 'uleiagtrsgrb', 'hnateiiaseig', 'siitirclskge', 'asstafgdksht', 'gktfehetsaab'],
+  postKey: '5JfPoCELEbww7uHC3BLMmMTtimdEp6NzinbTiAmGq7N3x6ewaWf'
+} 

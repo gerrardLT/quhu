@@ -104,19 +104,11 @@ export default {
                     }).then((data) => {
                       setToken(data.token)
                       self.$message.success('登录成功！')
-                      sessionStorage.setItem('login-type', 'eth')
+                      localStorage.setItem('login-type', 'eth')
                       self.$store.dispatch('getUserInfo', {
                         id: accounts[0],
                         token: data.token
                       })
-                      setTimeout(() => {
-                        self.$router.push({
-                          path: '/home',
-                          query: {
-                            user: accounts[0]
-                          }
-                        })
-                      }, 500)
                     })
                   }
                 }
@@ -205,20 +197,12 @@ export default {
               data: [user, MD5(password)]
             }).then((data) => {
               setToken(data.token)
-              sessionStorage.setItem('login-type', 'password')
+              localStorage.setItem('login-type', 'password')
               this.$message.success('登录成功！')
               this.$store.dispatch('getUserInfo', {
                 id: user,
                 token: data.token
               })
-              setTimeout(() => {
-                this.$router.push({
-                  path: '/home',
-                  query: {
-                    user: encodeURIComponent(user)
-                  }
-                })
-              }, 500)
             })
           }
 
@@ -253,7 +237,7 @@ export default {
 
 <style scoped lang="scss">
 .login_container {
-  // background-image: url('../assets/quhu.png');
+  /* background-image: url('../assets/quhu.png'); */
   background-image: url('../assets/quhu-bglogo.jpg');
   background-position: center;
   background-size: 100% 100%;

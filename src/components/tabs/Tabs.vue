@@ -14,7 +14,7 @@
           <div class="woo-box-flex woo-box-alignCenter Nav_main">
             <div class="woo-box-flex woo-box-alignCenter Nav_left">
               <a href="/" aria-label="quhu" class="Nav_logoWrap">
-                <img src="../../assets/quhu-logo.jpg" alt="">
+                <img src="../../assets/quhu.png" alt="">
               </a>
             </div>
             <div class="Nav_mid">
@@ -143,7 +143,7 @@ export default {
   left: 0;
   top: 0;
   width: 100%;
-  height: 60px;
+  height: 80px;
   padding-top: 0;
   border-top: 2px solid #4fbdd4;
   background-color: transparent;
@@ -188,8 +188,8 @@ export default {
   display: inline-block;
   cursor: pointer;
   img {
-    width: 50px;
-    height: 50px;
+    width: 120px;
+    height: 40px;
   }
 }
 .Nav_logo {
@@ -206,8 +206,7 @@ export default {
 }
 .svg_container {
   margin-top: 10px;
-  height: 40px;
-  line-height: 40px;
+  height: 60px;
   border-radius: 4px;
 }
 .svg_container:hover {

@@ -11,8 +11,9 @@ const HotHashWebpackPlugin = require('hot-hash-webpack-plugin');
 const WebpackBar = require('webpackbar');
 const UglifyPlugin = require('uglifyjs-webpack-plugin')
 const CompressionWebpackPlugin = require('compression-webpack-plugin')
+const webpack = require('webpack')
 const productionGzipExtensions = ['js', 'css']
-const resolve = (dir) => path.join(__dirname, '.', dir);
+const resolve = (dir) => path.join(__dirname, '.', dir)
 
 module.exports = {
   productionSourceMap: false,
@@ -87,9 +88,16 @@ module.exports = {
 
     config.plugin('define').tap(args => [{
       ...args,
-      "window.isDefine": JSON.stringify(true)
+      "window.isDefine": JSON.stringify(true),
     }]);
-
+    config
+    .plugin('Quill')
+    .use(webpack.ProvidePlugin, [{
+      'window.Quill': 'quill'
+      // 或
+      // 'window.Quill': 'quill/dist/quill.js',
+      // 'Quill': 'quill/dist/quill.js'
+    }])
     // 生产环境配置
     if (process.env.NODE_ENV === 'production') {
       config.output.filename('./js/[name].[chunkhash:8].js');

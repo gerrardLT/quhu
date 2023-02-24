@@ -74,3 +74,34 @@ export async function searchColumn (data) {
     data
   })
 }
+
+
+// 点赞
+export async function vote (data) {
+  return request({
+    url: '/vote',
+    method: 'post',
+    data
+  })
+}
+
+
+// 查询点赞数
+export async function getVote (data) {
+  return request({
+    url: '/getvote',
+    method: 'post',
+    data
+  })
+}
+
+
+// 查询热门圈子
+export async function hotColumn (data) {
+  return request({
+    url: '/hot',
+    method: 'get',
+    data
+  })
+}
+

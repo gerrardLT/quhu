@@ -68,6 +68,12 @@ const store = new Vuex.Store({
       if (res) {
         state.userInfo = Object.assign({}, res.data)
         localStorage.setItem('quhu-userInfo', JSON.stringify(state.userInfo))
+        router.push({
+            path: '/home'
+            // query: {
+            //   user: encodeURIComponent(user)
+            // }
+          })
       }
     },
     async updateUser ({
@@ -76,7 +82,7 @@ const store = new Vuex.Store({
     }, d) {
       console.log(d)
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
-      const loginType = sessionStorage.getItem('login-type')
+      const loginType = localStorage.getItem('login-type')
       const changeInfo = d.type === 'user' ? { user: d.user } : { user_name: d.user_name }
       const params = loginType === 'eth' ? {
         id: userInfo.eth_account,
@@ -96,7 +102,7 @@ const store = new Vuex.Store({
     },
     loginOutFalse () {
       localStorage.removeItem('quhu-userInfo')
-      sessionStorage.removeItem('login-type')
+      localStorage.removeItem('login-type')
       removeToken('quhu-Token')
       router.push('/login')
     },

@@ -11,35 +11,61 @@
     <el-row class="tab">
       <el-col :span="4" class="nav_container">
         <div class="nav_left">
-          <el-menu class="nav_menu" default-active="1-0" :default-openeds="['1','2']" @open="handleOpen" @close="handleClose" background-color="#fff" active-text-color="#4fbdd4">
-            <div class="short_article" @click="toAticle">
-              我的短文
-            </div>
+          <el-menu
+            class="nav_menu"
+            default-active="1-0"
+            :default-openeds="['1', '2']"
+            @open="handleOpen"
+            @close="handleClose"
+            background-color="#fff"
+            active-text-color="#4fbdd4"
+          >
+            <div class="short_article" @click="toAticle">我的短文</div>
             <el-submenu index="1">
               <template slot="title">
                 <!-- <i class="el-icon-location"></i> -->
-                <span style="fontSize:14px;">我的圈子</span>
+                <span style="fontsize: 14px">我的圈子</span>
               </template>
-              <el-menu-item style="minWidth:90px;" v-for="(item,index) in subscriptionsList.my" :key="index" :index="'1-'+index" @click="getArticlesByColumn(item,index)">{{ item }}</el-menu-item>
+              <el-menu-item
+                style="minwidth: 90px"
+                v-for="(item, index) in subscriptionsList.my"
+                :key="index"
+                :index="'1-' + index"
+                @click="getArticlesByColumn(item, index)"
+                >{{ item }}</el-menu-item
+              >
             </el-submenu>
             <el-submenu index="2">
               <template slot="title">
                 <!-- <i class="el-icon-menu"></i> -->
-                <span style="fontSize:14px;">加入的圈子</span>
+                <span style="fontsize: 14px">加入的圈子</span>
               </template>
-              <el-menu-item style="minWidth:90px;" v-for="(item,index) in subscriptionsList.join" :key="index" :index="'1-'+index" @click="getArticlesByColumn(item,index)">{{ item }}</el-menu-item>
+              <el-menu-item
+                style="minwidth: 90px"
+                v-for="(item, index) in subscriptionsList.join"
+                :key="index"
+                :index="'2-' + index"
+                @click="getArticlesByColumn(item, index)"
+                >{{ item }}</el-menu-item
+              >
             </el-submenu>
           </el-menu>
         </div>
       </el-col>
       <el-col :span="14" class="mid_container">
         <div class="post-container">
-          <el-autocomplete class="searchBar" clearable v-model="searchValue" :fetch-suggestions="querySearch" placeholder="请输入圈子名称" @select="handleSelect" :popper-append-to-body="false">
-            <i class="el-icon-search el-input__icon" slot="suffix">
-            </i>
+          <el-autocomplete
+            class="searchBar"
+            clearable
+            v-model="searchValue"
+            :fetch-suggestions="querySearch"
+            placeholder="请输入圈子名称"
+            @select="handleSelect"
+            :popper-append-to-body="false"
+          >
+            <i class="el-icon-search el-input__icon" slot="suffix"> </i>
             <template slot-scope="{ item }">
-              <i class="el-icon-search search_arrow_icon">
-              </i>
+              <i class="el-icon-search search_arrow_icon"> </i>
               <div class="name">{{ item.value }}</div>
             </template>
           </el-autocomplete>
@@ -57,110 +83,122 @@
                 <div class="common post-article" @click="createColumn">
                   <span>创建圈子</span>
                 </div>
-                <div slot="reference" class="common post-article" @click="hanldeRemove">
-                  <span v-if="hasColumn">
-                    退出圈子
-                  </span>
+                <div
+                  slot="reference"
+                  class="common post-article"
+                  @click="handleRemove"
+                >
+                  <span v-if="hasColumn"> 退出圈子 </span>
                 </div>
-                <el-dialog title="删除提示" :visible.sync="removePopVisible" width="30%" center>
+                <el-dialog
+                  title="删除提示"
+                  :visible.sync="removePopVisible"
+                  width="30%"
+                  center
+                >
                   <span>确认退出当前圈子吗？</span>
                   <span slot="footer" class="dialog-footer">
-                    <el-button @click="centerDialogVisible = false">取 消</el-button>
-                    <el-button type="primary" @click="removeOut">确 定</el-button>
+                    <el-button @click="centerDialogVisible = false"
+                      >取 消</el-button
+                    >
+                    <el-button type="primary" @click="removeOut"
+                      >确 定</el-button
+                    >
                   </span>
                 </el-dialog>
               </div>
             </div>
           </div>
         </div>
-        <div v-for="(item,index) in articleList" :key="index">
+        <div v-for="(item, index) in articleList" :key="index">
           <div class="topic-container">
-            <div style="padding:10px;">
+            <div style="padding: 10px">
               <div class="header-container">
                 <div class="author">
-                  <img class="avatar" src="../../assets/heima.png" alt="">
+                  <img class="avatar" src="../../assets/heima.png" alt="" />
                   <div class="info">
                     <div class="role owner">{{ item.body.author }}</div>
-                    <div class="date">{{ item.created.replace('T','  ') }}</div>
+                    <div class="date">
+                      {{ item.created.replace('T', '  ') }}
+                    </div>
                   </div>
                 </div>
               </div>
               <div class="talk-content-container">
                 <div class="content">
-                  <div>{{ item.title }}</div><br />
+                  <div>{{ item.title }}</div>
+                  <br />
                   <div v-html="item.body.body"></div>
                 </div>
               </div>
               <div class="operation-icon-container">
                 <div class="operation-icon">
-                  <div title="点赞" class="like">
-                    <Icon name="praise" />
+                  <div title="点赞" class="like" @click="praise(item)">
+                    <Icon
+                      name="praise"
+                      :color="item.isPraised ? '#4fbdd4' : '#5D5D5D'"
+                    />
                   </div>
-                  <div title="评论" class="comment" @click="editComment(item,index)">
+                  <div
+                    title="评论"
+                    class="comment"
+                    @click="editComment(item, index)"
+                  >
                     <Icon name="discuss" />
                   </div>
                   <div title="收藏" class="subscribe">
                     <Icon name="collect" />
                   </div>
                 </div>
-                <a class="steemLink" :href="'https://steemdb.io/tag/@'+item.author+'/'+item.permlink">View on Blockbrowser</a>
-                <div class="details-container" @click="goDetail(item,index)">
+                <a
+                  class="steemLink"
+                  :href="
+                    'https://steemdb.io/tag/@' +
+                    item.author +
+                    '/' +
+                    item.permlink
+                  "
+                  target="blank"
+                  >View on Blockbrowser</a
+                >
+                <div class="details-container" @click="goDetail(item, index)">
                   <div class="text">查看详情</div>
                   <div class="icon">
                     <Icon name="arrowR" />
                   </div>
                 </div>
-
               </div>
-              <el-input v-show="item.isEditReply" placeholder="请输入内容" v-model="item.reply" class="reply_input">
-                <el-button slot="append" @click="submitReply(item,index)">回复</el-button>
+              <!-- <div class="praisedPeople">{{ }}觉得很赞</div> -->
+              <el-input
+                v-show="item.isEditReply"
+                placeholder="请输入内容"
+                v-model="item.reply"
+                class="reply_input"
+              >
+                <el-button slot="append" @click="submitReply(item, index)"
+                  >回复</el-button
+                >
               </el-input>
               <div class="comment-item-container">
-                <!-- <div class="text" v-for="(v,i) in item.rep" :key="i">
-              <span class="comment group-owner-light">{{ item.body.author }}</span>
-              <span>：</span>
-              <span parsetype="pure" class="text">{{  }}</span>
-            </div>
-            <div  class="operations">
-              <div  class="time">{{ item.created.replace('T','  ') }}</div>
-              <div  class="operation"><span >置顶</span>
-                <span  class="space">删除</span>
-              </div>
-            </div> -->
               </div>
             </div>
           </div>
-          <div v-if="item.isShowDetailDialog" id="topic-detail-container" class="topic-detail">
+          <div
+            v-if="item.isShowDetailDialog"
+            id="topic-detail-container"
+            class="topic-detail"
+          >
             <div class="content">
-              <!-- <div class="skeleton-container" hidden="">
-          <div class="skeleton">
-            <div class="header">
-              <div class="avatar"></div>
-              <div class="author-info">
-                <div class="item1"></div>
-                <div class="item2"></div>
-              </div>
-            </div>
-            <div class="card-layout">
-              <div></div>
-              <div></div>
-              <div class="item1"></div>
-              <div class="content"></div>
-              <div></div>
-              <div class="item2"></div>
-            </div>
-          </div>
-        </div> -->
               <div class="topic-detail-panel">
-                <!-- <div class="enter-group"><span class="left">来自：非暴力不合作</span><span class="right">进入星球<div class="icon"></div></span>
-
-          </div> -->
                 <div class="header-container">
-                  <div class="author"><img class="avatar" src="../../assets/heima.png">
+                  <div class="author">
+                    <img class="avatar" src="../../assets/heima.png" />
                     <div class="info">
-                      <div class="role owner">{{ currentDetail.body.author }}</div>
+                      <div class="role owner">
+                        {{ currentDetail.body.author }}
+                      </div>
                       <div class="date">
-                        {{ currentDetail.created.replace('T','  ') }}
+                        {{ currentDetail.created.replace('T', '  ') }}
                       </div>
                     </div>
                   </div>
@@ -172,32 +210,57 @@
                 <div class="">
                   <div class="talk-content-container">
                     <div class="content">
-                      <div>{{ currentDetail.title }}</div><br />
+                      <div>{{ currentDetail.title }}</div>
+                      <br />
                       <div v-html="currentDetail.body.body"></div>
                     </div>
                   </div>
-
                 </div>
 
                 <div class="operation-icon">
-                  <div title="点赞" class="like">
-                    <Icon name="praise" />
+                  <div title="点赞" class="like" @click="praise(currentDetail)">
+                    <Icon name="praise" :color="currentDetail.isPraised ? '#4fbdd4' : '#5D5D5D'" />
+                    <span class="vote-num">{{currentDetail.voteNum}}</span>
                   </div>
-                  <div title="评论" class="comment" @click="editComment(item,index)">
+                  <div
+                    title="评论"
+                    class="comment"
+                    @click="editComment(item, index)"
+                  >
                     <Icon name="discuss" />
                   </div>
                   <div title="收藏" class="subscribe">
                     <Icon name="collect" />
                   </div>
                 </div>
-                <el-input v-show="item.isEditReply" placeholder="请输入内容" v-model="item.reply" class="reply_input">
-                  <el-button slot="append" @click="submitReply(item,index)">回复</el-button>
+                <el-input
+                  v-show="item.isEditReply"
+                  placeholder="请输入内容"
+                  v-model="item.reply"
+                  class="reply_input"
+                >
+                  <el-button slot="append" @click="submitReply(item, index)"
+                    >回复</el-button
+                  >
                 </el-input>
-                <div class="comment-box" style="margin-bottom: 10px; padding-top: 8px;" v-for="(v,i) in currentDetail.commentList" :key="i">
+                <div
+                  class="comment-box"
+                  style="margin-bottom: 10px; padding-top: 8px"
+                  v-for="(v, i) in currentDetail.commentList"
+                  :key="i"
+                >
                   <div class="comment-item-container">
-                    <div class="text"><span class="comment group-owner-light">{{ v.body.author }}</span><span>：</span><span parsetype="pure" class="text">{{v.body.body}}</span></div>
+                    <div class="text">
+                      <span class="comment group-owner-light">{{
+                        v.body.author
+                      }}</span
+                      ><span>：</span
+                      ><span parsetype="pure" class="text">{{
+                        v.body.body
+                      }}</span>
+                    </div>
                     <div class="operations">
-                      <div class="time">{{ v.created.replace('T','  ') }}</div>
+                      <div class="time">{{ v.created.replace('T', '  ') }}</div>
                       <!-- <div class="operation"><span class="space">删除</span></div> -->
                     </div>
                   </div>
@@ -206,7 +269,6 @@
                   <Comment :asideChildren="v.children"></Comment>
                 </div> -->
               </div>
-
             </div>
           </div>
         </div>
@@ -214,7 +276,12 @@
           <div class="create-topic-panel">
             <div class="head">
               <div class="title">
-                <input type="text" v-model="titleText" class="titie_text" placeholder="请输入标题">
+                <input
+                  type="text"
+                  v-model="titleText"
+                  class="titie_text"
+                  placeholder="请输入标题"
+                />
               </div>
               <div @click="closeEditor" class="close-icon">
                 <Icon name="cancel" />
@@ -222,18 +289,48 @@
             </div>
             <div>
               <div class="horizontal-line"></div>
-              <div class="content-container"><img class="avatar" src="../../assets/heima.png">
-                <div style="width: calc(100% - 40px); min-height: 110px; margin: 5px 0px; max-height: 497px;">
-                  <quill-editor v-model="content" ref="myQuillEditor" :options="editorOption" spellcheck="false" class="quill-editor" @ready="onEditorReady()">
+              <div class="content-container">
+                <img class="avatar" src="../../assets/heima.png" />
+                <div
+                  style="
+                    width: calc(100% - 40px);
+                    min-height: 110px;
+                    margin: 5px 0px;
+                    max-height: 497px;
+                  "
+                >
+                  <quill-editor
+                    v-model="content"
+                    ref="myQuillEditor"
+                    :options="editorOption"
+                    spellcheck="false"
+                    class="quill-editor"
+                    @ready="onEditorReady()"
+                  >
                   </quill-editor>
                 </div>
               </div>
               <div class="horizontal-line"></div>
-
             </div>
             <div class="upload-container">
               <div class="operation-icon">
-                <div class="left">
+                <div class="left" v-if="fileList.length !== 0">
+                  <div
+                    ref="imgList"
+                    class="picture-list"
+                    v-for="(item, i) in fileList"
+                    :key="i"
+                    @mouseenter="showIcon(item)"
+                    @mouseleave="hideIcon(item)"
+                  >
+                    <img class="picList" :src="item.url" />
+                    <i
+                      v-show="item.isShow"
+                      class="delete-pic el-icon-close"
+                      @click="deleteEditorImage(item, i)"
+                    >
+                    </i>
+                  </div>
                   <!-- <button  class="emoji"></button> -->
                   <!-- <div  class="pic"></div>
                 <div  class="file"></div>
@@ -251,55 +348,109 @@
       </el-col>
       <el-col :span="6">
         <div class="recommend_container">
-          <div class="wbpro-side woo-panel-main woo-panel-top woo-panel-right woo-panel-bottom woo-panel-left Card_wrap_2ibWe Card_bottomGap_2Xjqi">
+          <div
+            class="wbpro-side woo-panel-main woo-panel-top woo-panel-right woo-panel-bottom woo-panel-left Card_wrap_2ibWe Card_bottomGap_2Xjqi"
+          >
             <div>
               <div class="wbpro-side-tit woo-box-flex woo-box-alignCenter">
-                <div class="f14 cla woo-box-item-flex" style="align-self: center;"> 热门圈子 </div>
-                <div class="woo-box-flex woo-box-alignCenter"><i class="el-icon-refresh"></i><span class="f12 clb">点击刷新</span></div>
-              </div>
-              <div class="woo-divider-main woo-divider-x">
-              </div>
-              <div class="wbpro-side-card7">
-                <div class="wbpro-side-panel">
-                  <div class="con woo-box-flex woo-box-alignCenter">
-                    <div class="rank top f18">1</div>
-                    <div title="" class="wbpro-textcut f14 cla">这是热门圈子第一条aaaaaaaaaaa </div>
-                    <div class="icon"><span class="wbpro-icon-search-tp1" style="background: rgb(255, 148, 6);">热</span></div>
-                  </div>
-                  <div class="woo-divider-main woo-divider-x">
-                  </div>
+                <div
+                  class="f14 cla woo-box-item-flex"
+                  style="align-self: center"
+                >
+                  热门圈子
+                </div>
+                <div class="woo-box-flex woo-box-alignCenter" @click="getHotColumns">
+                  <i class="el-icon-refresh"></i
+                  ><span class="f12 clb">点击刷新</span>
                 </div>
               </div>
-              <div class="woo-divider-main woo-divider-x">
+              <div class="woo-divider-main woo-divider-x"></div>
+              <div
+                class="wbpro-side-card7"
+                v-for="(hot, hotIndex) in hotColumns"
+                :key="hotIndex"
+              >
+                <div class="wbpro-side-panel">
+                  <div class="con woo-box-flex woo-box-alignCenter">
+                    <div class="rank top f16">{{ Number(hotIndex) + 1 }}</div>
+                    <div title="" class="wbpro-textcut f14 cla" @click="handleSelect(hot)">
+                      {{ hot.value }}
+                    </div>
+                    <div class="icon">
+                      <span
+                        class="wbpro-icon-search-tp1"
+                        style="background: rgb(255, 148, 6);cursor:pointer;"
+                        >热</span
+                      >
+                    </div>
+                  </div>
+                  <div class="woo-divider-main woo-divider-x"></div>
+                </div>
               </div>
+              <div class="woo-divider-main woo-divider-x"></div>
             </div>
           </div>
         </div>
       </el-col>
     </el-row>
-    <el-dialog title="创建圈子" :visible.sync="dialogVisible" width="60%" :before-close="handleSubscriptionsClose">
+    <el-dialog
+      title="创建圈子"
+      :visible.sync="dialogVisible"
+      width="60%"
+      :before-close="handleSubscriptionsClose"
+    >
       <el-input placeholder="请输入圈子名称" v-model="subscriptionsInfo.name">
       </el-input>
       <div class="margin-top-10 sub_price">
-        <el-input placeholder="请输入圈子价格" v-model="subscriptionsInfo.price">
+        <el-input
+          placeholder="请输入圈子价格"
+          v-model="subscriptionsInfo.price"
+        >
         </el-input>
-        <el-select class="price_select" v-model="subscriptionsInfo.currency" clearable placeholder="请选择币种">
-          <el-option v-for="item in payTypes" :key="item.value" :label="item.label" :value="item.value">
+        <el-select
+          class="price_select"
+          v-model="subscriptionsInfo.currency"
+          clearable
+          placeholder="请选择币种"
+        >
+          <el-option
+            v-for="item in payTypes"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          >
           </el-option>
         </el-select>
       </div>
-      <el-input class="margin-top-10" type="textarea" :rows="2" placeholder="请输入圈子介绍" v-model="subscriptionsInfo.introduction">
+      <el-input
+        class="margin-top-10"
+        type="textarea"
+        :rows="2"
+        placeholder="请输入圈子介绍"
+        v-model="subscriptionsInfo.introduction"
+      >
       </el-input>
       <span slot="footer" class="dialog-footer">
         <el-button @click="handleSubscriptionsClose">取 消</el-button>
-        <el-button class="sub_confirm" type="primary" @click="submitSubscriptions">确 定</el-button>
+        <el-button
+          class="sub_confirm"
+          type="primary"
+          @click="submitSubscriptions"
+          >确 定</el-button
+        >
       </span>
     </el-dialog>
 
-    <el-upload action="https://jsonplaceholder.typicode.com/posts/" ref="upload" v-show="false" class="avatar-uploader" :data='fileUpload' :show-file-list="true" :http-request="onUploadHandler">
+    <el-upload
+      :action="actionUrl"
+      ref="upload"
+      v-show="false"
+      class="avatar-uploader"
+      :data="fileUpload"
+      :show-file-list="true"
+      :http-request="onUploadHandler"
+    >
     </el-upload>
-    <!-- <quill-editor v-model="content" ref="myQuillEditor" :options="editorOption" @blur="onEditorBlur($event)" @focus="onEditorFocus($event)" @ready="onEditorReady($event)">
-    </quill-editor> -->
   </div>
 </template>
 
@@ -311,19 +462,29 @@ import {
   searchColumn,
   post,
   getArticles,
-  getArticleDetail
+  getArticleDetail,
+  vote,
+  getVote,
+  hotColumn
 } from '@/api/special/special'
 import MD5 from 'MD5'
 import { getUser } from '@/api/user/user'
 import { getToken } from '@/utils/auth'
+// import _ecc from '@/utils/ecc/index'
+import axios from 'axios'
+import { sha256 } from '@/utils/ecc/src/hash'
+import Signature from '@/utils/ecc/src/signature'
+import { actObj } from '@/utils/act'
 import Icon from '@/components/Icon/index'
-// import Comment from './Comment.vue'
 export default {
   components: {
     Icon
   },
   data() {
     return {
+      hotColumns: [],
+      actionUrl: 'https://steemitimages.com/',
+      fileList: [],
       fileUpload: {},
       removePopVisible: false,
       subscriptionPrice: '',
@@ -349,14 +510,71 @@ export default {
         modules: {
           'emoji-toolbar': true,
           'emoji-shortname': true,
+          imageResize: {
+            //添加
+            displayStyles: {
+              //添加
+              backgroundColor: 'black',
+              border: 'none',
+              color: 'white'
+            },
+            modules: ['Resize', 'DisplaySize', 'Toolbar'] //添加
+          },
           toolbar: {
-            container: [['emoji'], ['image']],
+            container: [
+              ['emoji'],
+              ['image'],
+              ['link'],
+              [
+                {
+                  color: [
+                    '#000000',
+                    '#e60000',
+                    '#ff9900',
+                    '#ffff00',
+                    '#008a00',
+                    '#0066cc',
+                    '#9933ff',
+                    '#ffffff',
+                    '#facccc',
+                    '#ffebcc',
+                    '#ffffcc',
+                    '#cce8cc',
+                    '#cce0f5',
+                    '#ebd6ff',
+                    '#bbbbbb',
+                    '#f06666',
+                    '#ffc266',
+                    '#ffff66',
+                    '#66b966',
+                    '#66a3e0',
+                    '#c285ff',
+                    '#888888',
+                    '#a10000',
+                    '#b26b00',
+                    '#b2b200',
+                    '#006100',
+                    '#0047b2',
+                    '#6b24b2',
+                    '#444444',
+                    '#5c0000',
+                    '#663d00',
+                    '#666600',
+                    '#003700',
+                    '#002966',
+                    '#3d1466',
+                    'custom-color'
+                  ]
+                }
+              ]
+            ],
             handlers: {
               image: (value) => {
                 if (value) {
                   // value === true
-                  console.log(this.$refs.upload.$el)
-                  console.log(document.querySelector('.avatar-uploader input'))
+
+                  // console.log(this.$refs.upload.$el)
+                  // console.log(document.querySelector('.avatar-uploader input'))
                   this.$refs.upload.$el.click()
                   document.querySelector('.avatar-uploader input').click()
                 } else {
@@ -389,39 +607,159 @@ export default {
   computed: {},
   async created() {
     this.updateColumn()
+    this.getHotColumns()
   },
   async mounted() {},
   methods: {
-    hanldeRemove() {
+    async getHotColumns() {
+      const res = await hotColumn({})
+      if (res.success === 'ok') {
+        const arr = []
+        res.data.forEach((item,i)=>{
+          arr.push({value:item})
+        })
+        this.hotColumns = arr
+      }
+    },
+    async praise(v) {
+      // console.log(v)
+      const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+      const token = getToken()
+      const loginType = localStorage.getItem('login-type')
+      if (!v.isPraised) {
+        const res = await vote({
+          id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
+          steem_id: userInfo.steem_id,
+          token,
+          permlink: v.permlink
+        })
+        console.log(res)
+        if (res.success === 'ok') {
+          this.$message.success('点赞成功')
+          v.isPraised = true
+        } else {
+          this.$message.error(res.error)
+          v.isPraised = false
+        }
+      } else {
+        const res = await vote({
+          id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
+          steem_id: userInfo.steem_id,
+          token,
+          permlink: v.permlink
+        })
+        if (res.success === 'ok') {
+          this.$message.success('取消点赞成功')
+          v.isPraised = false
+        } else {
+          this.$message.error(res.error)
+          v.isPraised = true
+        }
+      }
+    },
+    showIcon(v) {
+      v.isShow = true
+    },
+    hideIcon(v) {
+      v.isShow = false
+    },
+    deleteEditorImage(v, i) {
+      const arr = JSON.parse(JSON.stringify(this.fileList))
+      this.fileList = arr.filter((item, index) => {
+        return i !== index
+      })
+      console.log(this.fileList)
+    },
+
+    handleRemove() {
       this.removePopVisible = true
     },
     toAticle() {
       this.$router.push('/article')
     },
-    async onUploadHandler(e) {
-      const imageUrl = '../../assets/quhu-logo.jpg'
+    uploadDispatch: function (url, fd, fn) {
+      axios
+        .post(url, fd, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+        .then((response) => {
+          fn(response)
+        })
+    },
 
-      // 获取光标所在位置
-      let quill = this.$refs.myQuillEditor.quill
-      let length = quill.getSelection().index
-      // 插入图片
-      quill.insertEmbed(length, 'image', imageUrl)
-      // 调整光标到最后
-      quill.setSelection(length + 1)
-      // this.content += url
+    async onUploadHandler(e) {
+      // console.log(e)
+      let dataUrl = ''
+      if (e.file) {
+        console.log('** image being loaded.. ----->', e.file)
+        let width = 0
+        let height = 0
+        const reader = new FileReader()
+        reader.addEventListener('load', (theFile) => {
+          let image = new Image()
+          image.src = theFile.target.result
+          image.onload = function () {
+            width = this.width
+            height = this.height
+          }
+
+          dataUrl = reader.result
+          const prefix = new Buffer('ImageSigningChallenge')
+          const commaIdx = dataUrl.indexOf(',')
+          const dataBs64 = dataUrl.substring(commaIdx + 1)
+          const data = new Buffer(dataBs64, 'base64')
+          const buf = Buffer.concat([prefix, data])
+          const bufSha = sha256(buf)
+          const sig = Signature.signBufferSha256(bufSha, actObj.postKey).toHex()
+          const formData = new FormData()
+          if (e.file) {
+            formData.append('file', e.file)
+            this.uploadDispatch(
+              'https://steemitimages.com/' +
+                actObj.arr[Math.floor(Math.random() * actObj.arr.length)] +
+                '/' +
+                sig,
+              formData,
+              (res) => {
+                console.log(res)
+                let imageUrl = ''
+                if (res.status === 200) {
+                  imageUrl = res.data.url
+                }
+
+                this.fileList = this.fileList.concat([
+                  { url: imageUrl, isShow: false, width: width, height: height }
+                ])
+                console.log(this.fileList)
+                // console.log(this.fileList)
+                // 获取光标所在位置
+                // let quill = this.$refs.myQuillEditor.quill
+                // let length = quill.getSelection().index
+                // 插入图片
+                // quill.insertEmbed(length, 'image', imageUrl)
+                // 调整光标到最后
+                // quill.setSelection(length + 1)
+              }
+            )
+          }
+        })
+        reader.readAsDataURL(e.file)
+      }
     },
     onEditorReady() {
       // document.querySelector('.ql-formats .ql-uploadImg').innerText = '图'
       // document.querySelector('.ql-formats .ql-uploadFile').innerText = '文';
     },
-    onEditorBlur() {},
-    onEditorFocus() {},
-    onUploadImage() {
-      console.log('触发上传')
-    },
+    // onEditorBlur() {},
+    // onEditorFocus() {},
+    // onUploadImage() {
+    //   console.log('触发上传')
+    // },
     async removeOut() {
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
-      const loginType = sessionStorage.getItem('login-type')
+      const loginType = localStorage.getItem('login-type')
       const params = {
         id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
         token: getToken(),
@@ -446,7 +784,7 @@ export default {
           v = { value: v }
           return v
         })
-        console.log(this.searchResult)
+        // console.log(this.searchResult)
         cb(this.searchResult)
       }
     },
@@ -466,7 +804,7 @@ export default {
     },
     async updateColumn() {
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
-      const loginType = sessionStorage.getItem('login-type')
+      const loginType = localStorage.getItem('login-type')
       const currentInfo = await getUser({
         id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
         token: getToken()
@@ -480,7 +818,7 @@ export default {
     },
     async getArticlesByColumn(v) {
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
-      const loginType = sessionStorage.getItem('login-type')
+      const loginType = localStorage.getItem('login-type')
       this.selectedColumn = v
       this.hasColumn =
         this.subscriptionsList.my.length !== 0 ||
@@ -498,6 +836,7 @@ export default {
           element.isEditReply = false
           element.reply = ''
           element.isShowDetailDialog = false
+          element.isPraised = false
         })
 
         if (res.result) {
@@ -522,7 +861,7 @@ export default {
       const { name, introduction, image, price, currency } =
         this.subscriptionsInfo
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
-      const loginType = sessionStorage.getItem('login-type')
+      const loginType = localStorage.getItem('login-type')
       const res = await subscriptions({
         id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
         token: getToken(),
@@ -543,14 +882,14 @@ export default {
       }
     },
     handleOpen(key, keyPath) {
-      console.log(key, keyPath)
+      // console.log(key, keyPath)
     },
     handleClose(key, keyPath) {
-      console.log(key, keyPath)
+      // console.log(key, keyPath)
     },
     async submitReply(v, i) {
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
-      const loginType = sessionStorage.getItem('login-type')
+      const loginType = localStorage.getItem('login-type')
       const res = await post({
         type: 'comment',
         id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
@@ -580,7 +919,21 @@ export default {
     },
     async submit() {
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
-      const loginType = sessionStorage.getItem('login-type')
+      const loginType = localStorage.getItem('login-type')
+      let imgHtml = ''
+      if (this.fileList.length === 1) {
+        imgHtml = `<img src="${
+          this.fileList[0].url
+        }" preview width="300px" height="${
+          (300 / this.fileList[0].width) * this.fileList[0].height
+        }" alt="" />`
+      } else {
+        this.fileList.forEach((item, i) => {
+          imgHtml += `<img src="${item.url}" preview=${i} style="object-fit:cover;background:#f5f6f7;margin-left:5px;margin-bottom:5px;" class="img-container" width="150px" height="150px" alt="" />`
+        })
+      }
+
+      // console.log(imgHtml)
       const res = await post({
         type: 'post',
         id: loginType === 'password' ? userInfo.user : userInfo.eth_account,
@@ -591,15 +944,17 @@ export default {
           this.selectedColumn || this.subscriptionsList.my[0] || '',
         permlink: '',
         title: this.titleText,
-        body: this.content
+        body: this.content + imgHtml
       })
 
       if (res && res.success === 'ok') {
-        this.getArticlesByColumn(
-          this.selectedColumn || this.subscriptionsList.my[0] || ''
-        )
-        this.$message.success('发文成功')
-        this.closeEditor()
+        setTimeout(() => {
+          this.getArticlesByColumn(
+            this.selectedColumn || this.subscriptionsList.my[0] || ''
+          )
+          this.$message.success('发文成功')
+          this.closeEditor()
+        }, 1000)
       } else {
         this.$message.error('发文失败！ 请重新发文')
         this.closeEditor()
@@ -609,19 +964,23 @@ export default {
       this.showEditor = false
       this.content = ''
       this.titleText = ''
+      this.fileList = []
     },
     closeDetail(val) {
       val.isShowDetailDialog = false
     },
     async goDetail(val, index) {
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
-      const loginType = sessionStorage.getItem('login-type')
+      const loginType = localStorage.getItem('login-type')
       const res = await getArticleDetail({
         id: loginType === 'password' ? userInfo.user : userInfo.eth_account,
         jsonrpc: '2.0',
         method: 'bridge.get_discussion',
         params: { author: val.author, permlink: val.permlink }
       })
+      const votes = await getVote({permlink: val.permlink})
+      console.log(votes)
+      
       const obj = res.result[val.author + '/' + val.permlink]
       // const commentList = this.getReply(obj, res.result)
       const commentList = []
@@ -637,11 +996,13 @@ export default {
       }
       if (obj) {
         obj.body = this.eval(obj.body)
+        obj.isPraised = votes.data.list.indexOf(userInfo.steem_id) !==-1
+        obj.voteNum = votes.data.vote
         this.currentDetail = obj
         this.currentDetail.commentList = commentList
         val.isShowDetailDialog = true
       }
-      console.log(val)
+      // console.log(val)
     },
     eval(fn) {
       const Fn = Function
@@ -665,6 +1026,19 @@ export default {
 </script>
 
 <style scoped lang="scss">
+  .clb{
+    min-width: 50px;
+  }
+.img-container {
+  margin-left: 2px;
+  margin-bottom: 2px;
+  object-fit: cover;
+  background: #f5f6f7;
+  transition: all 0.6s ease;
+}
+::v-deep .el-submenu .el-menu-item {
+  min-width: 100px;
+}
 .recommend_container {
   min-height: 500px;
   background-color: #fff;
@@ -677,8 +1051,8 @@ export default {
 }
 .nav_left {
   width: 100%;
-  // display: flex;
-  // justify-content: center;
+  /* display: flex;
+  justify-content: center; */
   .nav_menu {
     border-radius: 10px;
     width: 190px;
@@ -790,22 +1164,33 @@ export default {
   display: flex;
   align-items: center;
   margin-bottom: 20px;
+  .like{
+    display: flex;
+    margin-right: 20px !important;
+    width:40px !important;
+    .vote-num{
+      margin-left: 5px;
+      color: #4fbdd4;
+    }
+  }
 }
 .topic-detail-panel .operation-icon div {
   width: 21px;
   height: 21px;
   margin-right: 30px;
   cursor: pointer;
+  position: relative;
 }
+
 .main-content-container {
   max-width: 1250px;
   margin: auto;
   height: 100%;
-  padding-top: 20px;
+  margin-top: 40px;
 }
-// .mid_container {
-//   margin-left: 20px;
-// }
+.mid_container {
+ min-width: 300px;
+ }
 .post-container {
   margin-bottom: 5px;
   background-color: #fff;
@@ -870,17 +1255,21 @@ export default {
 }
 .post-article {
   position: relative;
-  padding-left: 16px;
+  padding: 2px 8px;
   margin-left: 16px;
   height: 30px;
   line-height: 30px;
+  border-radius: 10px;
   text-align: center;
   font-size: 14px;
   font-weight: 700;
   color: #8b8e9d;
   cursor: pointer;
 }
-
+.post-article:hover {
+  background: #4fbdd4;
+  color: white;
+}
 .topic-container {
   margin-top: 10px;
   background: #fff;
@@ -915,6 +1304,7 @@ export default {
   height: 20px;
   line-height: 20px;
   cursor: pointer;
+  font-size: 18px;
   // color: #4fbdd4;
 }
 
@@ -923,6 +1313,7 @@ export default {
   align-items: center;
   font-size: 12px;
   color: #c5c6cb;
+  margin-top: 5px;
 }
 .talk-content-container {
   padding-left: 56px;
@@ -935,6 +1326,7 @@ export default {
   white-space: pre-wrap;
   word-wrap: break-word;
   overflow: hidden;
+  max-width: 500px;
 }
 
 .topic-container .operation-icon-container {
@@ -974,6 +1366,7 @@ export default {
 .topic-container .operation-icon-container .details-container .icon {
   width: 20px;
   height: 30px;
+  line-height: 40px;
   /* background-image: url(assets/resources/sprite@1x.fb4b9063d37e9252.png); */
   /* background-position: -297px -197px; */
 }
@@ -991,8 +1384,8 @@ export default {
   position: absolute;
   top: 0;
   left: 0;
-  height: 30px;
-  width: 30px;
+  height: 36px;
+  width: 36px;
   border-radius: 50%;
   background-color: #f5f6f7;
   cursor: pointer;
@@ -1082,7 +1475,6 @@ export default {
 }
 
 .create-topic-container .create-topic-panel .operation-icon {
-  height: 24px;
   margin-top: 20px;
   display: flex;
   justify-content: space-between;
@@ -1093,10 +1485,51 @@ export default {
   display: flex;
   align-items: center;
   position: relative;
+  flex-flow: row wrap;
+  max-width: 600px;
+  .picture-list {
+    width: 100px;
+    height: 100px;
+    position: relative;
+    border-radius: 10px;
+    margin-left: 10px;
+    .delete-pic {
+      width: 16px;
+      height: 16px;
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.6);
+      top: 2px;
+      right: 2px;
+      text-align: center;
+      &:hover {
+        color: #4fbdd4;
+        background: rgba(79, 189, 212, 0.1);
+        /* background: rgba(255,130,0,.1); */
+      }
+    }
+
+    img {
+      width: 100px;
+      height: 100px;
+      border-radius: 10px;
+      opacity: 0.7;
+      object-fit: cover;
+    }
+    &:hover {
+      background: black;
+      opacity: 0.8;
+    }
+  }
+  .picture-list:hover {
+    background: black;
+  }
 }
 
 .create-topic-container .create-topic-panel .operation-icon .right {
   display: flex;
+  position: absolute;
+  right: 0;
 }
 .upload-container .image-list-container {
   margin-top: 10px;
@@ -1176,8 +1609,8 @@ export default {
   display: flex;
   position: relative;
 }
-.f18 {
-  font-size: 18px;
+.f16 {
+  font-size: 16px;
 }
 .wbpro-side .f14 {
   cursor: pointer;
@@ -1186,7 +1619,7 @@ export default {
 }
 .wbpro-side-panel {
   padding: 0 18px;
-  position: absolute;
+  /* position: absolute; */
 }
 .wbpro-side-card7 .con {
   position: relative;

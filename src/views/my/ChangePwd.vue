@@ -29,7 +29,7 @@ export default {
   },
   computed: {
     isEthLogin() {
-      return sessionStorage.getItem('login-type') === 'eth'
+      return localStorage.getItem('login-type') === 'eth'
     }
   },
   created() {},
@@ -39,7 +39,7 @@ export default {
       const self = this
       const token = getToken()
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
-      const loginType = sessionStorage.getItem('login-type')
+      const loginType = localStorage.getItem('login-type')
       if (
         (!this.isEthLogin && !this.validate(this.old_password)) ||
         !this.validate(this.new_password) ||

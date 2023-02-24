@@ -3,16 +3,24 @@
     <div class="user_info">
       <el-row type="flex" class="row-bg avatar_container">
         <el-col :span="4" class="user_avatar">
-          <img :src="require(`../../assets/defaultAvatarUrl.png`)" alt="" />
+          <el-upload
+            :action="actionUrl"
+            ref="upload"
+            class="avatar-uploader"
+            :show-file-list="false"
+            :http-request="onUploadHandler"
+          >
+            <img :src="imageUrl" alt="" />
+          </el-upload>
         </el-col>
         <el-col class="nick_name" :span="8">
-          {{ userInfo.user_name === 'none'?'': userInfo.user_name}}
+          {{ userInfo.user_name === 'none' ? '' : userInfo.user_name }}
         </el-col>
       </el-row>
       <el-row type="flex" class="user_history row-bg pointer">
         <el-col :span="6">
           <div @click="goDetail('history')">
-            <svg style="width:20px;height: 20px">
+            <svg style="width: 20px; height: 20px">
               <use xlink:href="#icon-foot" rel="external nofollow" />
             </svg>
             <span class="history_text">足迹</span>
@@ -20,7 +28,7 @@
         </el-col>
         <el-col :span="6">
           <div @click="goDetail('interact')">
-            <svg style="width:20px;height: 20px">
+            <svg style="width: 20px; height: 20px">
               <use xlink:href="#icon-askAnswer" rel="external nofollow" />
             </svg>
             <span class="history_text">问答</span>
@@ -28,7 +36,7 @@
         </el-col>
         <el-col :span="6">
           <div @click="goDetail('collect')">
-            <svg style="width:20px;height: 20px">
+            <svg style="width: 20px; height: 20px">
               <use xlink:href="#icon-collect" rel="external nofollow" />
             </svg>
             <span class="history_text">收藏</span>
@@ -36,7 +44,7 @@
         </el-col>
         <el-col :span="6">
           <div @click="goDetail('mySpecial')">
-            <svg style="width:20px;height: 20px">
+            <svg style="width: 20px; height: 20px">
               <use xlink:href="#icon-special" rel="external nofollow" />
             </svg>
             <span class="history_text">专栏</span>
@@ -44,11 +52,11 @@
         </el-col>
       </el-row>
     </div>
-    <div v-for="(item,index) in list" :key="index">
+    <div v-for="(item, index) in list" :key="index">
       <Bar :info="item" />
     </div>
     <div class="line"></div>
-    <div v-for="(item1) in list2" :key="item1.id">
+    <div v-for="item1 in list2" :key="item1.id">
       <Bar :info="item1" />
     </div>
   </div>
@@ -57,7 +65,11 @@
 <script>
 import { mapState, mapMutations } from 'vuex'
 import Bar from '@/components/setting-bar/setting-bar.vue'
-
+import axios from 'axios'
+import { sha256 } from '@/utils/ecc/src/hash'
+import Signature from '@/utils/ecc/src/signature'
+import { actObj } from '@/utils/act'
+const defaultAvatar = require(`../../assets/defaultAvatarUrl.png`)
 export default {
   name: 'My',
   components: {
@@ -73,6 +85,8 @@ export default {
   },
   data() {
     return {
+      actionUrl: '',
+      imageUrl: defaultAvatar,
       list: [
         {
           id: 1,
@@ -125,6 +139,82 @@ export default {
     login() {},
     goDetail(url) {
       this.$router.push('/' + url)
+    },
+    uploadDispatch: function (url, fd, fn) {
+      axios
+        .post(url, fd, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+        .then((response) => {
+          fn(response)
+        })
+    },
+    async onUploadHandler(e) {
+      // const isJPG = file.type === 'image/jpeg'
+      console.log(e)
+      const isLt2M = e.file.size / 1024 / 1024 < 2
+      if (!isLt2M) {
+        this.$message.error('上传头像图片大小不能超过 2MB!')
+      }
+      if (isLt2M) {
+        let dataUrl = ''
+        const self = this
+        if (e.file) {
+          console.log('** image being loaded.. ----->', e.file)
+          let width = 0
+          let height = 0
+          const reader = new FileReader()
+          reader.addEventListener('load', (theFile) => {
+            let image = new Image()
+            image.src = theFile.target.result
+            image.onload = function () {
+              width = this.width
+              height = this.height
+            }
+
+            dataUrl = reader.result
+            const prefix = new Buffer('ImageSigningChallenge')
+            const commaIdx = dataUrl.indexOf(',')
+            const dataBs64 = dataUrl.substring(commaIdx + 1)
+            const data = new Buffer(dataBs64, 'base64')
+            const buf = Buffer.concat([prefix, data])
+            const bufSha = sha256(buf)
+            const sig = Signature.signBufferSha256(
+              bufSha,
+              actObj.postKey
+            ).toHex()
+            const formData = new FormData()
+            if (e.file) {
+              formData.append('file', e.file)
+              this.uploadDispatch(
+                'https://steemitimages.com/' +
+                  actObj.arr[Math.floor(Math.random() * actObj.arr.length)] +
+                  '/' +
+                  sig,
+                formData,
+                (res) => {
+                  if (res.status === 200) {
+                    self.imageUrl = res.data.url
+                    const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+                    userInfo.avatar = self.imageUrl
+                    localStorage.setItem('quhu-userInfo',JSON.stringify(userInfo) )
+                    // self.$store.dispatch('updateUser', {
+                    //       user_name: self.user_name,
+                    //       password: '',
+                    //       sign: res,
+                    //       type: 'user_name'
+                    //     })
+                  }
+                }
+              )
+            }
+          })
+          reader.readAsDataURL(e.file)
+
+        }
+      }
     }
   }
 }
@@ -157,6 +247,7 @@ export default {
   height: 60px;
   vertical-align: middle;
   border-radius: 50%;
+  object-fit: cover;
 }
 .nick_name {
   padding-left: 20px;

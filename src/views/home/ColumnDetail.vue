@@ -6,7 +6,7 @@
           <div class="sub_name">{{ detail_info.subscriptions_name }}</div>
         </el-col>
         <el-col :span="6" class="sub_image">
-          <img src="../../assets/defaultAvatarUrl.png" alt="">
+          <img :src="detail_info.img" alt="" />
         </el-col>
       </el-row>
       <el-row type="flex" class="introduce">
@@ -16,16 +16,34 @@
         </el-col>
       </el-row>
       <el-row type="flex" class="add_column" justify="center">
-        <el-button v-if="!isJoined" class="add_btn" type="primary" @click="apply" round>
-          价格：{{detail_info.price }}
+        <el-button
+          v-if="!isJoined"
+          class="add_btn"
+          type="primary"
+          @click="apply"
+          round
+        >
+          价格：{{ detail_info.price }}
           <br />
           <br />
           申请加入
         </el-button>
-        <el-button v-if="isJoined" slot="reference" class="remove_btn" type="primary" @click="removeSub" round>
+        <el-button
+          v-if="isJoined"
+          slot="reference"
+          class="remove_btn"
+          type="primary"
+          @click="removeSub"
+          round
+        >
           退出圈子
         </el-button>
-        <el-dialog title="删除提示" :visible.sync="removePopVisible" width="30%" center>
+        <el-dialog
+          title="删除提示"
+          :visible.sync="removePopVisible"
+          width="30%"
+          center
+        >
           <span>确认退出当前圈子吗？</span>
           <span slot="footer" class="dialog-footer">
             <el-button @click="centerDialogVisible = false">取 消</el-button>
@@ -71,6 +89,9 @@ export default {
           ) !== -1
         )
       }
+    },
+    avatar() {
+      return JSON.parse(localStorage.getItem('quhu-userInfo')).avatar
     }
   },
   methods: {
@@ -80,7 +101,7 @@ export default {
     async remove() {
       const { subscriptions_name } = this.detail_info
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
-      const loginType = sessionStorage.getItem('login-type')
+      const loginType = localStorage.getItem('login-type')
       const params = {
         id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
         token: getToken(),
@@ -109,7 +130,7 @@ export default {
     async apply() {
       const { subscriptions_name } = this.detail_info
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
-      const loginType = sessionStorage.getItem('login-type')
+      const loginType = localStorage.getItem('login-type')
       const params = {
         id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
         token: getToken(),

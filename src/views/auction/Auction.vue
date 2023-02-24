@@ -23,9 +23,22 @@ export default {
   data() {
     return {}
   },
-  methods: {}
+  methods: {
+    post() {
+      // postUrl = $STM_Config.upload_image + '/' + username + '/' + sig;
+      // sig = _ecc.Signature.signBufferSha256(bufSha, d).toHex();
+      // d = stateUser.getIn(['current', 'private_keys', 'posting_private']);
+      // bufSha = _ecc.hash.sha256(buf);
+      // prefix = new Buffer('ImageSigningChallenge');
+      // buf = Buffer.concat([prefix, data]);
+      // data = _context12.sent;//上传回调数据
+    }
+  }
 }
 </script>
 
 <style scoped lang="scss">
 </style>
+
+
+
