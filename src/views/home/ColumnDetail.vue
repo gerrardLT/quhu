@@ -6,7 +6,7 @@
           <div class="sub_name">{{ detail_info.subscriptions_name }}</div>
         </el-col>
         <el-col :span="6" class="sub_image">
-          <img :src="detail_info.img" alt="" />
+          <img :src="detail_info.image" alt="" />
         </el-col>
       </el-row>
       <el-row type="flex" class="introduce">
@@ -80,18 +80,17 @@ export default {
   computed: {
     isJoined() {
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
-      if (userInfo.buy_article) {
-        return false
+      if (
+        userInfo.buy_article.join.indexOf(
+          this.detail_info.subscriptions_name
+        ) !== -1 ||
+        userInfo.buy_article.my.indexOf(this.detail_info.subscriptions_name) !==
+          -1
+      ) {
+        return true
       } else {
-        return (
-          userInfo.buy_article.join.indexOf(
-            this.detail_info.subscriptions_name
-          ) !== -1
-        )
+        return false
       }
-    },
-    avatar() {
-      return JSON.parse(localStorage.getItem('quhu-userInfo')).avatar
     }
   },
   methods: {

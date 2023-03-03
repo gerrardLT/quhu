@@ -70,6 +70,8 @@ import { sha256 } from '@/utils/ecc/src/hash'
 import Signature from '@/utils/ecc/src/signature'
 import { actObj } from '@/utils/act'
 const defaultAvatar = require(`../../assets/defaultAvatarUrl.png`)
+import { changeAvatar } from '@/api/user/user'
+import { getToken } from '@/utils/auth'
 export default {
   name: 'My',
   components: {
@@ -77,6 +79,8 @@ export default {
   },
   created() {
     console.log(this.$route)
+    const avatar = JSON.parse(localStorage.getItem('quhu-userInfo')).avatar
+    this.imageUrl = this.judgeNone(avatar) ? defaultAvatar : avatar
   },
   computed: {
     userInfo() {
@@ -136,6 +140,9 @@ export default {
     }
   },
   methods: {
+    judgeNone(v) {
+      return v === 'none'
+    },
     login() {},
     goDetail(url) {
       this.$router.push('/' + url)
@@ -154,6 +161,8 @@ export default {
     async onUploadHandler(e) {
       // const isJPG = file.type === 'image/jpeg'
       console.log(e)
+      const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+      const loginType = localStorage.getItem('login-type')
       const isLt2M = e.file.size / 1024 / 1024 < 2
       if (!isLt2M) {
         this.$message.error('上传头像图片大小不能超过 2MB!')
@@ -197,22 +206,31 @@ export default {
                 (res) => {
                   if (res.status === 200) {
                     self.imageUrl = res.data.url
-                    const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
                     userInfo.avatar = self.imageUrl
-                    localStorage.setItem('quhu-userInfo',JSON.stringify(userInfo) )
-                    // self.$store.dispatch('updateUser', {
-                    //       user_name: self.user_name,
-                    //       password: '',
-                    //       sign: res,
-                    //       type: 'user_name'
-                    //     })
+                    changeAvatar({
+                      id:
+                        loginType === 'eth'
+                          ? userInfo.eth_account
+                          : userInfo.user,
+                      token: getToken(),
+                      user_name: userInfo.user_name,
+                      steem_id: userInfo.steem_id,
+                      image: res.data.url
+                    }).then((res) => {
+                      console.log(res)
+                      if (res.success === 'ok') {
+                        localStorage.setItem(
+                          'quhu-userInfo',
+                          JSON.stringify(userInfo)
+                        )
+                      }
+                    })
                   }
                 }
               )
             }
           })
           reader.readAsDataURL(e.file)
-
         }
       }
     }

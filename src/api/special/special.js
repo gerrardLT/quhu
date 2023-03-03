@@ -105,3 +105,13 @@ export async function hotColumn (data) {
   })
 }
 
+
+// 文章置顶
+export async function goTop (data) {
+  return request({
+    url: '/subscriptions/top',
+    method: 'post',
+    data
+  })
+}
+

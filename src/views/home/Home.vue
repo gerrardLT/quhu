@@ -13,7 +13,7 @@
         <div class="nav_left">
           <el-menu
             class="nav_menu"
-            default-active="1-0"
+            :default-active="activeMenuId"
             :default-openeds="['1', '2']"
             @open="handleOpen"
             @close="handleClose"
@@ -65,7 +65,7 @@
           >
             <i class="el-icon-search el-input__icon" slot="suffix"> </i>
             <template slot-scope="{ item }">
-              <i class="el-icon-search search_arrow_icon"> </i>
+              <!-- <i class="el-icon-search search_arrow_icon"> </i> -->
               <div class="name">{{ item.value }}</div>
             </template>
           </el-autocomplete>
@@ -115,7 +115,7 @@
             <div style="padding: 10px">
               <div class="header-container">
                 <div class="author">
-                  <img class="avatar" src="../../assets/heima.png" alt="" />
+                  <img class="avatar" :src="item.body.avatar" alt="" />
                   <div class="info">
                     <div class="role owner">{{ item.body.author }}</div>
                     <div class="date">
@@ -123,6 +123,17 @@
                     </div>
                   </div>
                 </div>
+                <el-dropdown trigger="click" size="medium" placement="bottom">
+                  <span class="el-dropdown-link">
+                    <i class="el-icon-arrow-down el-icon--right"></i>
+                  </span>
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item v-show="item.body.status !== 'top'" @click.native="articleSet(item,index,'+')">置顶</el-dropdown-item>
+                    <el-dropdown-item v-show="item.body.status==='top'" @click.native="articleSet(item,index,'-')">取消置顶</el-dropdown-item>
+                    <el-dropdown-item>置底</el-dropdown-item>
+                    <el-dropdown-item @click.native="articleSet(item,index,'delete')">删除</el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
               </div>
               <div class="talk-content-container">
                 <div class="content">
@@ -133,22 +144,22 @@
               </div>
               <div class="operation-icon-container">
                 <div class="operation-icon">
-                  <div title="点赞" class="like" @click="praise(item)">
+                  <!-- <div title="点赞" class="like" @click="praise(item)">
                     <Icon
                       name="praise"
                       :color="item.isPraised ? '#4fbdd4' : '#5D5D5D'"
                     />
-                  </div>
-                  <div
+                  </div> -->
+                  <!-- <div
                     title="评论"
                     class="comment"
                     @click="editComment(item, index)"
                   >
                     <Icon name="discuss" />
-                  </div>
-                  <div title="收藏" class="subscribe">
+                  </div> -->
+                  <!-- <div title="收藏" class="subscribe">
                     <Icon name="collect" />
-                  </div>
+                  </div> -->
                 </div>
                 <a
                   class="steemLink"
@@ -192,7 +203,7 @@
               <div class="topic-detail-panel">
                 <div class="header-container">
                   <div class="author">
-                    <img class="avatar" src="../../assets/heima.png" />
+                    <img class="avatar" :src="currentDetail.body.avatar" />
                     <div class="info">
                       <div class="role owner">
                         {{ currentDetail.body.author }}
@@ -220,7 +231,7 @@
                 <div class="operation-icon">
                   <div title="点赞" class="like" @click="praise(currentDetail)">
                     <Icon name="praise" :color="currentDetail.isPraised ? '#4fbdd4' : '#5D5D5D'" />
-                    <span class="vote-num">{{currentDetail.voteNum}}</span>
+                    <span class="vote-num">{{currentDetail.voteNum || ''}}</span>
                   </div>
                   <div
                     title="评论"
@@ -290,7 +301,7 @@
             <div>
               <div class="horizontal-line"></div>
               <div class="content-container">
-                <img class="avatar" src="../../assets/heima.png" />
+                <img class="avatar" :src="userAvatar" />
                 <div
                   style="
                     width: calc(100% - 40px);
@@ -430,6 +441,15 @@
         v-model="subscriptionsInfo.introduction"
       >
       </el-input>
+      <el-upload
+      class="avatar-uploader"
+      :show-file-list="false"
+      :action="actionUrl"
+      :http-request="onUploadSubImgHandler"
+      >
+      <img v-if="subscriptionsInfo.image" :src="subscriptionsInfo.image" class="avatar-img">
+      <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+    </el-upload>
       <span slot="footer" class="dialog-footer">
         <el-button @click="handleSubscriptionsClose">取 消</el-button>
         <el-button
@@ -445,7 +465,7 @@
       :action="actionUrl"
       ref="upload"
       v-show="false"
-      class="avatar-uploader"
+      class="avatar-uploader-edit"
       :data="fileUpload"
       :show-file-list="true"
       :http-request="onUploadHandler"
@@ -465,10 +485,11 @@ import {
   getArticleDetail,
   vote,
   getVote,
-  hotColumn
+  hotColumn,
+  goTop
 } from '@/api/special/special'
 import MD5 from 'MD5'
-import { getUser } from '@/api/user/user'
+import { getUser,getAvatars } from '@/api/user/user'
 import { getToken } from '@/utils/auth'
 // import _ecc from '@/utils/ecc/index'
 import axios from 'axios'
@@ -476,6 +497,7 @@ import { sha256 } from '@/utils/ecc/src/hash'
 import Signature from '@/utils/ecc/src/signature'
 import { actObj } from '@/utils/act'
 import Icon from '@/components/Icon/index'
+const defaultAvatar = require(`../../assets/defaultAvatarUrl.png`)
 export default {
   components: {
     Icon
@@ -576,7 +598,7 @@ export default {
                   // console.log(this.$refs.upload.$el)
                   // console.log(document.querySelector('.avatar-uploader input'))
                   this.$refs.upload.$el.click()
-                  document.querySelector('.avatar-uploader input').click()
+                  document.querySelector('.avatar-uploader-edit input').click()
                 } else {
                   this.quill.format('image', false)
                 }
@@ -601,16 +623,66 @@ export default {
       subscriptionsList: {},
       selectedColumn: '',
       timeout: '',
-      hasColumn: true
+      hasColumn: true,
+      voteLists: [],
+      avatarLists:[]
     }
   },
-  computed: {},
+  computed: {
+    userAvatar() {
+      return JSON.parse(localStorage.getItem('quhu-userInfo')).avatar
+    },
+    userInfo() {
+      return JSON.parse(localStorage.getItem('quhu-userInfo'))
+    },
+    activeMenuId() {
+      return sessionStorage.getItem('selectedMenu')
+    }
+  },
   async created() {
     this.updateColumn()
     this.getHotColumns()
   },
   async mounted() {},
   methods: {
+   async articleSet(v,i,type) {
+    const userInfo = this.userInfo
+      const token = getToken()
+      const loginType = localStorage.getItem('login-type')
+        const res = await goTop({
+          id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
+          steem_id: userInfo.steem_id,
+          token,
+          permlink:[v.author, v.permlink],
+          subscriptions_name: this.selectedColumn,
+          type
+        })
+
+      if(res.success === 'ok') {
+        switch (type) {
+          case '+':
+            const obj = this.articleList[i]
+            this.articleList.splice(i,1)
+            this.articleList.unshift(obj)
+            this.$message.success('置顶成功')
+            break;
+            case '-':
+            this.getArticlesByColumn(
+            this.selectedColumn || this.subscriptionsList.my[0] || ''
+          )
+            break;
+            case 'delete':
+            this.articleList.splice(i,1)
+            this.$message.success('删除成功')
+            break;
+          default:
+            break;
+        }
+        // this.getArticlesByColumn(
+        //     this.selectedColumn || this.subscriptionsList.my[0] || ''
+        //   )
+      }  
+    },
     async getHotColumns() {
       const res = await hotColumn({})
       if (res.success === 'ok') {
@@ -623,25 +695,9 @@ export default {
     },
     async praise(v) {
       // console.log(v)
-      const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+      const userInfo = this.userInfo
       const token = getToken()
       const loginType = localStorage.getItem('login-type')
-      if (!v.isPraised) {
-        const res = await vote({
-          id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
-          steem_id: userInfo.steem_id,
-          token,
-          permlink: v.permlink
-        })
-        console.log(res)
-        if (res.success === 'ok') {
-          this.$message.success('点赞成功')
-          v.isPraised = true
-        } else {
-          this.$message.error(res.error)
-          v.isPraised = false
-        }
-      } else {
         const res = await vote({
           id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
           steem_id: userInfo.steem_id,
@@ -649,13 +705,19 @@ export default {
           permlink: v.permlink
         })
         if (res.success === 'ok') {
-          this.$message.success('取消点赞成功')
-          v.isPraised = false
-        } else {
-          this.$message.error(res.error)
+          if(res.type==='+') {
+            this.$message.success('点赞成功')
           v.isPraised = true
+          v.voteNum +=1
+          }else if(res.type==='-') {
+            this.$message.success('取消点赞成功')
+            v.isPraised = false
+            v.voteNum -=1
+          }
+
+        } else {
+          this.$message.success('网络问题！请重试')
         }
-      }
     },
     showIcon(v) {
       v.isShow = true
@@ -688,9 +750,7 @@ export default {
           fn(response)
         })
     },
-
-    async onUploadHandler(e) {
-      // console.log(e)
+    async loadHandler(e,cb) {
       let dataUrl = ''
       if (e.file) {
         console.log('** image being loaded.. ----->', e.file)
@@ -728,11 +788,10 @@ export default {
                 if (res.status === 200) {
                   imageUrl = res.data.url
                 }
+                cb({ url: imageUrl, isShow: false, width: width, height: height })
 
-                this.fileList = this.fileList.concat([
-                  { url: imageUrl, isShow: false, width: width, height: height }
-                ])
-                console.log(this.fileList)
+                
+                // console.log(this.fileList)
                 // console.log(this.fileList)
                 // 获取光标所在位置
                 // let quill = this.$refs.myQuillEditor.quill
@@ -748,6 +807,17 @@ export default {
         reader.readAsDataURL(e.file)
       }
     },
+    async onUploadSubImgHandler(e) {
+      this.loadHandler(e,(v)=>{
+        this.subscriptionsInfo.image = v.url
+      }) 
+    },
+    async onUploadHandler(e) {
+      // console.log(e)
+      this.loadHandler(e,(v)=>{
+        this.fileList = this.fileList.concat([v])
+      })  
+    },
     onEditorReady() {
       // document.querySelector('.ql-formats .ql-uploadImg').innerText = '图'
       // document.querySelector('.ql-formats .ql-uploadFile').innerText = '文';
@@ -758,7 +828,7 @@ export default {
     //   console.log('触发上传')
     // },
     async removeOut() {
-      const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+      const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
       const params = {
         id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
@@ -803,7 +873,7 @@ export default {
       item.isEditReply = !item.isEditReply
     },
     async updateColumn() {
-      const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+      const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
       const currentInfo = await getUser({
         id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
@@ -813,13 +883,24 @@ export default {
         if (currentInfo.data) {
           this.subscriptionsList = currentInfo.data.buy_article || {}
         }
-        this.getArticlesByColumn(this.subscriptionsList.my[0] || '')
+        this.getArticlesByColumn(sessionStorage.getItem('selectedColumn') || this.subscriptionsList.my[0] || '',sessionStorage.getItem('selectedMenu').split('-')[1] || 0)
       }
     },
-    async getArticlesByColumn(v) {
-      const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+    async getArticlesByColumn(v,i) {
+      const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
+      let selectedMenu = '1-0'
       this.selectedColumn = v
+      if(this.subscriptionsList.my.indexOf(v)!==-1){
+        selectedMenu= '1-'+i
+      }else {
+        if(this.subscriptionsList.join.indexOf(v)!==-1){
+        selectedMenu= '2-'+i
+      }
+      }
+
+      sessionStorage.setItem('selectedColumn',v)
+      sessionStorage.setItem('selectedMenu',selectedMenu)
       this.hasColumn =
         this.subscriptionsList.my.length !== 0 ||
         this.subscriptionsList.join.length !== 0
@@ -830,18 +911,33 @@ export default {
           method: 'bridge.get_ranked_posts',
           params: { sort: 'created', tag: 's' + MD5(v).substring(0, 10) }
         })
-        const formatRes = res.result && res.result.concat()
-        formatRes.forEach((element) => {
+
+        if (res.result) {
+          let formatRes = res.result && res.result.concat()
+        // const otherInfoList = []
+        // const ids = []
+        let arr = [];
+        formatRes.forEach((element,index) => {
           element.body = this.eval(element.body)
           element.isEditReply = false
           element.reply = ''
           element.isShowDetailDialog = false
           element.isPraised = false
+          console.log(element.body.status)
+          if(element.body.status === 'top') {
+            arr.push(element)
+            formatRes.splice(index,1)
+            index = index-1
+          }
+          if(element.body.status === 'delete'){
+            formatRes.splice(index,1)
+            index = index-1
+          }
         })
-
-        if (res.result) {
+        formatRes = arr.concat(formatRes)
           this.articleList = formatRes
         }
+        
       }
     },
     createColumn() {
@@ -860,7 +956,7 @@ export default {
     async submitSubscriptions() {
       const { name, introduction, image, price, currency } =
         this.subscriptionsInfo
-      const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+      const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
       const res = await subscriptions({
         id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
@@ -888,7 +984,7 @@ export default {
       // console.log(key, keyPath)
     },
     async submitReply(v, i) {
-      const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+      const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
       const res = await post({
         type: 'comment',
@@ -918,7 +1014,7 @@ export default {
       this.showEditor = true
     },
     async submit() {
-      const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+      const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
       let imgHtml = ''
       if (this.fileList.length === 1) {
@@ -970,7 +1066,7 @@ export default {
       val.isShowDetailDialog = false
     },
     async goDetail(val, index) {
-      const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+      const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
       const res = await getArticleDetail({
         id: loginType === 'password' ? userInfo.user : userInfo.eth_account,
@@ -996,8 +1092,15 @@ export default {
       }
       if (obj) {
         obj.body = this.eval(obj.body)
-        obj.isPraised = votes.data.list.indexOf(userInfo.steem_id) !==-1
-        obj.voteNum = votes.data.vote
+        obj.body.avatar = ''
+        let isPraised = false
+        let voteNum = 0
+        const vote = votes.data.forEach((item,i)=>{
+          isPraised = item.list.indexOf(userInfo.steem_id)!==-1
+          voteNum = item.vote
+        })
+        obj.isPraised = isPraised
+        obj.voteNum = voteNum
         this.currentDetail = obj
         this.currentDetail.commentList = commentList
         val.isShowDetailDialog = true
@@ -1026,6 +1129,37 @@ export default {
 </script>
 
 <style scoped lang="scss">
+  ::v-deep .el-dropdown {
+    position: absolute;
+    right: 20px;
+    top: 10px;
+  }
+
+   ::v-deep .avatar-uploader .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+  .avatar-uploader .el-upload:hover {
+    border-color: #409EFF;
+  }
+  .avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 178px;
+    height: 178px;
+    line-height: 178px;
+    text-align: center;
+  }
+  .avatar-img {
+    width: 178px;
+    height: 178px;
+    display: block;
+    object-fit: cover;
+  }
   .clb{
     min-width: 50px;
   }

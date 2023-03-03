@@ -1,29 +1,46 @@
 <template>
   <div class="login_container">
     <div class="login_box">
-      <!-- 头像区域 -->
-      <!-- <div class="avatar_box">
-        <img src="../assets/fire.jpeg" alt="" />
-      </div> -->
-      <div class="login_area">
-        <div class="wallet_login" @click="walletLogin">钱包登录</div>
-      </div>
       <!-- 登录表单区域 -->
-      <el-form ref="loginFormRef" :model="loginForm" :rule="rules" label-width="0px" class="login_form">
+      <el-form
+        ref="loginFormRef"
+        :model="loginForm"
+        :rule="rules"
+        label-width="0px"
+        class="login_form"
+      >
         <div class="form_container">
           <!-- 账号 -->
           <el-form-item prop="user">
-            <el-input prefix-icon="el-icon-user" v-model="loginForm.user" placeholder="请输入账号" clearable></el-input>
+            <el-input
+              prefix-icon="el-icon-user"
+              v-model="loginForm.user"
+              placeholder="请输入账号"
+              clearable
+            ></el-input>
           </el-form-item>
           <!-- 密码 -->
           <el-form-item prop="password" class="password">
-            <el-input show-password prefix-icon="el-icon-lock" v-model="loginForm.password" placeholder="请输入密码" clearable></el-input>
+            <el-input
+              show-password
+              prefix-icon="el-icon-lock"
+              v-model="loginForm.password"
+              placeholder="请输入密码"
+              clearable
+            ></el-input>
           </el-form-item>
-          <div class="register_btn" @click="toggle">{{ userType==='login'?'新用户注册' : '登录' }}</div>
+          <div class="login_area">
+            <div class="wallet_login" @click="walletLogin">钱包登录</div>
+          </div>
+          <div class="register_btn" @click="toggle">
+            {{ userType === 'login' ? '新用户注册' : '登  录' }}
+          </div>
         </div>
         <!-- 按钮 -->
         <el-form-item class="btns">
-          <el-button class="btn" type="primary" @click="passwordLogin">{{ userType==='login'?'登录' : '注册' }}</el-button>
+          <el-button class="btn" type="primary" @click="passwordLogin">{{
+            userType === 'login' ? '登 录' : '注 册'
+          }}</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -177,7 +194,7 @@ export default {
         if (!valid) return
         const user = this.loginForm.user.trim()
         const password = this.loginForm.password.trim()
-        const reg = /^[a-zA-Z0-9_\u4e00-\u9fa5]{2,12}$/
+        const reg = /^[a-zA-Z0-9_\u4e00-\u9fa5]{2,16}$/
         const pwdReg =
           /(?!^(\d+|[a-zA-Z]+|[~!@#$%^&*()_.]+)$)^[\w~!@#$%^&*()_.]{8,16}$/
         if (user === '') {
@@ -185,7 +202,7 @@ export default {
         } else if (password === '') {
           this.$message.error('请输入密码')
         } else if (!reg.test(user)) {
-          this.$message.error('请输入2到12位字符的汉字，字母，数字，下划线')
+          this.$message.error('请输入2到16位字符的汉字，字母，数字，下划线')
         } else if (!pwdReg.test(password)) {
           this.$message.error(
             '密码应为字母，数字，特殊符号(~!@#$%^&*()_.)，两种及以上组合，8-16位字符串，如：xyl37@baa'
@@ -215,6 +232,10 @@ export default {
               invitedId: this.invitedId || ''
             }).then((data) => {
               if (data.success === 'ok') {
+                this.loginForm = {
+                  user,
+                  password
+                }
                 this.$message.success('注册成功！')
                 this.toggle()
               }
@@ -237,22 +258,24 @@ export default {
 
 <style scoped lang="scss">
 .login_container {
-  /* background-image: url('../assets/quhu.png'); */
-  background-image: url('../assets/quhu-bglogo.jpg');
+  background-image: url('../assets/bg.jpg');
+  // background-image: url('../assets/quhu-bglogo.jpg');
   background-position: center;
-  background-size: 100% 100%;
+  background-size: cover;
   background-repeat: no-repeat;
   height: 100%;
+  // background-color: #101010;
+  color: #fff;
 }
 
 .login_box {
   position: relative;
-  color: #c0c0c0;
+  // color: #c0c0c0;
   width: 80%;
   max-width: 500px;
   min-width: 250px;
   height: 300px;
-  background-color: #fff;
+  // background-color: #fff;
   border-radius: 3px;
   position: absolute;
   left: 50%;
@@ -287,7 +310,7 @@ img {
   justify-content: flex-end;
   position: absolute;
   right: 10px;
-  top: 10px;
+  // top: 10px;
 }
 
 .login_area .wallet_login {
@@ -307,11 +330,40 @@ img {
 .btns {
   display: flex;
   justify-content: space-between;
+  margin-top: 40px;
 }
-
+::v-deep .el-form-item {
+  margin-top: 50px;
+}
+::v-deep .el-input {
+  font-size: 16px;
+}
+::v-deep .el-input--prefix .el-input__inner {
+  padding-left: 50px;
+  height: 50px;
+  border-radius: 30px;
+}
+::v-deep .el-input__prefix {
+  left: 15px;
+  top: 2px;
+}
+::v-deep .el-button--primary {
+  background-color: #3a62d7;
+  border-color: #3a62d7;
+}
+::v-deep .el-button {
+  font-size: 16px;
+}
+::v-deep .el-input__inner {
+  background-color: #525357;
+  border: 1px solid #525357;
+  color: #fff;
+}
 .btns .btn {
   margin-top: 20px;
-  width: 200px;
+  width: 450px;
+  height: 50px;
+  border-radius: 30px;
 }
 .form_container {
   position: relative;
@@ -329,8 +381,7 @@ img {
 }
 .form_container .register_btn {
   position: absolute;
-  right: 10px;
-  bottom: -30px;
+  left: 10px;
   cursor: pointer;
 }
 

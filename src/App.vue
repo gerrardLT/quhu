@@ -37,7 +37,11 @@ export default {
       sessionStorage.setItem('store', JSON.stringify(this.$store.state))
     })
   },
-  mounted() {},
+  mounted() {
+    if (!this.isTabP) {
+      this.$refs.app.style.paddingTop = 0
+    }
+  },
   computed: {
     isTabP() {
       return this.$route.meta.isTabPage
@@ -61,5 +65,4 @@ export default {
 }
 </script>
 
-<style >
-</style>
+<style></style>

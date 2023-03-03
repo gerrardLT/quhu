@@ -5,26 +5,51 @@
  * @LastEditTime: 2023-01-30 04:14:45
  * @FilePath: \quhu\src\components\tabs\Tabs.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
--->e
+-->
+e
 <template>
   <div>
     <div class="Frame_top">
       <div class="Nav_wrap">
-        <div class="woo-panel-main woo-panel-bottom Nav_panel" style="border-color: #f9f9f9; background-color: #fff;">
+        <div
+          class="woo-panel-main woo-panel-bottom Nav_panel"
+          style="border-color: #f9f9f9; background-color: #fff"
+        >
           <div class="woo-box-flex woo-box-alignCenter Nav_main">
             <div class="woo-box-flex woo-box-alignCenter Nav_left">
               <a href="/" aria-label="quhu" class="Nav_logoWrap">
-                <img src="../../assets/quhu.png" alt="">
+                <img src="../../assets/quhu.png" alt="" />
               </a>
             </div>
             <div class="Nav_mid">
-              <div class="tab" ref="tabRef" v-for="(item,index) in list" :key="item.id" id="item.id" @click="tabClick(item,index)" :title="item.text">
+              <div
+                class="tab"
+                ref="tabRef"
+                v-for="(item, index) in list"
+                :key="item.id"
+                id="item.id"
+                @click="tabClick(item, index)"
+                :title="item.text"
+              >
                 <div class="svg_container">
-                  <svg ref="svgRef" :style="{'fill':color?color:'','width':'25px','height':'25px'}">
-                    <use :xlink:href="'#icon-'+item.icon" rel="external nofollow" />
+                  <svg
+                    ref="svgRef"
+                    :style="{
+                      fill: color ? color : '',
+                      width: '25px',
+                      height: '25px'
+                    }"
+                  >
+                    <use
+                      :xlink:href="'#icon-' + item.icon"
+                      rel="external nofollow"
+                    />
                   </svg>
                 </div>
-                <div v-if="activeName === item.name" class="woo-tab-item-border"></div>
+                <div
+                  v-if="activeName === item.name"
+                  class="woo-tab-item-border"
+                ></div>
               </div>
             </div>
             <div class="Nav_right">
@@ -35,7 +60,6 @@
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -46,20 +70,25 @@ export default {
   components: {},
   mounted() {
     const self = this
+    const path = this.$route.path.replace('/', '')
     window.addEventListener(
       'popstate',
       function (e) {
-        const path = e.currentTarget.location.hash.replace('#/', '')
+        const path = e.currentTarget.location.hash
+          .split('?')[0]
+          .replace('#/', '')
         self.activeName = path
         self.toggleStyle(self.nameList.indexOf(path))
       },
       false
     )
     if (sessionStorage.getItem('tabName')) {
-      this.activeName = sessionStorage.getItem('tabName')
-      const path = this.$route.path.replace('/', '')
-      this.toggleStyle(this.nameList.indexOf(path))
+      console.log(this.$route)
+      this.activeName = this.$route.query.user
+        ? 'home'
+        : sessionStorage.getItem('tabName')
     }
+    this.toggleStyle(this.nameList.indexOf(path))
   },
   // beforeRouteEnter(to, from, next) {
   //   console.log(to, from)

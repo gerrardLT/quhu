@@ -31,3 +31,19 @@ export async function changeUser (data) {
     data
   })
 }
+
+export async function changeAvatar (data) {
+  return request({
+    url: '/avatar',
+    method: 'post',
+    data
+  })
+}
+
+export async function getAvatars (data) {
+  return request({
+    url: '/getavatar',
+    method: 'post',
+    data
+  })
+}

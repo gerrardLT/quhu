@@ -69,10 +69,10 @@ const store = new Vuex.Store({
         state.userInfo = Object.assign({}, res.data)
         localStorage.setItem('quhu-userInfo', JSON.stringify(state.userInfo))
         router.push({
-            path: '/home'
-            // query: {
-            //   user: encodeURIComponent(user)
-            // }
+            path: '/home',
+            query: {
+              user: encodeURIComponent(user),
+            }
           })
       }
     },
