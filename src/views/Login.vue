@@ -33,13 +33,13 @@
             <div class="wallet_login" @click="walletLogin">钱包登录</div>
           </div>
           <div class="register_btn" @click="toggle">
-            {{ userType === 'login' ? '新用户注册' : '登  录' }}
+            {{ userType === 'login' ? '注册账号' : '登  录' }}
           </div>
         </div>
         <!-- 按钮 -->
         <el-form-item class="btns">
           <el-button class="btn" type="primary" @click="passwordLogin">{{
-            userType === 'login' ? '登 录' : '注 册'
+            userType === 'login' ? '登 录' : '注册账号'
           }}</el-button>
         </el-form-item>
       </el-form>
@@ -348,8 +348,8 @@ img {
   top: 2px;
 }
 ::v-deep .el-button--primary {
-  background-color: #3a62d7;
-  border-color: #3a62d7;
+  background-color: #101010;
+  border-color: #fff;
 }
 ::v-deep .el-button {
   font-size: 16px;

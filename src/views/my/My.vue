@@ -94,7 +94,7 @@ export default {
       list: [
         {
           id: 1,
-          icon: 'xingqiubi',
+          icon: 'yqm',
           title: '活跃度',
           url: '/activation',
           showNumber: false
@@ -102,7 +102,7 @@ export default {
         {
           id: 2,
           icon: 'yqm',
-          title: 'token',
+          title: '钱包',
           url: '/voucher',
           showNumber: true
         },

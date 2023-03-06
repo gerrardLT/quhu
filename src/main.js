@@ -18,7 +18,6 @@ import './assets/css/global.css'
 import store from './store'
 import axios from 'axios'
 import Web3 from 'web3'
-
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 // 引入quill-editor编辑器
