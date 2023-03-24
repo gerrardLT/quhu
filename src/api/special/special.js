@@ -115,3 +115,21 @@ export async function goTop (data) {
   })
 }
 
+// 收藏
+export async function collect (data) {
+  return request({
+    url: '/favorites',
+    method: 'post',
+    data
+  })
+}
+
+// 获取收藏
+export async function getfavorites (data) {
+  return request({
+    url: '/getfavorites',
+    method: 'post',
+    data
+  })
+}
+

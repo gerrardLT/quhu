@@ -93,4 +93,5 @@ Vue.use(carouselItem)
 
 Vue.prototype.$message = Message // 弹框提示组件挂在在Vue原型上
 Vue.prototype.$confirm = MessageBox.confirm
+Vue.prototype.$alert = MessageBox.alert
 Vue.prototype.$prompt = MessageBox.prompt

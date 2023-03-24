@@ -7,20 +7,42 @@
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
-  <div>
-    敬请期待！
+  <div class="invite_container">
+    <el-button type="danger" round @click="copy($event)"
+      >复制邀请链接</el-button
+    >
   </div>
 </template>
 
 <script>
+import clipboard from '@/utils/clipboard'
 export default {
   data() {
     return {}
   },
   created() {},
   mounted() {},
-  methods: {}
+  methods: {
+    copy(e) {
+      const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+      clipboard(
+        'https://app.onlyfun.city/#/login?invitedId=' + userInfo.invitedId,
+        e
+      )
+      // clipboard(
+      //   'http://localhost:8888/#/login?invitedId=' + userInfo.invitedId,
+      //   e
+      // )
+      this.$message.success('复制成功！')
+    }
+  }
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.invite_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+</style>

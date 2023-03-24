@@ -7,80 +7,189 @@
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
-  <div class="setting_container">
-    <el-row type="flex" class="row-bg user_space" justify="center">
-      <el-col :span="4" class="user_avatar">
-        <img src="../../assets/defaultAvatarUrl.png" alt="" />
-      </el-col>
-    </el-row>
-    <div v-for="(item) in list" :key="item.id">
-      <el-row class="row-bg">
-        <div class="setting-bar" @click="handleChange(item)">
-          <div class="content">
-            <div class="menu">
-              {{item.title}}
+  <div>
+    <Info></Info>
+    <div class="setting_container">
+      <div class="setting_tab">
+        <el-tabs type="border-card">
+          <el-tab-pane class="tab_content" label="基本信息">
+            <el-form
+              :model="baseInfoForm"
+              :rules="baseRules"
+              ref="baseFormRef"
+              label-width="100px"
+            >
+              <el-form-item label="昵称" prop="nickName" style="width: 400px">
+                <el-input v-model="baseInfoForm.nickName" clearable></el-input>
+              </el-form-item>
+              <el-form-item label="用户名" prop="user" style="width: 400px">
+                <el-input
+                  v-model="baseInfoForm.user"
+                  clearable
+                  :disabled="userChanged"
+                ></el-input>
+              </el-form-item>
+              <el-form-item
+                label="密码"
+                prop="password"
+                v-if="!isEthLogin"
+                style="width: 400px"
+              >
+                <el-input
+                  v-model="baseInfoForm.password"
+                  clearable
+                  type="password"
+                  show-password
+                ></el-input>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" @click="save">保存</el-button>
+                <el-button
+                  type="primary"
+                  @click="bindEthAccount"
+                  style="margin-left: 100px"
+                  >绑定ETH账号</el-button
+                >
+              </el-form-item>
+            </el-form>
+          </el-tab-pane>
+          <el-tab-pane class="tab_content" label="安全设置">
+            <el-form
+              :model="safeInfoForm"
+              :rules="safeRules"
+              ref="safeFormRef"
+              label-width="100px"
+            >
+              <el-form-item
+                label="原密码"
+                prop="oldPassword"
+                v-if="!isEthLogin"
+                style="width: 400px"
+              >
+                <el-input
+                  v-model="safeInfoForm.oldPassword"
+                  clearable
+                  type="password"
+                  show-password
+                ></el-input>
+              </el-form-item>
+              <el-form-item
+                label="新密码"
+                prop="newPassword"
+                style="width: 400px"
+              >
+                <el-input
+                  v-model="safeInfoForm.newPassword"
+                  clearable
+                  type="password"
+                  show-password
+                ></el-input>
+              </el-form-item>
+              <el-form-item
+                label="确认密码"
+                prop="passwordAgain"
+                style="width: 400px"
+              >
+                <el-input
+                  v-model="safeInfoForm.passwordAgain"
+                  clearable
+                  type="password"
+                  show-password
+                ></el-input>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" @click="savePwd">保存</el-button>
+              </el-form-item>
+            </el-form>
+          </el-tab-pane>
+          <el-tab-pane class="tab_content" label="退出登录">
+            <div class="login_out">
+              <div class="title">
+                <svg
+                  :style="{
+                    width: '50px',
+                    height: '50px'
+                  }"
+                >
+                  <use xlink:href="#icon-sign-out" rel="external nofollow" />
+                </svg>
+                <span style="margin-left: 20px">
+                  您确定要退出吗？
+                  <br />
+                  退出后内容将不再保存！
+                </span>
+              </div>
+              <div class="btns">
+                <el-button type="primary" @click="confirmLoginOut"
+                  >确定</el-button
+                >
+              </div>
             </div>
-          </div>
-          <div class="arrow">
-            <span class="name_text" v-if="item.userSpace">{{   userInfo[item.userSpace] === 'none'?'': userInfo[item.userSpace]  }}</span>
-            <Icon name="arrowR" />
-          </div>
-        </div>
-      </el-row>
+          </el-tab-pane>
+        </el-tabs>
+      </div>
     </div>
-    <el-dialog title="提示" :visible.sync="dialogVisible" center :before-close="closeDialog" class="dialogBox border-radius" width="80%">
-      <el-input class="input" v-if="currentChange==='user'" v-model="user" placeholder="请输入用户名" clearable></el-input>
-      <el-input class="input" v-if="currentChange==='user_name'" v-model="user_name" placeholder="请输入昵称" clearable></el-input>
-      <el-input v-if="!isEthLogin" v-model="password" placeholder="请输入密码" show-password clearable></el-input>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="closeDialog">取 消</el-button>
-        <el-button type="primary" @click="handleReport">确 定</el-button>
-      </span>
-    </el-dialog>
   </div>
-
 </template>
 
 <script>
 import Icon from '@/components/Icon/index'
+import Info from './component/info.vue'
 import MD5 from 'MD5'
 import { mapState } from 'vuex'
+import { bindEth, changePwd } from '@/api/user/user'
+import { getToken } from '@/utils/auth'
 
 export default {
   components: {
-    Icon
+    Info
   },
   data() {
-    return {
-      dialogVisible: false,
-      user: '',
-      user_name: '',
-      password: '',
-      currentChange: '',
-      list: [
-        {
-          id: 0,
-          title: '修改昵称',
-          userSpace: 'user_name'
-        },
-        {
-          id: 1,
-          title: '修改用户名',
-          userSpace: 'user'
-        },
-        {
-          id: 2,
-          title: '修改密码'
-        },
-        {
-          id: 3,
-          title: '退出登录'
-        },
-        {
-          id: 4,
-          title: '注销'
+    const validate = (value, type, cb) => {
+      const reg = /^[a-zA-Z0-9_\u4e00-\u9fa5]{2,12}$/
+      if (value.trim() === '') {
+        cb('请输入要修改的' + type)
+      } else {
+        if (!reg.test(value)) {
+          cb('请输入2到12位字符的汉字，字母，数字，下划线')
+        } else {
+          cb()
         }
-      ]
+      }
+    }
+    const validateNick = (rule, value, callback) => {
+      validate(value, '昵称', callback)
+    }
+    const validateUserName = (rule, value, callback) => {
+      validate(value, '用户名', callback)
+    }
+    return {
+      baseInfoForm: {
+        nickName: '',
+        user: '',
+        password: ''
+      },
+      safeInfoForm: {
+        oldPassword: '',
+        newPassword: '',
+        passwordAgain: ''
+      },
+      safeRules: {
+        oldPassword: [
+          { required: true, message: '请输入原密码', trigger: 'blur' }
+        ],
+        newPassword: [
+          { required: true, message: '请输入新密码', trigger: 'blur' }
+        ],
+        passwordAgain: [
+          { required: true, message: '请再次确认密码', trigger: 'blur' }
+        ]
+      },
+      baseRules: {
+        nickName: [{ validator: validateNick, trigger: 'blur' }],
+        user: [{ validator: validateUserName, trigger: 'blur' }]
+      },
+      currentChange: ''
     }
   },
   computed: {
@@ -89,165 +198,194 @@ export default {
     },
     ...mapState({
       userInfo: (state) => state.userInfo
-    })
+    }),
+    userChanged() {
+      return this.userInfo.user !== 'none'
+    }
   },
   created() {},
   mounted() {
-    // console.log(this.$store.state)
-    // console.log(this.userInfo)
+    this.baseInfoForm = {
+      nickName: this.userInfo.user_name,
+      user: this.userInfo.user
+    }
   },
   methods: {
-    closeDialog() {
-      this.dialogVisible = false
-      this.user = ''
-      this.user_name = ''
-      this.password = ''
+    confirmLoginOut() {
+      this.$store.dispatch('loginOutFalse')
+    },
+    save() {
+      this.$refs.baseFormRef.validate((valid) => {
+        if (valid) {
+          this.handleReport()
+        } else {
+          return false
+        }
+      })
+    },
+    savePwd() {
+      this.$refs.safeFormRef.validate((valid) => {
+        if (valid) {
+          this.updatePwd()
+        } else {
+          return false
+        }
+      })
+    },
+    updatePwd() {
+      const self = this
+      const token = getToken()
+      const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+      const loginType = localStorage.getItem('login-type')
+
+      if (this.safeInfoForm.newPassword === this.safeInfoForm.passwordAgain) {
+        if (loginType === 'password') {
+          changePwd({
+            id: userInfo.user,
+            token,
+            old_password: MD5(this.safeInfoForm.oldPassword),
+            new_password: MD5(this.safeInfoForm.newPassword),
+            sign: ''
+          }).then((res) => {
+            if (res.success === 'ok') {
+              self.$message.success('修改成功！')
+              this.safeInfoForm = {
+                oldPassword: '',
+                newPassword: '',
+                passwordAgain: ''
+              }
+            }
+          })
+        } else if (loginType === 'eth') {
+          if (window.ethereum) {
+            if (typeof window.ethereum.isMetaMask === 'undefined') {
+              self.$message.error('请安装 MetaMask！')
+            } else {
+              window.ethereum
+                .request({ method: 'eth_requestAccounts' })
+                .catch(function (reason) {
+                  self.$message.error('出错了！' + reason.message)
+                })
+                .then(function (accounts) {
+                  // console.log('account', accounts)
+                  const web3 = new self.Web3(
+                    self.Web3.givenProvider ||
+                      'ws://some.local-or-remote.node:8546'
+                  )
+                  web3.eth.personal.sign(
+                    web3.utils.utf8ToHex('change password'),
+                    accounts[0],
+                    (err, res) => {
+                      if (err) {
+                        self.$message.error('签名失败，因为' + err.message)
+                      } else {
+                        changePwd({
+                          id: accounts[0],
+                          token,
+                          sign: res,
+                          old_password: MD5(self.safeInfoForm.oldPassword),
+                          new_password: MD5(self.safeInfoForm.newPassword)
+                        }).then((res) => {
+                          self.$message.success('密码修改成功！')
+                          this.safeInfoForm = {
+                            oldPassword: '',
+                            newPassword: '',
+                            passwordAgain: ''
+                          }
+                        })
+                      }
+                    }
+                  )
+                })
+            }
+          } else {
+            self.$message.error('请安装 MetaMask！')
+          }
+        }
+      } else {
+        this.$message.error('密码不一致，请重新输入')
+      }
+    },
+    callMeta(fn) {
+      const self = this
+      window.ethereum
+        .request({ method: 'eth_requestAccounts' })
+        .catch(function (reason) {
+          self.$message.error('出错了！' + reason.message)
+        })
+        .then(function (accounts) {
+          // console.log('account', accounts)
+          const web3 = new self.Web3(
+            self.Web3.givenProvider || 'ws://some.local-or-remote.node:8546'
+          )
+          web3.eth.personal.sign(
+            web3.utils.utf8ToHex('change'),
+            accounts[0],
+            (err, res) => {
+              fn(err, res, accounts)
+            }
+          )
+        })
+    },
+    handleSign(err, res) {
+      const self = this
+      if (err) {
+        self.$message.error('签名失败，因为' + err.message)
+      } else {
+        self.$store.dispatch('updateUser', {
+          user_name: self.baseInfoForm.nickName,
+          user: self.baseInfoForm.user,
+          password: '',
+          sign: res
+        })
+      }
     },
     handleReport() {
       // const reg = /^[a-zA-Z0-9\u4e00-\u9fa5]{2,9}$/
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
       const self = this
-      if (this.currentChange === 'user') {
-        if (!this.validate(this.user)) {
-          return
-        }
-      }
-
-      if (this.currentChange === 'user_name') {
-        if (!this.validate(this.user_name)) {
-          return
-        }
-      }
       if (this.isEthLogin) {
         if (window.ethereum) {
           if (typeof window.ethereum.isMetaMask === 'undefined') {
             self.$message.error('请安装 MetaMask！')
           } else {
-            window.ethereum
-              .request({ method: 'eth_requestAccounts' })
-              .catch(function (reason) {
-                self.$message.error('出错了！' + reason.message)
-              })
-              .then(function (accounts) {
-                // console.log('account', accounts)
-                const web3 = new self.Web3(
-                  self.Web3.givenProvider ||
-                    'ws://some.local-or-remote.node:8546'
-                )
-                web3.eth.personal.sign(
-                  web3.utils.utf8ToHex('change'),
-                  accounts[0],
-                  (err, res) => {
-                    if (err) {
-                      self.$message.error('签名失败，因为' + err.message)
-                    } else {
-                      if (self.currentChange === 'user_name') {
-                        self.$store.dispatch('updateUser', {
-                          user_name: self.user_name,
-                          password: '',
-                          sign: res,
-                          type: 'user_name'
-                        })
-                      }
-                      if (self.currentChange === 'user') {
-                        self.$store.dispatch('updateUser', {
-                          user: self.user,
-                          password: '',
-                          sign: res,
-                          type: 'user'
-                        })
-                      }
-                      self.closeDialog()
-                    }
-                  }
-                )
-              })
+            self.callMeta(self.handleSign)
           }
         } else {
           self.$message.error('请安装 MetaMask！')
         }
       } else {
-        const { user_name, user, password } = this
-
-        if (this.currentChange === 'user_name') {
-          if (this.validate(this.user_name.trim())) {
-            this.$store.dispatch('updateUser', {
-              user_name,
-              password: MD5(password),
-              type: 'user_name'
-            })
-          } else {
-            return
-          }
+        this.$store.dispatch('updateUser', {
+          user_name: self.baseInfoForm.nickName,
+          user: self.baseInfoForm.user,
+          password: MD5(self.baseInfoForm.password)
+        })
+        this.baseInfoForm = {
+          nickName: '',
+          password: ''
         }
-        if (this.currentChange === 'user') {
-          if (this.validate(this.user.trim())) {
-            this.$store.dispatch('updateUser', {
-              user,
-              password: MD5(password),
-              type: 'user'
-            })
-          } else {
-            return
-          }
-        }
-        self.closeDialog()
       }
     },
-    validate(value) {
-      let flag = true
-      const reg = /^[a-zA-Z0-9_\u4e00-\u9fa5]{2,12}$/
-      if (this.currentChange === 'user') {
-        if (value.trim() === '') {
-          this.$message.error('请输入要修改的用户名')
-          flag = false
+    bindEthAccount() {
+      const token = getToken()
+      const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+      const self = this
+      this.callMeta(async (err, res, account) => {
+        if (err) {
+          self.$message.error('签名失败，因为' + err.message)
         } else {
-          flag = true
+          const result = await bindEth({
+            id: userInfo.user,
+            token,
+            password: '',
+            eth_account: account[0],
+            sign: res
+          })
+          if (res.success === 'ok') {
+            self.$message.success('绑定成功！')
+          }
         }
-      }
-      if (this.currentChange === 'user_name') {
-        if (value.trim() === '') {
-          this.$message.error('请输入要修改的昵称')
-          flag = false
-        } else {
-          flag = true
-        }
-      }
-      if (!reg.test(value)) {
-        this.$message.error('请输入2到12位字符的汉字，字母，数字，下划线')
-        flag = false
-      } else {
-        flag = true
-      }
-      return flag
-    },
-    handleChange(val) {
-      if (val.id === 0) {
-        // 昵称修改
-        this.currentChange = 'user_name'
-        this.dialogVisible = true
-      }
-
-      if (val.id === 1) {
-        // 用户名修改
-        this.currentChange = 'user'
-        this.dialogVisible = true
-      }
-
-      if (val.id === 2) {
-        // 密码修改
-        this.$router.push('/changePwd')
-      }
-
-      if (val.id === 3) {
-        // 退出登录
-        this.$store.dispatch('loginOutFalse')
-      }
-
-      // if (val.id === 4) {
-      //   // 注销
-      //   this.$store.dispatch('loginOutFalse')
-      // }
+      })
     }
   },
 
@@ -261,7 +399,37 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+.tab_content {
+  height: 500px;
+  display: flex;
+  justify-content: center;
+  padding-top: 50px;
+  .login_out {
+    width: 800px;
+    height: 350px;
+    background-color: #cecece;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    .title {
+      width: 400px;
+      justify-content: center;
+      margin-bottom: 40px;
+      display: flex;
+    }
+    .btns {
+      display: flex;
+      justify-content: center;
+      width: 400px;
+    }
+  }
+}
+.setting_container {
+  /* height: 100vh;
+  background: #fff; */
+}
 .border-radius {
   border-radius: 10px;
 }

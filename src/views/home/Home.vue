@@ -20,10 +20,23 @@
             background-color="#fff"
             active-text-color="#4fbdd4"
           >
-            <div class="short_article" @click="toAticle">我的短文</div>
+            <!-- <div class="short_article" @click="toAticle">我的短文</div> -->
             <el-submenu index="1">
               <template slot="title">
-                <!-- <i class="el-icon-location"></i> -->
+                <!-- <i class="el-icon-edit"></i> -->
+                <svg
+                  :style="{
+                    fill: '#087790',
+                    width: '15px',
+                    height: '15px',
+                    marginRight: '5px'
+                  }"
+                >
+                  <use
+                    :xlink:href="'#icon-semiDesign-semi-icons-edit'"
+                    rel="external nofollow"
+                  />
+                </svg>
                 <span style="fontsize: 14px">我的圈子</span>
               </template>
               <el-menu-item
@@ -37,7 +50,16 @@
             </el-submenu>
             <el-submenu index="2">
               <template slot="title">
-                <!-- <i class="el-icon-menu"></i> -->
+                <svg
+                  :style="{
+                    fill: '#087790',
+                    width: '15px',
+                    height: '15px',
+                    marginRight: '5px'
+                  }"
+                >
+                  <use :xlink:href="'#icon-my'" rel="external nofollow" />
+                </svg>
                 <span style="fontsize: 14px">加入的圈子</span>
               </template>
               <el-menu-item
@@ -52,356 +74,415 @@
           </el-menu>
         </div>
       </el-col>
-      <el-col :span="14" class="mid_container">
-        <div class="post-container">
-          <el-autocomplete
-            class="searchBar"
-            clearable
-            v-model="searchValue"
-            :fetch-suggestions="querySearch"
-            placeholder="请输入圈子名称"
-            @select="handleSelect"
-            :popper-append-to-body="false"
-          >
-            <i class="el-icon-search el-input__icon" slot="suffix"> </i>
-            <template slot-scope="{ item }">
-              <!-- <i class="el-icon-search search_arrow_icon"> </i> -->
-              <div class="name">{{ item.value }}</div>
-            </template>
-          </el-autocomplete>
+      <el-col :span="20" v-if="currentPath === '/write'">
+        <router-view></router-view>
+      </el-col>
+      <el-col :span="20" v-else>
+        <el-col :span="18" class="mid_container">
+          <div class="post-container">
+            <div @click="postArticle" class="post-topic-head">
+              <div class="tip">点击发表主题...</div>
+            </div>
+            <div class="post-topic-footer">
+              <div class="post-topic-btn">
+                <div class="left"></div>
+                <div class="post-action">
+                  <router-link
+                    :to="'/write?selectedColumn=' + selectedColumn"
+                    v-if="selectedColumn"
+                  >
+                    <div class="common post-article">
+                      <span>写文章</span>
+                    </div>
+                  </router-link>
 
-          <div @click="postArticle" class="post-topic-head">
-            <div class="tip">点击发表主题...</div>
-          </div>
-          <div class="post-topic-footer">
-            <div class="post-topic-btn">
-              <div class="left"></div>
-              <div class="post-action">
-                <div class="common post-article" @click="postArticle">
-                  <span>写文章</span>
+                  <div class="common post-article" @click="createColumn">
+                    <span>创建圈子</span>
+                  </div>
+                  <div
+                    slot="reference"
+                    class="common post-article"
+                    @click="handleRemove"
+                  >
+                    <span v-if="hasColumn"> 退出圈子 </span>
+                  </div>
+                  <el-dialog
+                    title="删除提示"
+                    :visible.sync="removePopVisible"
+                    width="30%"
+                    center
+                  >
+                    <span>确认退出当前圈子吗？</span>
+                    <span slot="footer" class="dialog-footer">
+                      <el-button @click="centerDialogVisible = false"
+                        >取 消</el-button
+                      >
+                      <el-button type="primary" @click="removeOut"
+                        >确 定</el-button
+                      >
+                    </span>
+                  </el-dialog>
                 </div>
-                <div class="common post-article" @click="createColumn">
-                  <span>创建圈子</span>
-                </div>
-                <div
-                  slot="reference"
-                  class="common post-article"
-                  @click="handleRemove"
-                >
-                  <span v-if="hasColumn"> 退出圈子 </span>
-                </div>
-                <el-dialog
-                  title="删除提示"
-                  :visible.sync="removePopVisible"
-                  width="30%"
-                  center
-                >
-                  <span>确认退出当前圈子吗？</span>
-                  <span slot="footer" class="dialog-footer">
-                    <el-button @click="centerDialogVisible = false"
-                      >取 消</el-button
-                    >
-                    <el-button type="primary" @click="removeOut"
-                      >确 定</el-button
-                    >
-                  </span>
-                </el-dialog>
               </div>
             </div>
           </div>
-        </div>
-        <div v-for="(item, index) in articleList" :key="index">
-          <div class="topic-container">
-            <div style="padding: 10px">
-              <div class="header-container">
-                <div class="author">
-                  <img class="avatar" :src="item.body.avatar" alt="" />
-                  <div class="info">
-                    <div class="role owner">{{ item.body.author }}</div>
-                    <div class="date">
-                      {{ item.created.replace('T', '  ') }}
+          <div v-if="articleList.length > 0">
+            <div v-for="(item, index) in articleList" :key="index">
+              <div class="topic-container">
+                <div style="padding: 10px">
+                  <div class="header-container">
+                    <div class="author">
+                      <img class="avatar" :src="item.body.avatar" alt="" />
+                      <div class="info">
+                        <div class="role owner">{{ item.body.author }}</div>
+                        <div class="date">
+                          {{ item.created.replace('T', '  ') }}
+                        </div>
+                      </div>
+                    </div>
+                    <el-dropdown
+                      trigger="click"
+                      size="medium"
+                      placement="bottom"
+                    >
+                      <span class="el-dropdown-link">
+                        <i class="el-icon-arrow-down el-icon--right"></i>
+                      </span>
+                      <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item
+                          v-show="item.body.status !== 'top'"
+                          @click.native="articleSet(item, index, '+')"
+                          >置顶</el-dropdown-item
+                        >
+                        <el-dropdown-item
+                          v-show="item.body.status === 'top'"
+                          @click.native="articleSet(item, index, '-')"
+                          >取消置顶</el-dropdown-item
+                        >
+                        <el-dropdown-item>置底</el-dropdown-item>
+                        <el-dropdown-item
+                          @click.native="articleSet(item, index, 'delete')"
+                          >删除</el-dropdown-item
+                        >
+                        <el-dropdown-item
+                          @click.native="articleSet(item, index, 'collect')"
+                          >收藏</el-dropdown-item
+                        >
+                      </el-dropdown-menu>
+                    </el-dropdown>
+                  </div>
+                  <div class="talk-content-container">
+                    <div class="content">
+                      <div>{{ item.title }}</div>
+                      <br />
+                      <div v-html="item.body.body"></div>
                     </div>
                   </div>
-                </div>
-                <el-dropdown trigger="click" size="medium" placement="bottom">
-                  <span class="el-dropdown-link">
-                    <i class="el-icon-arrow-down el-icon--right"></i>
-                  </span>
-                  <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item v-show="item.body.status !== 'top'" @click.native="articleSet(item,index,'+')">置顶</el-dropdown-item>
-                    <el-dropdown-item v-show="item.body.status==='top'" @click.native="articleSet(item,index,'-')">取消置顶</el-dropdown-item>
-                    <el-dropdown-item>置底</el-dropdown-item>
-                    <el-dropdown-item @click.native="articleSet(item,index,'delete')">删除</el-dropdown-item>
-                  </el-dropdown-menu>
-                </el-dropdown>
-              </div>
-              <div class="talk-content-container">
-                <div class="content">
-                  <div>{{ item.title }}</div>
-                  <br />
-                  <div v-html="item.body.body"></div>
-                </div>
-              </div>
-              <div class="operation-icon-container">
-                <div class="operation-icon">
-                  <!-- <div title="点赞" class="like" @click="praise(item)">
+                  <div class="operation-icon-container">
+                    <div class="operation-icon">
+                      <!-- <div title="点赞" class="like" @click="praise(item)">
                     <Icon
                       name="praise"
                       :color="item.isPraised ? '#4fbdd4' : '#5D5D5D'"
                     />
                   </div> -->
-                  <!-- <div
+                      <!-- <div
                     title="评论"
                     class="comment"
                     @click="editComment(item, index)"
                   >
                     <Icon name="discuss" />
                   </div> -->
-                  <!-- <div title="收藏" class="subscribe">
+                      <!-- <div title="收藏" class="subscribe">
                     <Icon name="collect" />
                   </div> -->
-                </div>
-                <a
-                  class="steemLink"
-                  :href="
-                    'https://steemdb.io/tag/@' +
-                    item.author +
-                    '/' +
-                    item.permlink
-                  "
-                  target="blank"
-                  >View on Blockbrowser</a
-                >
-                <div class="details-container" @click="goDetail(item, index)">
-                  <div class="text">查看详情</div>
-                  <div class="icon">
-                    <Icon name="arrowR" />
+                    </div>
+                    <a
+                      class="steemLink"
+                      :href="
+                        'https://steemdb.io/tag/@' +
+                        item.author +
+                        '/' +
+                        item.permlink
+                      "
+                      target="blank"
+                      >View on Blockbrowser</a
+                    >
+                    <div
+                      class="details-container"
+                      @click="goDetail(item, index)"
+                    >
+                      <div class="text">查看详情</div>
+                      <div class="icon">
+                        <Icon name="arrowR" />
+                      </div>
+                    </div>
                   </div>
+                  <!-- <div class="praisedPeople">{{ }}觉得很赞</div> -->
+                  <el-input
+                    v-show="item.isEditReply"
+                    placeholder="请输入内容"
+                    v-model="item.reply"
+                    class="reply_input"
+                  >
+                    <el-button slot="append" @click="submitReply(item, index)"
+                      >回复</el-button
+                    >
+                  </el-input>
+                  <div class="comment-item-container"></div>
                 </div>
               </div>
-              <!-- <div class="praisedPeople">{{ }}觉得很赞</div> -->
-              <el-input
-                v-show="item.isEditReply"
-                placeholder="请输入内容"
-                v-model="item.reply"
-                class="reply_input"
+              <div
+                v-if="item.isShowDetailDialog"
+                id="topic-detail-container"
+                class="topic-detail"
               >
-                <el-button slot="append" @click="submitReply(item, index)"
-                  >回复</el-button
-                >
-              </el-input>
-              <div class="comment-item-container">
-              </div>
-            </div>
-          </div>
-          <div
-            v-if="item.isShowDetailDialog"
-            id="topic-detail-container"
-            class="topic-detail"
-          >
-            <div class="content">
-              <div class="topic-detail-panel">
-                <div class="header-container">
-                  <div class="author">
-                    <img class="avatar" :src="currentDetail.body.avatar" />
-                    <div class="info">
-                      <div class="role owner">
-                        {{ currentDetail.body.author }}
+                <div class="content">
+                  <div class="topic-detail-panel">
+                    <div class="header-container">
+                      <div class="author">
+                        <img class="avatar" :src="currentDetail.body.avatar" />
+                        <div class="info">
+                          <div class="role owner">
+                            {{ currentDetail.body.author }}
+                          </div>
+                          <div class="date">
+                            {{ currentDetail.created.replace('T', '  ') }}
+                          </div>
+                        </div>
                       </div>
-                      <div class="date">
-                        {{ currentDetail.created.replace('T', '  ') }}
+                      <div @click="closeDetail(item)" class="close-icon">
+                        <Icon name="cancel" />
                       </div>
                     </div>
-                  </div>
-                  <div @click="closeDetail(item)" class="close-icon">
-                    <Icon name="cancel" />
-                  </div>
-                </div>
 
-                <div class="">
-                  <div class="talk-content-container">
-                    <div class="content">
-                      <div>{{ currentDetail.title }}</div>
-                      <br />
-                      <div v-html="currentDetail.body.body"></div>
+                    <div class="">
+                      <div class="talk-content-container">
+                        <div class="content">
+                          <div>{{ currentDetail.title }}</div>
+                          <br />
+                          <div v-html="currentDetail.body.body"></div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
 
-                <div class="operation-icon">
-                  <div title="点赞" class="like" @click="praise(currentDetail)">
-                    <Icon name="praise" :color="currentDetail.isPraised ? '#4fbdd4' : '#5D5D5D'" />
-                    <span class="vote-num">{{currentDetail.voteNum || ''}}</span>
-                  </div>
-                  <div
-                    title="评论"
-                    class="comment"
-                    @click="editComment(item, index)"
-                  >
-                    <Icon name="discuss" />
-                  </div>
-                  <div title="收藏" class="subscribe">
-                    <Icon name="collect" />
-                  </div>
-                </div>
-                <el-input
-                  v-show="item.isEditReply"
-                  placeholder="请输入内容"
-                  v-model="item.reply"
-                  class="reply_input"
-                >
-                  <el-button slot="append" @click="submitReply(item, index)"
-                    >回复</el-button
-                  >
-                </el-input>
-                <div
-                  class="comment-box"
-                  style="margin-bottom: 10px; padding-top: 8px"
-                  v-for="(v, i) in currentDetail.commentList"
-                  :key="i"
-                >
-                  <div class="comment-item-container">
-                    <div class="text">
-                      <span class="comment group-owner-light">{{
-                        v.body.author
-                      }}</span
-                      ><span>：</span
-                      ><span parsetype="pure" class="text">{{
-                        v.body.body
-                      }}</span>
+                    <div class="operation-icon">
+                      <div
+                        title="点赞"
+                        class="like"
+                        @click="praise(currentDetail)"
+                      >
+                        <Icon
+                          name="praise"
+                          :color="
+                            currentDetail.isPraised ? '#4fbdd4' : '#5D5D5D'
+                          "
+                        />
+                        <span class="vote-num">{{
+                          currentDetail.voteNum || ''
+                        }}</span>
+                      </div>
+                      <div
+                        title="评论"
+                        class="comment"
+                        @click="editComment(item, index)"
+                      >
+                        <Icon name="discuss" />
+                      </div>
+                      <div
+                        title="收藏"
+                        class="subscribe"
+                        @click="articleSet(item, index, 'collect')"
+                      >
+                        <Icon
+                          name="collect"
+                          :color="
+                            currentDetail.isFavorite ? '#4fbdd4' : '#5D5D5D'
+                          "
+                        />
+                      </div>
                     </div>
-                    <div class="operations">
-                      <div class="time">{{ v.created.replace('T', '  ') }}</div>
-                      <!-- <div class="operation"><span class="space">删除</span></div> -->
+                    <el-input
+                      v-show="item.isEditReply"
+                      placeholder="请输入内容"
+                      v-model="item.reply"
+                      class="reply_input"
+                    >
+                      <el-button slot="append" @click="submitReply(item, index)"
+                        >回复</el-button
+                      >
+                    </el-input>
+                    <div
+                      class="comment-box"
+                      style="margin-bottom: 10px; padding-top: 8px"
+                      v-for="(v, i) in currentDetail.commentList"
+                      :key="i"
+                    >
+                      <div class="comment-item-container">
+                        <div class="text">
+                          <span class="comment group-owner-light">{{
+                            v.body.author
+                          }}</span
+                          ><span>：</span
+                          ><span parsetype="pure" class="text">{{
+                            v.body.body
+                          }}</span>
+                        </div>
+                        <div class="operations">
+                          <div class="time">
+                            {{ v.created.replace('T', '  ') }}
+                          </div>
+                          <!-- <div class="operation"><span class="space">删除</span></div> -->
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-                <!-- <div class="comment-box" style="margin-bottom: 10px; padding-top: 8px;" v-for="(v,i) in item.commentList" :key="i">
+                    <!-- <div class="comment-box" style="margin-bottom: 10px; padding-top: 8px;" v-for="(v,i) in item.commentList" :key="i">
                   <Comment :asideChildren="v.children"></Comment>
                 </div> -->
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div v-if="showEditor" class="create-topic-container">
-          <div class="create-topic-panel">
-            <div class="head">
-              <div class="title">
-                <input
-                  type="text"
-                  v-model="titleText"
-                  class="titie_text"
-                  placeholder="请输入标题"
-                />
-              </div>
-              <div @click="closeEditor" class="close-icon">
-                <Icon name="cancel" />
-              </div>
-            </div>
-            <div>
-              <div class="horizontal-line"></div>
-              <div class="content-container">
-                <img class="avatar" :src="userAvatar" />
-                <div
-                  style="
-                    width: calc(100% - 40px);
-                    min-height: 110px;
-                    margin: 5px 0px;
-                    max-height: 497px;
-                  "
-                >
-                  <quill-editor
-                    v-model="content"
-                    ref="myQuillEditor"
-                    :options="editorOption"
-                    spellcheck="false"
-                    class="quill-editor"
-                    @ready="onEditorReady()"
-                  >
-                  </quill-editor>
+          <el-empty v-else description="暂无数据"></el-empty>
+
+          <div v-if="showEditor" class="create-topic-container">
+            <div class="create-topic-panel">
+              <div class="head">
+                <div class="title">
+                  <input
+                    type="text"
+                    v-model="titleText"
+                    class="titie_text"
+                    placeholder="请输入标题"
+                  />
+                </div>
+                <div @click="closeEditor" class="close-icon">
+                  <Icon name="cancel" />
                 </div>
               </div>
-              <div class="horizontal-line"></div>
-            </div>
-            <div class="upload-container">
-              <div class="operation-icon">
-                <div class="left" v-if="fileList.length !== 0">
+              <div>
+                <div class="horizontal-line"></div>
+                <div class="content-container">
+                  <img class="avatar" :src="userAvatar" />
                   <div
-                    ref="imgList"
-                    class="picture-list"
-                    v-for="(item, i) in fileList"
-                    :key="i"
-                    @mouseenter="showIcon(item)"
-                    @mouseleave="hideIcon(item)"
+                    style="
+                      width: calc(100% - 40px);
+                      min-height: 110px;
+                      margin: 5px 0px;
+                      max-height: 497px;
+                    "
                   >
-                    <img class="picList" :src="item.url" />
-                    <i
-                      v-show="item.isShow"
-                      class="delete-pic el-icon-close"
-                      @click="deleteEditorImage(item, i)"
+                    <quill-editor
+                      v-model="content"
+                      ref="myQuillEditor"
+                      :options="editorOption"
+                      spellcheck="false"
+                      class="quill-editor"
+                      @ready="onEditorReady()"
                     >
-                    </i>
+                    </quill-editor>
                   </div>
-                  <!-- <button  class="emoji"></button> -->
-                  <!-- <div  class="pic"></div>
+                </div>
+                <div class="horizontal-line"></div>
+              </div>
+              <div class="upload-container">
+                <div class="operation-icon">
+                  <div class="left" v-if="fileList.length !== 0">
+                    <div
+                      ref="imgList"
+                      class="picture-list"
+                      v-for="(item, i) in fileList"
+                      :key="i"
+                      @mouseenter="showIcon(item)"
+                      @mouseleave="hideIcon(item)"
+                    >
+                      <img class="picList" :src="item.url" />
+                      <i
+                        v-show="item.isShow"
+                        class="delete-pic el-icon-close"
+                        @click="deleteEditorImage(item, i)"
+                      >
+                      </i>
+                    </div>
+                    <!-- <button  class="emoji"></button> -->
+                    <!-- <div  class="pic"></div>
                 <div  class="file"></div>
                 <div  class="video" hidden=""></div><button  class="tag"></button>
                 <div  class="scheduled"></div> -->
-                </div>
-                <div class="right">
-                  <div class="text-range">(4～10000)</div>
-                  <div @click="submit" class="submit-btn">发布</div>
+                  </div>
+                  <div class="right">
+                    <div class="text-range">(4～10000)</div>
+                    <div @click="submit" class="submit-btn">发布</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </el-col>
-      <el-col :span="6">
-        <div class="recommend_container">
-          <div
-            class="wbpro-side woo-panel-main woo-panel-top woo-panel-right woo-panel-bottom woo-panel-left Card_wrap_2ibWe Card_bottomGap_2Xjqi"
-          >
-            <div>
-              <div class="wbpro-side-tit woo-box-flex woo-box-alignCenter">
-                <div
-                  class="f14 cla woo-box-item-flex"
-                  style="align-self: center"
-                >
-                  热门圈子
+        </el-col>
+        <el-col :span="6">
+          <div class="recommend_container">
+            <div
+              class="wbpro-side woo-panel-main woo-panel-top woo-panel-right woo-panel-bottom woo-panel-left Card_wrap_2ibWe Card_bottomGap_2Xjqi"
+            >
+              <div>
+                <div class="wbpro-side-tit woo-box-flex woo-box-alignCenter">
+                  <div
+                    class="f14 cla woo-box-item-flex"
+                    style="align-self: center"
+                  >
+                    热门圈子
+                  </div>
+                  <div
+                    class="woo-box-flex woo-box-alignCenter"
+                    @click="getHotColumns"
+                  >
+                    <i class="el-icon-refresh"></i
+                    ><span class="f12 clb">点击刷新</span>
+                  </div>
                 </div>
-                <div class="woo-box-flex woo-box-alignCenter" @click="getHotColumns">
-                  <i class="el-icon-refresh"></i
-                  ><span class="f12 clb">点击刷新</span>
-                </div>
-              </div>
-              <div class="woo-divider-main woo-divider-x"></div>
-              <div
-                class="wbpro-side-card7"
-                v-for="(hot, hotIndex) in hotColumns"
-                :key="hotIndex"
-              >
-                <div class="wbpro-side-panel">
-                  <div class="con woo-box-flex woo-box-alignCenter">
-                    <div class="rank top f16">{{ Number(hotIndex) + 1 }}</div>
-                    <div title="" class="wbpro-textcut f14 cla" @click="handleSelect(hot)">
-                      {{ hot.value }}
-                    </div>
-                    <div class="icon">
-                      <span
-                        class="wbpro-icon-search-tp1"
-                        style="background: rgb(255, 148, 6);cursor:pointer;"
-                        >热</span
-                      >
+                <div class="woo-divider-main woo-divider-x"></div>
+                <div v-if="hotColumns.length > 0">
+                  <div
+                    class="wbpro-side-card7"
+                    v-for="(hot, hotIndex) in hotColumns"
+                    :key="hotIndex"
+                  >
+                    <div class="wbpro-side-panel">
+                      <div class="con woo-box-flex woo-box-alignCenter">
+                        <div class="rank top f16">
+                          {{ Number(hotIndex) + 1 }}
+                        </div>
+                        <div
+                          title=""
+                          class="wbpro-textcut f14 cla"
+                          @click="handleSelect(hot)"
+                        >
+                          {{ hot.value }}
+                        </div>
+                        <div class="icon">
+                          <span
+                            v-if="hot.isHot"
+                            class="wbpro-icon-search-tp1"
+                            style="
+                              background: rgb(255, 148, 6);
+                              cursor: pointer;
+                            "
+                            >热</span
+                          >
+                        </div>
+                      </div>
+                      <div class="woo-divider-main woo-divider-x"></div>
                     </div>
                   </div>
-                  <div class="woo-divider-main woo-divider-x"></div>
                 </div>
+
+                <el-empty v-else description="暂无数据"></el-empty>
+                <div class="woo-divider-main woo-divider-x"></div>
               </div>
-              <div class="woo-divider-main woo-divider-x"></div>
             </div>
           </div>
-        </div>
+        </el-col>
       </el-col>
     </el-row>
     <el-dialog
@@ -442,15 +523,22 @@
       >
       </el-input>
       <el-upload
-      class="avatar-uploader"
-      :show-file-list="false"
-      :action="actionUrl"
-      :http-request="onUploadSubImgHandler"
+        class="avatar-uploader"
+        :show-file-list="false"
+        :action="actionUrl"
+        :http-request="onUploadSubImgHandler"
       >
-      <img v-if="subscriptionsInfo.image" :src="subscriptionsInfo.image" class="avatar-img">
-      <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-    </el-upload>
-      <span slot="footer" class="dialog-footer">
+        <img
+          v-if="subscriptionsInfo.image"
+          :src="subscriptionsInfo.image"
+          class="avatar-img"
+        />
+        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+      </el-upload>
+      <span slot="footer" class="dialog-footer create-footer">
+        <div class="rule">
+          专栏规则： 第一个专栏免费 第二个专栏20busd 第三个及以上80busd
+        </div>
         <el-button @click="handleSubscriptionsClose">取 消</el-button>
         <el-button
           class="sub_confirm"
@@ -486,10 +574,12 @@ import {
   vote,
   getVote,
   hotColumn,
-  goTop
+  goTop,
+  collect,
+  getfavorites
 } from '@/api/special/special'
 import MD5 from 'MD5'
-import { getUser,getAvatars } from '@/api/user/user'
+import { getUser, getAvatars } from '@/api/user/user'
 import { getToken } from '@/utils/auth'
 // import _ecc from '@/utils/ecc/index'
 import axios from 'axios'
@@ -525,7 +615,6 @@ export default {
         }
       ],
       searchResult: [],
-      searchValue: '',
       articleList: [],
       content: '',
       editorOption: {
@@ -625,10 +714,14 @@ export default {
       timeout: '',
       hasColumn: true,
       voteLists: [],
-      avatarLists:[]
+      avatarLists: []
     }
   },
   computed: {
+    currentPath() {
+      console.log(this.$route)
+      return this.$route.path
+    },
     userAvatar() {
       return JSON.parse(localStorage.getItem('quhu-userInfo')).avatar
     },
@@ -645,50 +738,63 @@ export default {
   },
   async mounted() {},
   methods: {
-   async articleSet(v,i,type) {
-    const userInfo = this.userInfo
+    async articleSet(v, i, type) {
+      const userInfo = this.userInfo
       const token = getToken()
       const loginType = localStorage.getItem('login-type')
-        const res = await goTop({
-          id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
-          steem_id: userInfo.steem_id,
-          token,
-          permlink:[v.author, v.permlink],
-          subscriptions_name: this.selectedColumn,
-          type
-        })
 
-      if(res.success === 'ok') {
-        switch (type) {
-          case '+':
+      switch (type) {
+        case '+':
+          const res = await goTop({
+            id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
+            steem_id: userInfo.steem_id,
+            token,
+            permlink: [v.author, v.permlink],
+            subscriptions_name: this.selectedColumn,
+            type
+          })
+          if (res.success === 'ok') {
             const obj = this.articleList[i]
-            this.articleList.splice(i,1)
+            this.articleList.splice(i, 1)
             this.articleList.unshift(obj)
             this.$message.success('置顶成功')
-            break;
-            case '-':
-            this.getArticlesByColumn(
+          }
+          break
+        case '-':
+          this.getArticlesByColumn(
             this.selectedColumn || this.subscriptionsList.my[0] || ''
           )
-            break;
-            case 'delete':
-            this.articleList.splice(i,1)
-            this.$message.success('删除成功')
-            break;
-          default:
-            break;
-        }
-        // this.getArticlesByColumn(
-        //     this.selectedColumn || this.subscriptionsList.my[0] || ''
-        //   )
-      }  
+          break
+        case 'delete':
+          this.articleList.splice(i, 1)
+          this.$message.success('删除成功')
+          break
+        case 'collect':
+          const res1 = await collect({
+            id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
+            token: token,
+            permlink: [v.author, v.permlink]
+          })
+          if (res1.success === 'ok') {
+            this.$message.success('收藏成功')
+          }
+          break
+        default:
+          break
+      }
+      // this.getArticlesByColumn(
+      //     this.selectedColumn || this.subscriptionsList.my[0] || ''
+      //   )
     },
     async getHotColumns() {
       const res = await hotColumn({})
       if (res.success === 'ok') {
         const arr = []
-        res.data.forEach((item,i)=>{
-          arr.push({value:item})
+        res.data.forEach((item, i) => {
+          arr.push({
+            value: item,
+            isHot: Math.floor(Math.random() * res.data.length) === i
+          })
         })
         this.hotColumns = arr
       }
@@ -698,26 +804,25 @@ export default {
       const userInfo = this.userInfo
       const token = getToken()
       const loginType = localStorage.getItem('login-type')
-        const res = await vote({
-          id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
-          steem_id: userInfo.steem_id,
-          token,
-          permlink: v.permlink
-        })
-        if (res.success === 'ok') {
-          if(res.type==='+') {
-            this.$message.success('点赞成功')
+      const res = await vote({
+        id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
+        steem_id: userInfo.steem_id,
+        token,
+        permlink: [v.author, v.permlink]
+      })
+      if (res.success === 'ok') {
+        if (res.type === '+') {
+          this.$message.success('点赞成功')
           v.isPraised = true
-          v.voteNum +=1
-          }else if(res.type==='-') {
-            this.$message.success('取消点赞成功')
-            v.isPraised = false
-            v.voteNum -=1
-          }
-
-        } else {
-          this.$message.success('网络问题！请重试')
+          v.voteNum += 1
+        } else if (res.type === '-') {
+          this.$message.success('取消点赞成功')
+          v.isPraised = false
+          v.voteNum -= 1
         }
+      } else {
+        this.$message.success('网络问题！请重试')
+      }
     },
     showIcon(v) {
       v.isShow = true
@@ -750,7 +855,7 @@ export default {
           fn(response)
         })
     },
-    async loadHandler(e,cb) {
+    async loadHandler(e, cb) {
       let dataUrl = ''
       if (e.file) {
         console.log('** image being loaded.. ----->', e.file)
@@ -788,9 +893,13 @@ export default {
                 if (res.status === 200) {
                   imageUrl = res.data.url
                 }
-                cb({ url: imageUrl, isShow: false, width: width, height: height })
+                cb({
+                  url: imageUrl,
+                  isShow: false,
+                  width: width,
+                  height: height
+                })
 
-                
                 // console.log(this.fileList)
                 // console.log(this.fileList)
                 // 获取光标所在位置
@@ -808,15 +917,15 @@ export default {
       }
     },
     async onUploadSubImgHandler(e) {
-      this.loadHandler(e,(v)=>{
+      this.loadHandler(e, (v) => {
         this.subscriptionsInfo.image = v.url
-      }) 
+      })
     },
     async onUploadHandler(e) {
       // console.log(e)
-      this.loadHandler(e,(v)=>{
+      this.loadHandler(e, (v) => {
         this.fileList = this.fileList.concat([v])
-      })  
+      })
     },
     onEditorReady() {
       // document.querySelector('.ql-formats .ql-uploadImg').innerText = '图'
@@ -844,20 +953,7 @@ export default {
       }
       this.removePopVisible = false
     },
-    async querySearch(queryString, cb) {
-      const res = await searchColumn({
-        subscriptions_name: this.searchValue.trim()
-      })
 
-      if (res.success === 'ok') {
-        this.searchResult = res.data.map((v, i) => {
-          v = { value: v }
-          return v
-        })
-        // console.log(this.searchResult)
-        cb(this.searchResult)
-      }
-    },
     handleSelect(item) {
       // const arr = this.subscriptionsList.my.concat(this.subscriptionsList.join)
       // console.log(arr)
@@ -883,24 +979,34 @@ export default {
         if (currentInfo.data) {
           this.subscriptionsList = currentInfo.data.buy_article || {}
         }
-        this.getArticlesByColumn(sessionStorage.getItem('selectedColumn') || this.subscriptionsList.my[0] || '',sessionStorage.getItem('selectedMenu').split('-')[1] || 0)
+        this.getArticlesByColumn(
+          sessionStorage.getItem('selectedColumn') ||
+            this.subscriptionsList.my[0] ||
+            '',
+          (sessionStorage.getItem('selectedMenu') &&
+            sessionStorage.getItem('selectedMenu').split('-')[1]) ||
+            0
+        )
       }
     },
-    async getArticlesByColumn(v,i) {
+    async getArticlesByColumn(v, i) {
+      if (this.$route.path !== '/home') {
+        this.$router.push('/home')
+      }
       const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
       let selectedMenu = '1-0'
       this.selectedColumn = v
-      if(this.subscriptionsList.my.indexOf(v)!==-1){
-        selectedMenu= '1-'+i
-      }else {
-        if(this.subscriptionsList.join.indexOf(v)!==-1){
-        selectedMenu= '2-'+i
-      }
+      if (this.subscriptionsList.my.indexOf(v) !== -1) {
+        selectedMenu = '1-' + i
+      } else {
+        if (this.subscriptionsList.join.indexOf(v) !== -1) {
+          selectedMenu = '2-' + i
+        }
       }
 
-      sessionStorage.setItem('selectedColumn',v)
-      sessionStorage.setItem('selectedMenu',selectedMenu)
+      sessionStorage.setItem('selectedColumn', v)
+      sessionStorage.setItem('selectedMenu', selectedMenu)
       this.hasColumn =
         this.subscriptionsList.my.length !== 0 ||
         this.subscriptionsList.join.length !== 0
@@ -914,30 +1020,30 @@ export default {
 
         if (res.result) {
           let formatRes = res.result && res.result.concat()
-        // const otherInfoList = []
-        // const ids = []
-        let arr = [];
-        formatRes.forEach((element,index) => {
-          element.body = this.eval(element.body)
-          element.isEditReply = false
-          element.reply = ''
-          element.isShowDetailDialog = false
-          element.isPraised = false
-          console.log(element.body.status)
-          if(element.body.status === 'top') {
-            arr.push(element)
-            formatRes.splice(index,1)
-            index = index-1
-          }
-          if(element.body.status === 'delete'){
-            formatRes.splice(index,1)
-            index = index-1
-          }
-        })
-        formatRes = arr.concat(formatRes)
+          // const otherInfoList = []
+          // const ids = []
+          let arr = []
+          formatRes.forEach((element, index) => {
+            element.body = this.eval(element.body)
+            element.isEditReply = false
+            element.reply = ''
+            element.isShowDetailDialog = false
+            element.isPraised = false
+            element.isFavorite = false
+            console.log(element.body.status)
+            // if (element.body.status === 'top') {
+            //   arr.push(element)
+            //   formatRes.splice(index, 1)
+            //   index = index - 1
+            // }
+            // if (element.body.status === 'delete') {
+            //   formatRes.splice(index, 1)
+            //   index = index - 1
+            // }
+          })
+          formatRes = arr.concat(formatRes)
           this.articleList = formatRes
         }
-        
       }
     },
     createColumn() {
@@ -1068,15 +1174,20 @@ export default {
     async goDetail(val, index) {
       const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
+      const token = getToken()
       const res = await getArticleDetail({
         id: loginType === 'password' ? userInfo.user : userInfo.eth_account,
         jsonrpc: '2.0',
         method: 'bridge.get_discussion',
         params: { author: val.author, permlink: val.permlink }
       })
-      const votes = await getVote({permlink: val.permlink})
-      console.log(votes)
-      
+      const votes = await getVote({ permlink: val.permlink })
+      const favorites = await getfavorites({
+        id: loginType === 'password' ? userInfo.user : userInfo.eth_account,
+        token
+      })
+      console.log(val, votes, favorites)
+
       const obj = res.result[val.author + '/' + val.permlink]
       // const commentList = this.getReply(obj, res.result)
       const commentList = []
@@ -1092,11 +1203,10 @@ export default {
       }
       if (obj) {
         obj.body = this.eval(obj.body)
-        obj.body.avatar = ''
         let isPraised = false
         let voteNum = 0
-        const vote = votes.data.forEach((item,i)=>{
-          isPraised = item.list.indexOf(userInfo.steem_id)!==-1
+        const vote = votes.data.forEach((item, i) => {
+          isPraised = item.list.indexOf(userInfo.steem_id) !== -1
           voteNum = item.vote
         })
         obj.isPraised = isPraised
@@ -1129,40 +1239,47 @@ export default {
 </script>
 
 <style scoped lang="scss">
-  ::v-deep .el-dropdown {
+.create-footer {
+  position: relative;
+  .rule {
     position: absolute;
-    right: 20px;
-    top: 10px;
+    color: #c0c0c0;
   }
+}
+::v-deep .el-dropdown {
+  position: absolute;
+  right: 20px;
+  top: 10px;
+}
 
-   ::v-deep .avatar-uploader .el-upload {
-    border: 1px dashed #d9d9d9;
-    border-radius: 6px;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    margin-top: 10px;
-  }
-  .avatar-uploader .el-upload:hover {
-    border-color: #409EFF;
-  }
-  .avatar-uploader-icon {
-    font-size: 28px;
-    color: #8c939d;
-    width: 178px;
-    height: 178px;
-    line-height: 178px;
-    text-align: center;
-  }
-  .avatar-img {
-    width: 178px;
-    height: 178px;
-    display: block;
-    object-fit: cover;
-  }
-  .clb{
-    min-width: 50px;
-  }
+::v-deep .avatar-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  margin-top: 10px;
+}
+.avatar-uploader .el-upload:hover {
+  border-color: #409eff;
+}
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  line-height: 178px;
+  text-align: center;
+}
+.avatar-img {
+  width: 178px;
+  height: 178px;
+  display: block;
+  object-fit: cover;
+}
+.clb {
+  min-width: 50px;
+}
 .img-container {
   margin-left: 2px;
   margin-bottom: 2px;
@@ -1281,6 +1398,7 @@ export default {
   width: 80%;
   min-width: 200px;
   margin: 60px auto;
+  min-height: 300px;
 }
 .header-container {
   position: relative;
@@ -1298,11 +1416,11 @@ export default {
   display: flex;
   align-items: center;
   margin-bottom: 20px;
-  .like{
+  .like {
     display: flex;
     margin-right: 20px !important;
-    width:40px !important;
-    .vote-num{
+    width: 40px !important;
+    .vote-num {
       margin-left: 5px;
       color: #4fbdd4;
     }
@@ -1323,12 +1441,13 @@ export default {
   margin-top: 40px;
 }
 .mid_container {
- min-width: 300px;
- }
+  min-width: 300px;
+}
 .post-container {
   margin-bottom: 5px;
   background-color: #fff;
   border-radius: 4px;
+  padding-top: 20px;
 }
 .post-topic-head {
   display: flex;

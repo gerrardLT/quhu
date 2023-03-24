@@ -1,264 +1,157 @@
 <template>
   <div class="user_page">
     <div class="user_info">
-      <el-row type="flex" class="row-bg avatar_container">
-        <el-col :span="4" class="user_avatar">
-          <el-upload
-            :action="actionUrl"
-            ref="upload"
-            class="avatar-uploader"
-            :show-file-list="false"
-            :http-request="onUploadHandler"
+      <el-col :span="3" class="left_container">
+        <div class="nav_left">
+          <router-link
+            :to="item.url"
+            v-for="(item, i) in navList"
+            :key="i"
+            class="nav_item"
           >
-            <img :src="imageUrl" alt="" />
-          </el-upload>
-        </el-col>
-        <el-col class="nick_name" :span="8">
-          {{ userInfo.user_name === 'none' ? '' : userInfo.user_name }}
-        </el-col>
-      </el-row>
-      <el-row type="flex" class="user_history row-bg pointer">
-        <el-col :span="6">
-          <div @click="goDetail('history')">
-            <svg style="width: 20px; height: 20px">
-              <use xlink:href="#icon-foot" rel="external nofollow" />
+            <svg
+              :style="{
+                fill: '#087790',
+                width: '15px',
+                height: '15px',
+                marginRight: '5px'
+              }"
+            >
+              <use :xlink:href="'#icon-' + item.icon" rel="external nofollow" />
             </svg>
-            <span class="history_text">足迹</span>
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div @click="goDetail('interact')">
-            <svg style="width: 20px; height: 20px">
-              <use xlink:href="#icon-askAnswer" rel="external nofollow" />
-            </svg>
-            <span class="history_text">问答</span>
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div @click="goDetail('collect')">
-            <svg style="width: 20px; height: 20px">
-              <use xlink:href="#icon-collect" rel="external nofollow" />
-            </svg>
-            <span class="history_text">收藏</span>
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div @click="goDetail('mySpecial')">
-            <svg style="width: 20px; height: 20px">
-              <use xlink:href="#icon-special" rel="external nofollow" />
-            </svg>
-            <span class="history_text">专栏</span>
-          </div>
-        </el-col>
-      </el-row>
-    </div>
-    <div v-for="(item, index) in list" :key="index">
-      <Bar :info="item" />
-    </div>
-    <div class="line"></div>
-    <div v-for="item1 in list2" :key="item1.id">
-      <Bar :info="item1" />
+            <span :title="item.title"> {{ item.title }} </span>
+            <i class="el-icon-arrow-right nav_icon"></i>
+          </router-link>
+        </div>
+      </el-col>
+
+      <el-col :span="21" class="right_container">
+        <el-page-header v-if="!isMainPage" @back="goBack" class="back">
+        </el-page-header>
+        <router-view></router-view>
+      </el-col>
     </div>
   </div>
 </template>
 
 <script>
-import { mapState, mapMutations } from 'vuex'
-import Bar from '@/components/setting-bar/setting-bar.vue'
-import axios from 'axios'
-import { sha256 } from '@/utils/ecc/src/hash'
-import Signature from '@/utils/ecc/src/signature'
-import { actObj } from '@/utils/act'
-const defaultAvatar = require(`../../assets/defaultAvatarUrl.png`)
-import { changeAvatar } from '@/api/user/user'
-import { getToken } from '@/utils/auth'
 export default {
   name: 'My',
-  components: {
-    Bar
-  },
-  created() {
-    console.log(this.$route)
-    const avatar = JSON.parse(localStorage.getItem('quhu-userInfo')).avatar
-    this.imageUrl = this.judgeNone(avatar) ? defaultAvatar : avatar
-  },
+  async created() {},
   computed: {
-    userInfo() {
-      return JSON.parse(localStorage.getItem('quhu-userInfo')) || {}
+    isMainPage() {
+      return this.$route.path === '/introduce'
     }
   },
   data() {
     return {
-      actionUrl: '',
-      imageUrl: defaultAvatar,
-      list: [
+      navList: [
         {
           id: 1,
-          icon: 'yqm',
-          title: '活跃度',
-          url: '/activation',
-          showNumber: false
+          icon: 'ze-balance-o',
+          title: '我的钱包',
+          url: '/voucher'
         },
         {
           id: 2,
-          icon: 'yqm',
-          title: '钱包',
-          url: '/voucher',
-          showNumber: true
+          icon: 'ze-flower-o',
+          title: '活跃度',
+          url: '/activation'
         },
         {
           id: 3,
-          icon: 'yqm',
-          title: '邀请好友',
-          url: '/invite',
-          showNumber: true
-        }
-      ],
-      list2: [
+          icon: 'ze-setting-o',
+          title: '用户设置',
+          url: '/setting'
+        },
         {
           id: 4,
-          icon: 'change',
-          title: '回收站',
-          url: '/invite',
-          showNumber: false
+          icon: 'yqm',
+          title: '邀请好友',
+          url: '/invite'
         },
         {
           id: 5,
-          icon: 'kefu',
+          icon: 'semiDesign-semi-icons-mail',
           title: '帮助与客服',
-          url: '/invite',
-          showNumber: false
-        },
-        {
-          id: 6,
-          icon: 'set',
-          title: '设置',
-          url: '/setting',
-          showNumber: false
+          url: '/introduce'
         }
       ]
     }
   },
   methods: {
-    judgeNone(v) {
-      return v === 'none'
-    },
-    login() {},
-    goDetail(url) {
-      this.$router.push('/' + url)
-    },
-    uploadDispatch: function (url, fd, fn) {
-      axios
-        .post(url, fd, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        })
-        .then((response) => {
-          fn(response)
-        })
-    },
-    async onUploadHandler(e) {
-      // const isJPG = file.type === 'image/jpeg'
-      console.log(e)
-      const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
-      const loginType = localStorage.getItem('login-type')
-      const isLt2M = e.file.size / 1024 / 1024 < 2
-      if (!isLt2M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!')
-      }
-      if (isLt2M) {
-        let dataUrl = ''
-        const self = this
-        if (e.file) {
-          console.log('** image being loaded.. ----->', e.file)
-          let width = 0
-          let height = 0
-          const reader = new FileReader()
-          reader.addEventListener('load', (theFile) => {
-            let image = new Image()
-            image.src = theFile.target.result
-            image.onload = function () {
-              width = this.width
-              height = this.height
-            }
-
-            dataUrl = reader.result
-            const prefix = new Buffer('ImageSigningChallenge')
-            const commaIdx = dataUrl.indexOf(',')
-            const dataBs64 = dataUrl.substring(commaIdx + 1)
-            const data = new Buffer(dataBs64, 'base64')
-            const buf = Buffer.concat([prefix, data])
-            const bufSha = sha256(buf)
-            const sig = Signature.signBufferSha256(
-              bufSha,
-              actObj.postKey
-            ).toHex()
-            const formData = new FormData()
-            if (e.file) {
-              formData.append('file', e.file)
-              this.uploadDispatch(
-                'https://steemitimages.com/' +
-                  actObj.arr[Math.floor(Math.random() * actObj.arr.length)] +
-                  '/' +
-                  sig,
-                formData,
-                (res) => {
-                  if (res.status === 200) {
-                    self.imageUrl = res.data.url
-                    userInfo.avatar = self.imageUrl
-                    changeAvatar({
-                      id:
-                        loginType === 'eth'
-                          ? userInfo.eth_account
-                          : userInfo.user,
-                      token: getToken(),
-                      user_name: userInfo.user_name,
-                      steem_id: userInfo.steem_id,
-                      image: res.data.url
-                    }).then((res) => {
-                      console.log(res)
-                      if (res.success === 'ok') {
-                        localStorage.setItem(
-                          'quhu-userInfo',
-                          JSON.stringify(userInfo)
-                        )
-                      }
-                    })
-                  }
-                }
-              )
-            }
-          })
-          reader.readAsDataURL(e.file)
-        }
-      }
+    goBack() {
+      this.$router.go(-1)
     }
   }
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .pointer {
   cursor: pointer;
 }
 .user_page {
   width: 100%;
   height: 100vh;
-  background: #f2f8f8 !important;
+  background: #f5f5f5 !important;
 }
 
 .user_info {
-  height: 200px;
+  height: 100%;
   padding: 16px 20px 16px 28px;
 }
-.avatar_container {
-  padding: 20px 0;
+.left_container {
+  padding-top: 20px;
+}
+.nav_icon {
+  position: absolute;
+  right: 20px;
+  top: calc(50% - 8px);
+}
+::v-deep .nav_left {
+  max-height: 1200px;
+  height: 100vh;
+  border-radius: 8px;
+  border: 1px solid #bbbbbb;
+  min-width: 150px;
+  .nav_item {
+    display: block;
+    padding: 0 20px;
+    height: 60px;
+    line-height: 60px;
+    position: relative;
+    min-width: 120px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+}
+
+.right_container {
+  padding: 20px;
+  .back {
+    margin-bottom: 10px;
+  }
+  .right_top {
+    // width: 100%;
+    height: 200px;
+    background-color: #bfd2d2;
+    // opacity: 0.26;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 }
 .user_avatar {
+  margin-top: 30px;
+  margin-bottom: 5px;
   width: 60px;
   height: 60px;
   border-radius: 50%;
+  display: inline-block;
+  position: relative;
 }
 .user_avatar img {
   width: 60px;
@@ -267,24 +160,51 @@ export default {
   border-radius: 50%;
   object-fit: cover;
 }
-.nick_name {
-  padding-left: 20px;
-  display: inline-block;
-  line-height: 60px;
-  text-align: left;
+.box-card {
+  margin-top: 10px;
+  min-height: 400px;
 }
-.user_history {
-  height: 100px;
-  line-height: 100px;
+.camera {
+  width: 15px;
+  height: 15px;
+  background-color: #fff;
+  border-radius: 50%;
+  position: absolute;
+  right: -2px;
+  bottom: -5px;
   text-align: center;
+  line-height: 15px;
 }
-.user_history svg {
-  /* width: 30px;
-  height: 30px; */
-  vertical-align: middle;
+.nick_name {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  font-size: 14px;
+  font-weight: bold;
 }
-.user_history .history_text {
-  margin-left: 5px;
+.introduce {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  font-size: 12px;
+}
+.profile {
+  max-width: 150px;
+  cursor: pointer;
+}
+::v-deep .profile .el-input__inner {
+  max-width: 150px;
+  height: 20px;
+}
+.tags {
+  margin-top: 5px;
+}
+.tag {
+  margin-left: 20px;
+  border-radius: 20px;
+  width: 50px;
+  height: 24px;
+  text-align: center;
+  font-size: 14px;
+  line-height: 24px;
 }
 .hd-box {
   width: 100%;

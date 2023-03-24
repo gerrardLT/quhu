@@ -9,6 +9,7 @@
     "report": "vue-cli-service build --report --mode production"
   },
   "dependencies": {
+    "animate.css": "^4.1.1",
     "axios": "^0.21.1",
     "bigi": "^1.4.2",
     "browserify-aes": "^1.0.6",

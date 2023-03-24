@@ -47,3 +47,29 @@ export async function getAvatars (data) {
     data
   })
 }
+
+export async function bindEth (data) {
+  return request({
+    url: '/eth',
+    method: 'post',
+    data
+  })
+}
+
+// 基础资料修改
+export async function baseData (data) {
+  return request({
+    url: '/basedata',
+    method: 'post',
+    data
+  })
+}
+
+// 用户轨迹
+export async function trail (data) {
+  return request({
+    url: '/trail',
+    method: 'post',
+    data
+  })
+}

@@ -49,6 +49,7 @@ const store = new Vuex.Store({
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
       state.userInfo = Object.assign({}, userInfo, data)
       localStorage.setItem('quhu-userInfo', JSON.stringify(state.userInfo))
+      this.$message.success('修改成功！')
     },
     SET_USERINFO (state, data) {
       const userInfo = Object.assign(state.userInfo, data)
@@ -83,7 +84,7 @@ const store = new Vuex.Store({
       console.log(d)
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
       const loginType = localStorage.getItem('login-type')
-      const changeInfo = d.type === 'user' ? { user: d.user } : { user_name: d.user_name }
+      const changeInfo = { user: d.user,user_name: d.user_name }
       const params = loginType === 'eth' ? {
         id: userInfo.eth_account,
         token: getToken(),
@@ -101,8 +102,8 @@ const store = new Vuex.Store({
       }
     },
     loginOutFalse () {
-      localStorage.removeItem('quhu-userInfo')
-      localStorage.removeItem('login-type')
+      localStorage.clear()
+      sessionStorage.clear()
       removeToken('quhu-Token')
       router.push('/login')
     },

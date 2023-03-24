@@ -8,19 +8,22 @@
 -->
 e
 <template>
-  <div>
-    <div class="Frame_top">
-      <div class="Nav_wrap">
-        <div
-          class="woo-panel-main woo-panel-bottom Nav_panel"
-          style="border-color: #f9f9f9; background-color: #fff"
-        >
-          <div class="woo-box-flex woo-box-alignCenter Nav_main">
+  <div class="Frame_top">
+    <div class="Nav_wrap">
+      <div
+        class="woo-panel-main woo-panel-bottom Nav_panel"
+        style="border-color: #f9f9f9; background-color: #fff"
+      >
+        <div class="woo-box-flex woo-box-alignCenter Nav_main">
+          <el-col :span="4">
             <div class="woo-box-flex woo-box-alignCenter Nav_left">
               <a href="/" aria-label="quhu" class="Nav_logoWrap">
-                <img src="../../assets/quhu.png" alt="" />
+                <img src="../../assets/quhu-white.png" alt="" />
               </a>
             </div>
+          </el-col>
+
+          <el-col :span="14">
             <div class="Nav_mid">
               <div
                 class="tab"
@@ -52,11 +55,26 @@ e
                 ></div>
               </div>
             </div>
+          </el-col>
+          <el-col :span="6">
             <div class="Nav_right">
-              <div class="login_btn" v-if="!isLogin">登录</div>
-              <!-- <div class="register_btn">注册</div> -->
+              <el-autocomplete
+                class="searchBar"
+                clearable
+                v-model="searchValue"
+                :fetch-suggestions="querySearch"
+                placeholder="请输入圈子名称"
+                @select="handleSelect"
+                :popper-append-to-body="false"
+              >
+                <i class="el-icon-search el-input__icon" slot="suffix"> </i>
+                <template slot-scope="{ item }">
+                  <!-- <i class="el-icon-search search_arrow_icon"> </i> -->
+                  <div class="name">{{ item.value }}</div>
+                </template>
+              </el-autocomplete>
             </div>
-          </div>
+          </el-col>
         </div>
       </div>
     </div>
@@ -65,6 +83,7 @@ e
 
 <script>
 import { getToken } from '@/utils/auth'
+import { searchColumn } from '@/api/special/special'
 export default {
   name: 'Tabs',
   components: {},
@@ -89,6 +108,9 @@ export default {
         : sessionStorage.getItem('tabName')
     }
     this.toggleStyle(this.nameList.indexOf(path))
+    this.$EventBus.$on('changeTab', (v, index) => {
+      this.tabClick(v, index)
+    })
   },
   // beforeRouteEnter(to, from, next) {
   //   console.log(to, from)
@@ -98,32 +120,33 @@ export default {
       list: [
         {
           id: 0,
-          icon: 'home',
+          icon: 'if-ui-home',
           text: '首页',
           name: 'home'
         },
+        // {
+        //   id: 1,
+        //   icon: 'if-ui-edit',
+        //   text: '热门',
+        //   name: 'article'
+        // },
         {
           id: 1,
-          icon: 'article',
-          text: '热门',
-          name: 'article'
-        },
-        {
-          id: 2,
-          icon: 'auction',
+          icon: 'if-court-hammer',
           text: '竞拍',
           name: 'auction'
         },
         {
-          id: 3,
-          icon: 'my',
+          id: 2,
+          icon: 'if-ui-user',
           text: '我的',
-          name: 'my'
+          name: 'introduce'
         }
       ],
-      nameList: ['home', 'article', 'auction', 'my'],
+      nameList: ['home', 'auction', 'introduce'],
       activeName: 'home',
-      color: ''
+      color: '',
+      searchValue: ''
     }
   },
   computed: {
@@ -132,6 +155,30 @@ export default {
     }
   },
   methods: {
+    handleSelect(item) {
+      // const arr = this.subscriptionsList.my.concat(this.subscriptionsList.join)
+      // console.log(arr)
+      // this.getArticlesByColumn(item.value)
+      this.$router.push({
+        path: '/columnDetail',
+        query: {
+          subName: item.value
+        }
+      })
+    },
+    async querySearch(queryString, cb) {
+      const res = await searchColumn({
+        subscriptions_name: this.searchValue.trim()
+      })
+
+      if (res.success === 'ok') {
+        this.searchResult = res.data.map((v, i) => {
+          v = { value: v }
+          return v
+        })
+        cb(this.searchResult)
+      }
+    },
     tabClick(v, i) {
       this.activeName = v.name
       sessionStorage.setItem('tabName', v.name)
@@ -150,8 +197,8 @@ export default {
             this.$refs.tabRef[index].style.color = '#4fbdd4'
             this.$refs.svgRef[index].style.fill = '#4fbdd4'
           } else {
-            this.$refs.tabRef[index].style.color = ''
-            this.$refs.svgRef[index].style.fill = ''
+            this.$refs.tabRef[index].style.color = 'rgba(108,108,108,1)'
+            this.$refs.svgRef[index].style.fill = 'rgba(108,108,108,1)'
           }
         })
       }
@@ -161,11 +208,33 @@ export default {
 </script>
 
 <style scoped lang="scss">
+::v-deep .searchBar {
+  width: calc(100% - 20px);
+  .name {
+    height: 50px;
+    line-height: 50px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .search_arrow_icon {
+    line-height: 50px;
+    position: absolute;
+    right: 10px;
+  }
+}
+::v-deep .el-input__inner {
+  border-radius: 30px;
+}
+.Frame_top {
+  width: 100%;
+}
 .Nav_panel,
 .Nav_wrap {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
 }
+
 .Nav_wrap {
   position: fixed;
   z-index: 888;
@@ -179,6 +248,7 @@ export default {
   -webkit-box-shadow: none;
   box-shadow: none;
   display: flex;
+  margin: auto;
 }
 .Nav_panel {
   width: 100%;
@@ -217,8 +287,8 @@ export default {
   display: inline-block;
   cursor: pointer;
   img {
-    width: 120px;
-    height: 40px;
+    width: 180px;
+    height: 72px;
   }
 }
 .Nav_logo {
@@ -226,12 +296,13 @@ export default {
   height: 38px;
 }
 .Nav_mid {
-  width: 750px;
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 998;
   height: 100%;
+  min-width: 500px;
 }
 .svg_container {
   margin-top: 10px;
@@ -250,9 +321,8 @@ export default {
   width: 100%;
 }
 .Nav_right {
-  width: auto;
-  position: absolute;
-  right: 20px;
+  width: 100%;
+  padding-left: 20px;
   .login_btn {
     width: 60px;
     height: 30px;

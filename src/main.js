@@ -31,7 +31,7 @@ import * as Quill from 'quill'
 import ImageResize from 'quill-image-resize-module'
 import preview from 'vue-photo-preview'
 import 'vue-photo-preview/dist/skin.css'
-
+import 'animate.css';
 
 // 实现quill-editor编辑器拖拽上传图片
 Vue.use(VueQuillEditor)
@@ -50,6 +50,8 @@ Vue.prototype.$http = axios
 Vue.prototype.$store = store
 
 Vue.config.productionTip = false
+
+Vue.prototype.$EventBus = new Vue();
 
 Vue.filter('dateFormat', function (originVal) {
   const dt = new Date(originVal)

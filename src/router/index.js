@@ -14,16 +14,16 @@ import My from '../views/my/My.vue'
 import Article from '../views/article/Article.vue'
 import Auction from '../views/auction/Auction.vue'
 import ColumnDetail from '../views/home/ColumnDetail.vue'
+import Write from '../views/home/Write.vue'
 import Activation from '../views/my/Activation.vue'
 import Setting from '../views/my/Setting.vue'
 import Voucher from '../views/my/Voucher.vue'
 import Interact from '../views/my/Interact.vue'
-import History from '../views/my/History.vue'
 import Collect from '../views/my/Collect.vue'
 import About from '../views/my/About.vue'
 import Invite from '../views/my/Invite.vue'
-import ChangePwd from '../views/my/ChangePwd.vue'
 import MySpecial from '../views/my/MySpecial.vue'
+import Introduce from '../views/my/Introduce.vue'
 import { getToken } from '@/utils/auth'
 
 Vue.use(VueRouter)
@@ -40,7 +40,11 @@ const routes = [
   {
     path: '/home',
     component: Home,
-    meta: { isTabPage: true }
+    meta: { isTabPage: true },
+    children: [ 
+      {name: 'write', path: '/write', component: Write,
+      meta: { isTabPage: true }}
+    ]
   },
   {
     path: '/article',
@@ -53,46 +57,63 @@ const routes = [
     meta: { isTabPage: true }
   },
   {
+    name:'my',
     path: '/my',
     component: My,
-    meta: { isTabPage: true }
+    meta: { isTabPage: true },
+    children: [ 
+      {name: 'activation', path: '/activation', component: Activation,
+      meta: { isTabPage: true }}, 
+      {name: 'setting', path: '/setting', component: Setting,
+      meta: { isTabPage: true }},
+      {name: 'voucher', path: '/voucher', component: Voucher,
+      meta: { isTabPage: true }},
+      {name: 'invite', path: '/invite', component: Invite,
+      meta: { isTabPage: true }},
+      {name: 'interact', path: '/interact', component: Interact,
+      meta: { isTabPage: true }},
+      {name: 'about', path: '/about', component: About,
+      meta: { isTabPage: true }},
+      {name: 'introduce', path: '/introduce', component: Introduce,
+      meta: { isTabPage: true }}
+    ]
   },
-  {
-    path: '/activation',
-    component: Activation
-  },
-  {
-    path: '/setting',
-    component: Setting
-  },
-  {
-    path: '/voucher',
-    component: Voucher
-  },
-  {
-    path: '/invite',
-    component: Invite
-  },
-  {
-    path: '/interact',
-    component: Interact
-  },
-  {
-    path: '/history',
-    component: History
-  },
-  {
-    path: '/collect',
-    component: Collect
-  },
-  {
-    path: '/about',
-    component: About
-  },
-  {
-    path: '/changePwd',
-    component: ChangePwd
-  },
+  // {
+  //   path: '/activation',
+  //   component: Activation
+  // },
+  // {
+  //   path: '/setting',
+  //   component: Setting
+  // },
+  // {
+  //   path: '/voucher',
+  //   component: Voucher
+  // },
+  // {
+  //   path: '/invite',
+  //   component: Invite
+  // },
+  // {
+  //   path: '/interact',
+  //   component: Interact
+  // },
+  // {
+  //   path: '/history',
+  //   component: History
+  // },
+  // {
+  //   path: '/collect',
+  //   component: Collect
+  // },
+  // {
+  //   path: '/about',
+  //   component: About
+  // },
+  // {
+  //   path: '/changePwd',
+  //   component: ChangePwd
+  // },
   {
     path: '/MySpecial',
     component: MySpecial
@@ -113,7 +134,7 @@ router.beforeEach((to, from, next) => {
   // from 代表从哪个路径跳转而来
   // next 是一个函数， 表示放行   ①next()放行   ②next('/login')强制跳转
   if (to.path === '/login') return next() // 访问登录页，直接放行
-  if (to.path === '/login' && from.path === '/changePwd') {
+  if (to.path === '/login' && from.path === '/setting') {
     Vue.prototype.$isTabPage = false
   }
   // 获取token

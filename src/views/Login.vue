@@ -1,5 +1,10 @@
 <template>
   <div class="login_container">
+    <img
+      class="logo_container animate__animated animate__backInRight animate__slow"
+      src="../assets/quhu-transparant.png"
+      alt=""
+    />
     <div class="login_box">
       <!-- 登录表单区域 -->
       <el-form
@@ -29,18 +34,23 @@
               clearable
             ></el-input>
           </el-form-item>
-          <div class="login_area">
-            <div class="wallet_login" @click="walletLogin">钱包登录</div>
-          </div>
-          <div class="register_btn" @click="toggle">
-            {{ userType === 'login' ? '注册账号' : '登  录' }}
-          </div>
+          <el-form-item prop="inviteCode" class="invite">
+            <el-input v-if="invitedId" v-model="invitedId" disabled>
+              <template slot="prepend">邀请码：</template>
+            </el-input>
+          </el-form-item>
         </div>
         <!-- 按钮 -->
         <el-form-item class="btns">
           <el-button class="btn" type="primary" @click="passwordLogin">{{
-            userType === 'login' ? '登 录' : '注册账号'
+            userType === 'login' ? '登 录' : '注 册'
           }}</el-button>
+          <div class="login_area">
+            <div class="wallet_login" @click="walletLogin">钱包登录</div>
+          </div>
+          <div class="register_btn" @click="toggle">
+            {{ userType === 'login' ? '注册账号' : '账号登录' }}
+          </div>
         </el-form-item>
       </el-form>
     </div>
@@ -55,6 +65,7 @@ import { setToken } from '@/utils/auth'
 export default {
   mounted() {
     this.invitedId = this.$route.query.invitedId
+    this.userType = 'register'
   },
   data() {
     return {
@@ -205,7 +216,7 @@ export default {
           this.$message.error('请输入2到16位字符的汉字，字母，数字，下划线')
         } else if (!pwdReg.test(password)) {
           this.$message.error(
-            '密码应为字母，数字，特殊符号(~!@#$%^&*()_.)，两种及以上组合，8-16位字符串，如：xyl37@baa'
+            '密码应为字母，数字，特殊符号(~!@#$%^&*()_.)，两种及以上组合，8-16位字符串，如：xxxxx@abc'
           )
         } else {
           if (this.userType === 'login') {
@@ -258,7 +269,7 @@ export default {
 
 <style scoped lang="scss">
 .login_container {
-  background-image: url('../assets/bg.jpg');
+  background-image: url('../assets/fengwo.jpg');
   // background-image: url('../assets/quhu-bglogo.jpg');
   background-position: center;
   background-size: cover;
@@ -266,8 +277,16 @@ export default {
   height: 100%;
   // background-color: #101010;
   color: #fff;
+  position: relative;
 }
-
+.logo_container {
+  width: 400px;
+  height: 200px;
+  position: absolute;
+  right: 380px;
+  top: 15%;
+  box-shadow: #c0c0c0;
+}
 .login_box {
   position: relative;
   // color: #c0c0c0;
@@ -278,9 +297,9 @@ export default {
   // background-color: #fff;
   border-radius: 3px;
   position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  right: 300px;
+  bottom: 20%;
+  // transform: translate(-50%, -50%);
 }
 
 .avatar_box {
@@ -304,22 +323,6 @@ img {
   /* background-color: #eee; */
 }
 
-.login_area {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  position: absolute;
-  right: 10px;
-  // top: 10px;
-}
-
-.login_area .wallet_login {
-  display: inline-block;
-  cursor: pointer;
-}
-.login_area .wallet_login:hover {
-  color: $mainColor;
-}
 .login_form {
   position: absolute;
   bottom: 0;
@@ -327,10 +330,19 @@ img {
   padding: 10px 20px;
   box-sizing: border-box;
 }
-.btns {
+.invite {
   display: flex;
-  justify-content: space-between;
-  margin-top: 40px;
+}
+.btns {
+  position: relative;
+  max-width: 400px;
+}
+::v-deep .el-input-group__prepend {
+  position: absolute;
+  background-color: #525357;
+  left: 20px;
+  top: 50%;
+  transform: translate(0, -50%);
 }
 ::v-deep .el-form-item {
   margin-top: 50px;
@@ -339,9 +351,6 @@ img {
   font-size: 16px;
 }
 ::v-deep .el-input--prefix .el-input__inner {
-  padding-left: 50px;
-  height: 50px;
-  border-radius: 30px;
 }
 ::v-deep .el-input__prefix {
   left: 15px;
@@ -355,13 +364,31 @@ img {
   font-size: 16px;
 }
 ::v-deep .el-input__inner {
+  padding-left: 50px;
+  height: 50px;
+  width: 400px;
+  border-radius: 30px;
   background-color: #525357;
   border: 1px solid #525357;
   color: #fff;
 }
+::v-deep .el-input.is-disabled .el-input__inner {
+  background-color: #525357;
+  padding-left: 80px;
+}
+::v-deep .el-input-group__prepend {
+  padding-left: 0px;
+  border: none;
+}
+::v-deep .el-form-item__content {
+  width: 400px;
+}
+::v-deep .el-input__suffix {
+  right: 10px;
+}
 .btns .btn {
-  margin-top: 20px;
-  width: 450px;
+  // margin-top: 20px;
+  width: 400px;
   height: 50px;
   border-radius: 30px;
 }
@@ -379,12 +406,33 @@ img {
   bottom: 15px;
   cursor: pointer;
 }
-.form_container .register_btn {
+.register_btn {
   position: absolute;
-  left: 10px;
+  left: 0px;
+  bottom: -100px;
   cursor: pointer;
+  color: $mainColor;
+  font-size: 16px;
 }
 
+.login_area {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  position: absolute;
+  right: 0;
+  bottom: -100px;
+}
+
+.login_area .wallet_login {
+  display: inline-block;
+  cursor: pointer;
+  color: #000;
+  font-size: 16px;
+}
+.login_area .wallet_login:hover {
+  color: $mainColor;
+}
 .form_container .register_btn:hover {
   color: $mainColor;
 }
