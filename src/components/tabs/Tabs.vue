@@ -63,7 +63,7 @@ e
                 clearable
                 v-model="searchValue"
                 :fetch-suggestions="querySearch"
-                placeholder="请输入圈子名称"
+                placeholder="请输入专栏名称"
                 @select="handleSelect"
                 :popper-append-to-body="false"
               >
@@ -171,7 +171,7 @@ export default {
         subscriptions_name: this.searchValue.trim()
       })
 
-      if (res.success === 'ok') {
+      if (res && res.success === 'ok') {
         this.searchResult = res.data.map((v, i) => {
           v = { value: v }
           return v

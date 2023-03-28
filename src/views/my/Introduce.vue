@@ -14,10 +14,7 @@
         <div v-if="specialList.length > 0" class="special_content">
           <div v-for="(item, i) in specialList" :key="i" class="special_item">
             <div class="title">{{ item.title }}</div>
-            <div class="introduce">
-              这是简介
-              <!-- {{ item.image }}        -->
-            </div>
+            <div class="introduce">这是简介</div>
             <div class="members">共{{ item.member }}人</div>
           </div>
         </div>
@@ -88,7 +85,7 @@ export default {
           : this.userInfo.user,
       token: getToken()
     })
-    if (res.success === 'ok') {
+    if (res && res.success === 'ok') {
       this.trailList = res.data
     }
   },
@@ -171,6 +168,7 @@ export default {
     padding: 10px 20px;
     font-size: 14px;
     background-color: #fff;
+    min-height: 350px;
     .special_top {
       display: flex;
       justify-content: space-between;
@@ -182,7 +180,6 @@ export default {
     }
     .special_content {
       display: flex;
-      justify-content: space-around;
       flex-wrap: wrap;
       width: 100%;
       .special_item {

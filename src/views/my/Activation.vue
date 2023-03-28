@@ -56,7 +56,7 @@ export default {
   },
   computed: {
     activation() {
-      return JSON.parse(localStorage.getItem('quhu-userInfo')).activation
+      return JSON.parse(localStorage.getItem('quhu-userInfo')).integral
     }
   },
   created() {},

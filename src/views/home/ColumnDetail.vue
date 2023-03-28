@@ -11,11 +11,11 @@
       </el-row>
       <el-row type="flex" class="introduce">
         <el-col :span="24">
-          <div class="intro_title">圈子介绍</div>
+          <div class="intro_title">专栏介绍</div>
           <div>{{ detail_info.introduction }}</div>
         </el-col>
       </el-row>
-      <el-row type="flex" class="add_column" justify="center">
+      <el-row type="flex" class="add_column" justify="center" align="middle">
         <el-button
           v-if="!isJoined"
           class="add_btn"
@@ -36,15 +36,15 @@
           @click="removeSub"
           round
         >
-          退出圈子
+          退出专栏
         </el-button>
         <el-dialog
-          title="删除提示"
+          title="退出提示"
           :visible.sync="removePopVisible"
           width="30%"
           center
         >
-          <span>确认退出当前圈子吗？</span>
+          <span>确认退出当前专栏吗？</span>
           <span slot="footer" class="dialog-footer">
             <el-button @click="centerDialogVisible = false">取 消</el-button>
             <el-button type="primary" @click="remove">确 定</el-button>
@@ -58,6 +58,8 @@
 <script>
 import { subscriptions, addColumn, removeColumn } from '@/api/special/special'
 import { getToken } from '@/utils/auth'
+
+const defaultImg = require(`../../assets/quhu-logo.jpg`)
 export default {
   name: 'ColumnDetail',
   created() {
@@ -70,7 +72,7 @@ export default {
         subscriptions_name: '',
         master: '',
         introduction: '',
-        image: '',
+        image: defaultImg,
         price: '',
         time_stamp: ''
       },
@@ -108,8 +110,8 @@ export default {
       }
       const res = await removeColumn(params)
       // console.log(res)
-      if (res.success === 'ok') {
-        this.$message.success('退出圈子成功')
+      if (res && res.success === 'ok') {
+        this.$message.success('退出专栏成功')
       } else {
         this.$message.error(res.error)
       }
@@ -121,9 +123,12 @@ export default {
         subscriptions_name
       }
       const res = await subscriptions(params)
-      console.log(res)
-      if (res.success === 'ok') {
+
+      if (res && res.success === 'ok') {
         this.detail_info = res.data
+      }
+      if (!this.detail_info.image) {
+        this.detail_info.image = defaultImg
       }
     },
     async apply() {
@@ -139,8 +144,8 @@ export default {
       }
       const res = await addColumn(params)
       console.log(res)
-      if (res.success === 'ok') {
-        this.$message.success('加入圈子成功')
+      if (res && res.success === 'ok') {
+        this.$message.success('加入专栏成功')
         this.$router.go(-1)
       } else {
         this.$message.error(res.error)
@@ -152,9 +157,12 @@ export default {
 
 <style scoped lang="scss">
 .columnDetail_container {
-  padding: 10px;
+  padding: 20px 50px;
+  margin: 50px;
+  border: 1px solid #e4e4e4;
+  background-color: #fff;
   .subscriptions {
-    border-bottom: 1px solid #e4e4e4;
+    border-bottom: 1px dashed #e4e4e4;
     padding: 10px 0;
     .sub_name {
     }
@@ -171,7 +179,7 @@ export default {
   .introduce {
     margin-top: 20px;
     height: 200px;
-    border-bottom: 1px solid #e4e4e4;
+    border-bottom: 1px dashed #e4e4e4;
     margin-bottom: 20px;
     .intro_title {
       margin-bottom: 20px;
@@ -182,6 +190,7 @@ export default {
     .add_btn {
       width: 200px;
       height: 80px;
+      background-color: #54bcbd;
     }
     .remove_btn {
       width: 200px;

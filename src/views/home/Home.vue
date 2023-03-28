@@ -20,10 +20,8 @@
             background-color="#fff"
             active-text-color="#4fbdd4"
           >
-            <!-- <div class="short_article" @click="toAticle">我的短文</div> -->
             <el-submenu index="1">
               <template slot="title">
-                <!-- <i class="el-icon-edit"></i> -->
                 <svg
                   :style="{
                     fill: '#087790',
@@ -37,7 +35,7 @@
                     rel="external nofollow"
                   />
                 </svg>
-                <span style="fontsize: 14px">我的圈子</span>
+                <span style="fontsize: 14px">我的专栏</span>
               </template>
               <el-menu-item
                 style="minwidth: 90px"
@@ -60,7 +58,7 @@
                 >
                   <use :xlink:href="'#icon-my'" rel="external nofollow" />
                 </svg>
-                <span style="fontsize: 14px">加入的圈子</span>
+                <span style="fontsize: 14px">加入的专栏</span>
               </template>
               <el-menu-item
                 style="minwidth: 90px"
@@ -97,14 +95,14 @@
                   </router-link>
 
                   <div class="common post-article" @click="createColumn">
-                    <span>创建圈子</span>
+                    <span>创建专栏</span>
                   </div>
                   <div
                     slot="reference"
                     class="common post-article"
                     @click="handleRemove"
                   >
-                    <span v-if="hasColumn"> 退出圈子 </span>
+                    <span v-if="hasColumn"> 退出专栏 </span>
                   </div>
                   <el-dialog
                     title="删除提示"
@@ -112,9 +110,9 @@
                     width="30%"
                     center
                   >
-                    <span>确认退出当前圈子吗？</span>
+                    <span>确认退出当前专栏吗？</span>
                     <span slot="footer" class="dialog-footer">
-                      <el-button @click="centerDialogVisible = false"
+                      <el-button @click="removePopVisible = false"
                         >取 消</el-button
                       >
                       <el-button type="primary" @click="removeOut"
@@ -159,7 +157,7 @@
                           @click.native="articleSet(item, index, '-')"
                           >取消置顶</el-dropdown-item
                         >
-                        <el-dropdown-item>置底</el-dropdown-item>
+                        <!-- <el-dropdown-item>置底</el-dropdown-item> -->
                         <el-dropdown-item
                           @click.native="articleSet(item, index, 'delete')"
                           >删除</el-dropdown-item
@@ -282,13 +280,13 @@
                           currentDetail.voteNum || ''
                         }}</span>
                       </div>
-                      <div
+                      <!-- <div
                         title="评论"
                         class="comment"
                         @click="editComment(item, index)"
                       >
                         <Icon name="discuss" />
-                      </div>
+                      </div> -->
                       <div
                         title="收藏"
                         class="subscribe"
@@ -302,24 +300,43 @@
                         />
                       </div>
                     </div>
-                    <el-input
+                    <!-- <el-input
                       v-show="item.isEditReply"
                       placeholder="请输入内容"
                       v-model="item.reply"
                       class="reply_input"
                     >
-                      <el-button slot="append" @click="submitReply(item, index)"
+                      <el-button
+                        slot="append"
+                        @click="submitReply(item, index, currentDetail)"
                         >回复</el-button
                       >
-                    </el-input>
-                    <div
+                    </el-input> -->
+                    <!-- <div
                       class="comment-box"
                       style="margin-bottom: 10px; padding-top: 8px"
                       v-for="(v, i) in currentDetail.commentList"
                       :key="i"
                     >
-                      <div class="comment-item-container">
+                      <div
+                        class="comment-item-container"
+                        @mouseenter="v.isShowReplyText = true"
+                        @mouseleave="v.isShowReplyText = false"
+                      >
                         <div class="text">
+                          <span
+                            class="comment group-owner-light"
+                            v-if="
+                              v.parent_author && v.author !== v.parent_author
+                            "
+                            >{{ v.parent_author }}</span
+                          >
+                          <span
+                            v-if="
+                              v.parent_author && v.author !== v.parent_author
+                            "
+                            >&nbsp;回复&nbsp;</span
+                          >
                           <span class="comment group-owner-light">{{
                             v.body.author
                           }}</span
@@ -332,13 +349,43 @@
                           <div class="time">
                             {{ v.created.replace('T', '  ') }}
                           </div>
-                          <!-- <div class="operation"><span class="space">删除</span></div> -->
+                          <div class="operation">
+                            <span
+                              class="reply"
+                              @click="editComment(v, i)"
+                              v-show="v.isShowReplyText"
+                              >回复</span
+                            >
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <!-- <div class="comment-box" style="margin-bottom: 10px; padding-top: 8px;" v-for="(v,i) in item.commentList" :key="i">
-                  <Comment :asideChildren="v.children"></Comment>
-                </div> -->
+                      <el-input
+                        v-show="v.isEditReply"
+                        placeholder="请输入内容"
+                        v-model="v.reply"
+                        class="reply_input"
+                      >
+                        <el-button
+                          slot="append"
+                          @click="submitReply(v, i, currentDetail)"
+                          >回复</el-button
+                        >
+                      </el-input>
+                    </div> -->
+                    <!-- <Comment
+                      style="margin: 0 auto"
+                      @doSend="doSend"
+                      @deleteComment="deleteComment"
+                      :commentList="currentDetail.commentList"
+                      :commentNum="commentNum"
+                      :avatar="avatar"
+                    ></Comment> -->
+                    <Comment
+                      style="margin: 0 auto"
+                      @doSend="submitReply"
+                      :commentList="currentDetail.commentList"
+                      :detail="currentDetail"
+                    ></Comment>
                   </div>
                 </div>
               </div>
@@ -431,7 +478,7 @@
                     class="f14 cla woo-box-item-flex"
                     style="align-self: center"
                   >
-                    热门圈子
+                    热门专栏
                   </div>
                   <div
                     class="woo-box-flex woo-box-alignCenter"
@@ -486,16 +533,16 @@
       </el-col>
     </el-row>
     <el-dialog
-      title="创建圈子"
+      title="创建专栏"
       :visible.sync="dialogVisible"
       width="60%"
       :before-close="handleSubscriptionsClose"
     >
-      <el-input placeholder="请输入圈子名称" v-model="subscriptionsInfo.name">
+      <el-input placeholder="请输入专栏名称" v-model="subscriptionsInfo.name">
       </el-input>
       <div class="margin-top-10 sub_price">
         <el-input
-          placeholder="请输入圈子价格"
+          placeholder="请输入专栏价格"
           v-model="subscriptionsInfo.price"
         >
         </el-input>
@@ -518,7 +565,7 @@
         class="margin-top-10"
         type="textarea"
         :rows="2"
-        placeholder="请输入圈子介绍"
+        placeholder="请输入专栏介绍"
         v-model="subscriptionsInfo.introduction"
       >
       </el-input>
@@ -587,10 +634,13 @@ import { sha256 } from '@/utils/ecc/src/hash'
 import Signature from '@/utils/ecc/src/signature'
 import { actObj } from '@/utils/act'
 import Icon from '@/components/Icon/index'
+import Comment from '@/components/comment/Comment.vue'
 const defaultAvatar = require(`../../assets/defaultAvatarUrl.png`)
+
 export default {
   components: {
-    Icon
+    Icon,
+    Comment
   },
   data() {
     return {
@@ -719,7 +769,7 @@ export default {
   },
   computed: {
     currentPath() {
-      console.log(this.$route)
+      // console.log(this.$route)
       return this.$route.path
     },
     userAvatar() {
@@ -738,6 +788,21 @@ export default {
   },
   async mounted() {},
   methods: {
+    toTree(list, parId) {
+      let len = list.length
+      function loop(parId) {
+        let res = []
+        for (let i = 0; i < len; i++) {
+          let item = list[i]
+          if (item.parent_author === parId) {
+            item.children = loop(item.author)
+            res.push(item)
+          }
+        }
+        return res
+      }
+      return loop(parId)
+    },
     async articleSet(v, i, type) {
       const userInfo = this.userInfo
       const token = getToken()
@@ -753,10 +818,8 @@ export default {
             subscriptions_name: this.selectedColumn,
             type
           })
-          if (res.success === 'ok') {
-            const obj = this.articleList[i]
-            this.articleList.splice(i, 1)
-            this.articleList.unshift(obj)
+          if (res && res.success === 'ok') {
+            this.articleList.unshift(this.articleList.splice(i, 1)[0])
             this.$message.success('置顶成功')
           }
           break
@@ -788,7 +851,7 @@ export default {
     },
     async getHotColumns() {
       const res = await hotColumn({})
-      if (res.success === 'ok') {
+      if (res && res.success === 'ok') {
         const arr = []
         res.data.forEach((item, i) => {
           arr.push({
@@ -810,7 +873,7 @@ export default {
         token,
         permlink: [v.author, v.permlink]
       })
-      if (res.success === 'ok') {
+      if (res && res.success === 'ok') {
         if (res.type === '+') {
           this.$message.success('点赞成功')
           v.isPraised = true
@@ -835,7 +898,7 @@ export default {
       this.fileList = arr.filter((item, index) => {
         return i !== index
       })
-      console.log(this.fileList)
+      // console.log(this.fileList)
     },
 
     handleRemove() {
@@ -858,7 +921,7 @@ export default {
     async loadHandler(e, cb) {
       let dataUrl = ''
       if (e.file) {
-        console.log('** image being loaded.. ----->', e.file)
+        // console.log('** image being loaded.. ----->', e.file)
         let width = 0
         let height = 0
         const reader = new FileReader()
@@ -888,7 +951,7 @@ export default {
                 sig,
               formData,
               (res) => {
-                console.log(res)
+                // console.log(res)
                 let imageUrl = ''
                 if (res.status === 200) {
                   imageUrl = res.data.url
@@ -946,8 +1009,8 @@ export default {
       }
       const res = await removeColumn(params)
       // console.log(res)
-      if (res.success === 'ok') {
-        this.$message.success('退出圈子成功')
+      if (res && res.success === 'ok') {
+        this.$message.success('退出专栏成功')
       } else {
         this.$message.error(res.error)
       }
@@ -966,7 +1029,7 @@ export default {
       })
     },
     editComment(item, index) {
-      item.isEditReply = !item.isEditReply
+      // item.isEditReply = !item.isEditReply
     },
     async updateColumn() {
       const userInfo = this.userInfo
@@ -990,9 +1053,9 @@ export default {
       }
     },
     async getArticlesByColumn(v, i) {
-      if (this.$route.path !== '/home') {
-        this.$router.push('/home')
-      }
+      // if (this.$route.path !== '/home') {
+      //   this.$router.push('/home')
+      // }
       const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
       let selectedMenu = '1-0'
@@ -1008,8 +1071,7 @@ export default {
       sessionStorage.setItem('selectedColumn', v)
       sessionStorage.setItem('selectedMenu', selectedMenu)
       this.hasColumn =
-        this.subscriptionsList.my.length !== 0 ||
-        this.subscriptionsList.join.length !== 0
+        this.subscriptionsList.join.indexOf(this.selectedColumn) !== -1
       if (localStorage.getItem('quhu-userInfo')) {
         const res = await getArticles({
           id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
@@ -1018,31 +1080,34 @@ export default {
           params: { sort: 'created', tag: 's' + MD5(v).substring(0, 10) }
         })
 
-        if (res.result) {
+        if (res && res.result) {
           let formatRes = res.result && res.result.concat()
+          // console.log(formatRes)
           // const otherInfoList = []
           // const ids = []
           let arr = []
-          formatRes.forEach((element, index) => {
+          let newRes = formatRes.filter((ele, index) => {
+            return this.eval(ele.body).status !== 'delete'
+          })
+          newRes.forEach((element, index) => {
             element.body = this.eval(element.body)
             element.isEditReply = false
             element.reply = ''
             element.isShowDetailDialog = false
             element.isPraised = false
             element.isFavorite = false
-            console.log(element.body.status)
-            // if (element.body.status === 'top') {
-            //   arr.push(element)
-            //   formatRes.splice(index, 1)
-            //   index = index - 1
-            // }
-            // if (element.body.status === 'delete') {
-            //   formatRes.splice(index, 1)
-            //   index = index - 1
-            // }
+            // console.log(element.body.status)
+            if (element.body.status === 'top') {
+              // arr.push(element)
+              // formatRes.splice(index, 1)
+              // index = index - 1
+              newRes.unshift(newRes.splice(index, 1)[0])
+            }
           })
-          formatRes = arr.concat(formatRes)
-          this.articleList = formatRes
+          console.log(newRes)
+          // console.log(formatRes)
+          newRes = arr.concat(newRes)
+          this.articleList = newRes
         }
       }
     },
@@ -1074,12 +1139,12 @@ export default {
         image: image,
         price: price + currency
       })
-      if (res.success === 'ok') {
+      if (res && res.success === 'ok') {
         this.updateColumn()
-        this.$message.success('创建圈子成功')
+        this.$message.success('创建专栏成功')
         this.handleSubscriptionsClose()
       } else {
-        this.$message.error('创建失败！请重新创建圈子')
+        this.$message.error('创建失败！请重新创建专栏')
         this.handleSubscriptionsClose()
       }
     },
@@ -1089,31 +1154,52 @@ export default {
     handleClose(key, keyPath) {
       // console.log(key, keyPath)
     },
-    async submitReply(v, i) {
+    async submitReply(v, i, detail, text) {
+      console.log(v, i, detail, text)
       const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
+      const {
+        permlink,
+        body,
+        author,
+        parent_author,
+        parent_permlink,
+        created,
+        reply
+      } = v ? v : detail
       const res = await post({
         type: 'comment',
         id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
         token: getToken(),
-        user_name: userInfo.user_name,
-        steem_id: userInfo.steem_id,
-        subscriptions_name: v.body.subscriptions_name,
-        permlink: [v.author, v.permlink],
+        subscriptions_name: detail.body.subscriptions_name,
+        permlink: [
+          text ? detail.author : v.author,
+          text ? detail.permlink : v.permlink
+        ],
         title: '',
-        body: v.reply
+        body: text ? text : v.reply
       })
 
       if (res && res.success === 'ok') {
         this.$message.success('回复成功')
         v.isEditReply = false
-        // this.currentDetail.commentList.unshift()
-        v.reply = ''
+        this.currentDetail.commentList.unshift({
+          author,
+          permlink,
+          body: Object.assign({}, body, { body: reply }),
+          parent_author,
+          parent_permlink,
+          created,
+          reply,
+          children: []
+        })
+
+        // v.reply = ''
       } else {
         this.$message.error('发文失败！ 请重新发文')
         this.closeEditor()
         v.isEditReply = false
-        v.reply = ''
+        // v.reply = ''
       }
     },
     postArticle() {
@@ -1186,7 +1272,10 @@ export default {
         id: loginType === 'password' ? userInfo.user : userInfo.eth_account,
         token
       })
-      console.log(val, votes, favorites)
+      const formatFavorites = favorites.data.map((favorite, i) => {
+        return favorite[1]
+      })
+      console.log(val, votes, formatFavorites)
 
       const obj = res.result[val.author + '/' + val.permlink]
       // const commentList = this.getReply(obj, res.result)
@@ -1201,18 +1290,29 @@ export default {
           commentList.push(result[key])
         }
       }
+      commentList.forEach((comment) => {
+        comment.isShowReplyText = false
+        // comment.isEditReply = false
+        comment.reply = ''
+      })
+      const commentTree = this.toTree(commentList, val.author)
+      console.log(commentTree)
       if (obj) {
         obj.body = this.eval(obj.body)
         let isPraised = false
         let voteNum = 0
+        let isFavorite = false
         const vote = votes.data.forEach((item, i) => {
           isPraised = item.list.indexOf(userInfo.steem_id) !== -1
           voteNum = item.vote
         })
+        isFavorite = formatFavorites.indexOf(val.permlink) !== -1
+        // console.log(isFavorite, formatFavorites, val.permlink)
         obj.isPraised = isPraised
         obj.voteNum = voteNum
+        obj.isFavorite = isFavorite
+        obj.commentList = commentTree
         this.currentDetail = obj
-        this.currentDetail.commentList = commentList
         val.isShowDetailDialog = true
       }
       // console.log(val)
@@ -1233,6 +1333,13 @@ export default {
       // } else {
       //   return []
       // }
+    }
+  },
+  watch: {
+    'currentDetail.commentList': {
+      handler(newVal, oldVal) {},
+      deep: true,
+      immediate: true
     }
   }
 }
@@ -1308,7 +1415,8 @@ export default {
     border-radius: 10px;
     width: 190px;
     background: $bgcolor;
-    height: 800px;
+    min-height: 800px;
+    height: calc(100vh - 80px);
   }
   .short_article {
     width: calc(100% - 20px);
@@ -1379,6 +1487,9 @@ export default {
   font-size: 14px;
   color: #c5c6cb;
 }
+.reply {
+  cursor: pointer;
+}
 .reply_input input {
   width: 100%;
   height: 50px;
@@ -1416,6 +1527,7 @@ export default {
   display: flex;
   align-items: center;
   margin-bottom: 20px;
+  justify-content: flex-end;
   .like {
     display: flex;
     margin-right: 20px !important;
@@ -1495,7 +1607,7 @@ export default {
   color: #1a1a1a;
   height: 30px;
   line-height: normal;
-  padding: 0;
+  padding: 0 0 0 10px;
 }
 .left {
   display: flex;
@@ -1815,6 +1927,8 @@ export default {
   background: #fff;
   border-radius: 4px;
   padding: 20px 30px 30px;
+  max-height: 2000px;
+  overflow: scroll;
 }
 .el-col {
   margin-bottom: 20px;

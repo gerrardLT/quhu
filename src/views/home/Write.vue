@@ -299,7 +299,7 @@ export default {
   color: #1a1a1a;
   height: 40px;
   line-height: normal;
-  padding: 0;
+  padding: 0 0 0 10px;
 }
 .footer {
   display: flex;

@@ -19,9 +19,9 @@
               ref="baseFormRef"
               label-width="100px"
             >
-              <el-form-item label="昵称" prop="nickName" style="width: 400px">
+              <!-- <el-form-item label="昵称" prop="nickName" style="width: 400px">
                 <el-input v-model="baseInfoForm.nickName" clearable></el-input>
-              </el-form-item>
+              </el-form-item> -->
               <el-form-item label="用户名" prop="user" style="width: 400px">
                 <el-input
                   v-model="baseInfoForm.user"
@@ -32,7 +32,7 @@
               <el-form-item
                 label="密码"
                 prop="password"
-                v-if="!isEthLogin"
+                v-if="!userChanged"
                 style="width: 400px"
               >
                 <el-input
@@ -157,16 +157,18 @@ export default {
         }
       }
     }
-    const validateNick = (rule, value, callback) => {
-      validate(value, '昵称', callback)
-    }
+    // const validateNick = (rule, value, callback) => {
+    //   validate(value, '昵称', callback)
+    // }
     const validateUserName = (rule, value, callback) => {
       validate(value, '用户名', callback)
     }
     return {
       baseInfoForm: {
-        nickName: '',
-        user: '',
+        user:
+          JSON.parse(localStorage.getItem('quhu-userInfo')).user === 'none'
+            ? ''
+            : JSON.parse(localStorage.getItem('quhu-userInfo')).user,
         password: ''
       },
       safeInfoForm: {
@@ -186,7 +188,6 @@ export default {
         ]
       },
       baseRules: {
-        nickName: [{ validator: validateNick, trigger: 'blur' }],
         user: [{ validator: validateUserName, trigger: 'blur' }]
       },
       currentChange: ''
@@ -205,10 +206,11 @@ export default {
   },
   created() {},
   mounted() {
-    this.baseInfoForm = {
-      nickName: this.userInfo.user_name,
-      user: this.userInfo.user
-    }
+    //       this.$nextTick(() => {
+    //             this.baseInfoForm = {
+    //   user: this.userInfo.user
+    // }
+    //   })
   },
   methods: {
     confirmLoginOut() {
@@ -247,7 +249,7 @@ export default {
             new_password: MD5(this.safeInfoForm.newPassword),
             sign: ''
           }).then((res) => {
-            if (res.success === 'ok') {
+            if (res && res.success === 'ok') {
               self.$message.success('修改成功！')
               this.safeInfoForm = {
                 oldPassword: '',
@@ -319,7 +321,7 @@ export default {
             self.Web3.givenProvider || 'ws://some.local-or-remote.node:8546'
           )
           web3.eth.personal.sign(
-            web3.utils.utf8ToHex('change'),
+            web3.utils.utf8ToHex('eth'),
             accounts[0],
             (err, res) => {
               fn(err, res, accounts)
@@ -333,7 +335,7 @@ export default {
         self.$message.error('签名失败，因为' + err.message)
       } else {
         self.$store.dispatch('updateUser', {
-          user_name: self.baseInfoForm.nickName,
+          // user_name: self.baseInfoForm.nickName,
           user: self.baseInfoForm.user,
           password: '',
           sign: res
@@ -356,12 +358,11 @@ export default {
         }
       } else {
         this.$store.dispatch('updateUser', {
-          user_name: self.baseInfoForm.nickName,
+          // user_name: self.baseInfoForm.nickName,
           user: self.baseInfoForm.user,
           password: MD5(self.baseInfoForm.password)
         })
         this.baseInfoForm = {
-          nickName: '',
           password: ''
         }
       }
@@ -381,7 +382,7 @@ export default {
             eth_account: account[0],
             sign: res
           })
-          if (res.success === 'ok') {
+          if (res && res.success === 'ok') {
             self.$message.success('绑定成功！')
           }
         }

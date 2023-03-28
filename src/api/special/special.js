@@ -48,7 +48,7 @@ export async function getArticleDetail (data) {
   })
 }
 
-// 加入圈子
+// 加入专栏
 export async function addColumn (data) {
   return request({
     url: '/add',
@@ -57,7 +57,7 @@ export async function addColumn (data) {
   })
 }
 
-// 退出圈子
+// 退出专栏
 export async function removeColumn (data) {
   return request({
     url: '/remove',
@@ -66,7 +66,7 @@ export async function removeColumn (data) {
   })
 }
 
-// 搜索圈子
+// 搜索专栏
 export async function searchColumn (data) {
   return request({
     url: '/search',
@@ -96,7 +96,7 @@ export async function getVote (data) {
 }
 
 
-// 查询热门圈子
+// 查询热门专栏
 export async function hotColumn (data) {
   return request({
     url: '/hot',

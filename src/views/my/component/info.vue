@@ -24,11 +24,23 @@
       </div>
 
       <div class="nick_name">
-        {{ userInfo.user_name }}
+        <el-input
+          v-model="user_name"
+          placeholder="请输入昵称"
+          maxlength="60"
+          v-if="showNick"
+          class="profile"
+          @blur="editNick"
+        ></el-input>
+        <span v-else @click="showNickInput"> {{ userInfo.user_name }}</span>
+        <span v-show="!userInfo.user_name" @click="showNickInput"
+          >请输入昵称</span
+        >
         <svg
           :style="{
             width: '20px',
-            height: '20px'
+            height: '20px',
+            marginLeft: '5px'
           }"
           @click="changeSex"
         >
@@ -42,7 +54,7 @@
         <el-input
           v-model="profile"
           placeholder="请输入简介"
-          maxlength="8"
+          maxlength="60"
           v-show="showIntro"
           class="profile"
           @blur="editIntro"
@@ -50,7 +62,7 @@
         <span v-show="!showIntro" class="intro-text">{{
           userInfo.profile
         }}</span>
-        <span v-show="!profile" @click="changeStatus">请输入简介</span>
+        <span v-show="!userInfo.profile" @click="changeStatus">请输入简介</span>
         <i
           v-show="!showIntro"
           class="el-icon-edit"
@@ -145,6 +157,8 @@ export default {
   },
   data() {
     return {
+      showNick: false,
+      user_name: '',
       sexVisible: false,
       sex: '',
       inputVisible: false,
@@ -167,6 +181,32 @@ export default {
         this.sexVisible = true
       }
     },
+    async editNick() {
+      if (this.user_name.trim() === '') {
+        this.$message.error('请输入昵称！')
+        return
+      } else {
+        const res = await baseData({
+          id:
+            this.loginType === 'eth'
+              ? this.userInfo.eth_account
+              : this.userInfo.user,
+          token: getToken(),
+          user_name: this.user_name
+        })
+        if (res && res.success === 'ok') {
+          this.userInfo.user_name = this.user_name
+          localStorage.setItem('quhu-userInfo', JSON.stringify(this.userInfo))
+          this.$message.success('修改成功')
+          this.showNick = !this.showNick
+        } else {
+          this.$message.error('修改失败')
+        }
+      }
+    },
+    async showNickInput() {
+      this.showNick = true
+    },
     async confirmSex() {
       console.log(this.sex)
       const res = await baseData({
@@ -177,7 +217,7 @@ export default {
         token: getToken(),
         sex: this.sex
       })
-      if (res.success === 'ok') {
+      if (res && res.success === 'ok') {
         this.sexVisible = false
         this.userInfo.sex = this.sex
         localStorage.setItem('quhu-userInfo', JSON.stringify(this.userInfo))
@@ -199,7 +239,7 @@ export default {
         token: getToken(),
         tags: this.tagList
       })
-      if (res.success === 'ok') {
+      if (res && res.success === 'ok') {
         this.userInfo.tags = this.tagList
         localStorage.setItem('quhu-userInfo', JSON.stringify(this.userInfo))
       }
@@ -222,7 +262,7 @@ export default {
           token: getToken(),
           tags: this.tagList
         })
-        if (res.success === 'ok') {
+        if (res && res.success === 'ok') {
           this.userInfo.tags = this.tagList
           localStorage.setItem('quhu-userInfo', JSON.stringify(this.userInfo))
           this.inputVisible = false
@@ -243,7 +283,7 @@ export default {
           token: getToken(),
           profile: this.profile
         })
-        if (res.success === 'ok') {
+        if (res && res.success === 'ok') {
           this.userInfo.profile = this.profile
           localStorage.setItem('quhu-userInfo', JSON.stringify(this.userInfo))
           this.$message.success('修改成功')
@@ -328,7 +368,7 @@ export default {
                       image: res.data.url
                     }).then((res) => {
                       console.log(res)
-                      if (res.success === 'ok') {
+                      if (res && res.success === 'ok') {
                         localStorage.setItem(
                           'quhu-userInfo',
                           JSON.stringify(userInfo)
@@ -406,7 +446,7 @@ export default {
   }
 }
 .user_avatar {
-  margin-top: 30px;
+  margin-top: 25px;
   margin-bottom: 5px;
   width: 60px;
   height: 60px;
@@ -449,8 +489,13 @@ export default {
   font-size: 12px;
 }
 .profile {
-  max-width: 150px;
+  max-width: 200px;
   cursor: pointer;
+}
+.intro-text {
+  display: inline-block;
+  max-width: 200px;
+  word-break: break-word;
 }
 ::v-deep .profile .el-input__inner {
   max-width: 150px;

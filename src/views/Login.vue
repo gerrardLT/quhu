@@ -65,7 +65,7 @@ import { setToken } from '@/utils/auth'
 export default {
   mounted() {
     this.invitedId = this.$route.query.invitedId
-    this.userType = 'register'
+    this.userType = 'login'
   },
   data() {
     return {
