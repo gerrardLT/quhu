@@ -10,9 +10,10 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import router from '@/router'
 import user from './modules/user'
-import home from './modules/home'
+import MD5 from 'MD5'
 import { getUser, changeUser } from '@/api/user/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
+import { Loading } from 'element-ui'
 
 Vue.use(Vuex)
 // {
@@ -81,7 +82,7 @@ const store = new Vuex.Store({
       commit,
       state
     }, d) {
-      console.log(d)
+
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
       const loginType = localStorage.getItem('login-type')
       const changeInfo = { user: d.user,user_name: d.user_name }
@@ -93,12 +94,20 @@ const store = new Vuex.Store({
       } : {
         id: userInfo.user,
         token: getToken(),
-        password: d.password,
+        password: MD5(d.password),
         data: changeInfo
       }
+      const loading = Loading.service({
+        text: '加载中...',
+        spinner: 'el-icon-loading ElementLoading',
+        background: 'rgba(0, 0, 0, 0.2)'
+      })
       const res = await changeUser(params)
       if (res && res.success === 'ok') {
         commit('UPDATE_USERINFO', changeInfo)
+      }
+      if (loading) {
+        loading.close()
       }
     },
     loginOutFalse () {

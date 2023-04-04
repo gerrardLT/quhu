@@ -29,8 +29,7 @@
           申请加入
         </el-button>
         <el-button
-          v-if="isJoined"
-          slot="reference"
+          v-else
           class="remove_btn"
           type="primary"
           @click="removeSub"
@@ -46,7 +45,7 @@
         >
           <span>确认退出当前专栏吗？</span>
           <span slot="footer" class="dialog-footer">
-            <el-button @click="centerDialogVisible = false">取 消</el-button>
+            <el-button @click="removePopVisible = false">取 消</el-button>
             <el-button type="primary" @click="remove">确 定</el-button>
           </span>
         </el-dialog>
@@ -76,25 +75,11 @@ export default {
         price: '',
         time_stamp: ''
       },
-      removePopVisible: false
+      removePopVisible: false,
+      isJoined: false
     }
   },
-  computed: {
-    isJoined() {
-      const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
-      if (
-        userInfo.buy_article.join.indexOf(
-          this.detail_info.subscriptions_name
-        ) !== -1 ||
-        userInfo.buy_article.my.indexOf(this.detail_info.subscriptions_name) !==
-          -1
-      ) {
-        return true
-      } else {
-        return false
-      }
-    }
-  },
+  computed: {},
   methods: {
     removeSub() {
       this.removePopVisible = true
@@ -115,8 +100,10 @@ export default {
       } else {
         this.$message.error(res.error)
       }
+      this.removePopVisible = false
     },
     async getDetail() {
+      const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
       const subscriptions_name = this.$route.query.subName
       const params = {
         type: 'info',
@@ -126,6 +113,13 @@ export default {
 
       if (res && res.success === 'ok') {
         this.detail_info = res.data
+        this.isJoined =
+          userInfo.buy_article.join.indexOf(
+            this.detail_info.subscriptions_name
+          ) !== -1 ||
+          userInfo.buy_article.my.indexOf(
+            this.detail_info.subscriptions_name
+          ) !== -1
       }
       if (!this.detail_info.image) {
         this.detail_info.image = defaultImg
@@ -195,6 +189,7 @@ export default {
     .remove_btn {
       width: 200px;
       height: 80px;
+      background-color: #54bcbd;
     }
   }
 }

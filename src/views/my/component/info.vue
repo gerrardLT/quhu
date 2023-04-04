@@ -9,7 +9,7 @@
           :show-file-list="false"
           :http-request="onUploadHandler"
         >
-          <img :src="imageUrl" alt="" />
+          <img :src="imageUrl" alt="" title="点击修改头像" />
         </el-upload>
         <div class="camera">
           <svg
@@ -32,7 +32,9 @@
           class="profile"
           @blur="editNick"
         ></el-input>
-        <span v-else @click="showNickInput"> {{ userInfo.user_name }}</span>
+        <span v-else @click="showNickInput" title="点击修改昵称" class="text">
+          {{ userInfo.user_name }}</span
+        >
         <span v-show="!userInfo.user_name" @click="showNickInput"
           >请输入昵称</span
         >
@@ -42,6 +44,7 @@
             height: '20px',
             marginLeft: '5px'
           }"
+          :title="userInfo.sex === 'unknown' ? '点击修改性别' : ''"
           @click="changeSex"
         >
           <use :xlink:href="sexTypes[userInfo.sex]" rel="external nofollow" />
@@ -66,8 +69,9 @@
         <i
           v-show="!showIntro"
           class="el-icon-edit"
-          style="margin-left: 5px"
+          style="margin-left: 5px; cursor: pointer"
           @click="changeStatus"
+          title="点击修改简介"
         ></i>
       </div>
       <div class="tags">
@@ -78,6 +82,7 @@
           v-for="(item, i) in tagList"
           :key="i"
           closable
+          :title="item"
           @close="handleClose(item)"
           >{{ item }}</el-tag
         >
@@ -87,6 +92,7 @@
           v-model="inputValue"
           ref="saveTagInput"
           size="small"
+          maxlength="12"
           @keyup.enter.native="handleInputConfirm"
           @blur="handleInputConfirm"
         >
@@ -252,19 +258,28 @@ export default {
     },
     async handleInputConfirm() {
       let inputValue = this.inputValue
+      const reg = /^[\u4e00-\u9fa5_a-zA-Z0-9]+$/
+      if (!reg.test(inputValue.trim())) {
+        this.$message.error('请输入6位以下字母和汉字！')
+        return
+      }
+      const arr = [inputValue]
       if (inputValue) {
-        this.tagList.push(inputValue)
         const res = await baseData({
           id:
             this.loginType === 'eth'
               ? this.userInfo.eth_account
               : this.userInfo.user,
           token: getToken(),
-          tags: this.tagList
+          tags: this.tagList.concat(arr)
         })
         if (res && res.success === 'ok') {
+          this.tagList.push(inputValue)
           this.userInfo.tags = this.tagList
           localStorage.setItem('quhu-userInfo', JSON.stringify(this.userInfo))
+          this.inputVisible = false
+          this.inputValue = ''
+        } else {
           this.inputVisible = false
           this.inputValue = ''
         }
@@ -399,10 +414,11 @@ export default {
 <style scoped lang="scss">
 .button-new-tag {
   margin-left: 10px;
-  height: 20px;
-  line-height: 20px;
+  height: 26px;
+  line-height: 26px;
   padding-top: 0;
   padding-bottom: 0;
+  border-radius: 20px;
 }
 ::v-deep .input-new-tag {
   width: 90px;
@@ -482,6 +498,9 @@ export default {
   font-size: 14px;
   font-weight: bold;
   display: flex;
+  .text {
+    cursor: pointer;
+  }
 }
 .introduce {
   margin-top: 5px;
@@ -503,15 +522,20 @@ export default {
 }
 .tags {
   margin-top: 5px;
+  display: flex;
 }
 .tag {
   margin-left: 20px;
   border-radius: 20px;
-  width: 65px;
+  width: 100px;
   height: 26px;
   text-align: center;
   font-size: 12px;
   line-height: 24px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
 }
 .hd-box {
   width: 100%;

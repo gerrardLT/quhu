@@ -133,3 +133,11 @@ export async function getfavorites (data) {
   })
 }
 
+// 移除收藏
+export async function removeCollect (data) {
+  return request({
+    url: '/removefavorites',
+    method: 'post',
+    data
+  })
+}

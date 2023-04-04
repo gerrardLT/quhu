@@ -20,6 +20,23 @@
             background-color="#fff"
             active-text-color="#4fbdd4"
           >
+            <div
+              :class="{ activeText: activeMenuIndex === 0, 'menu-style': true }"
+              @click="getArticlesByColumn('', '', 'all')"
+            >
+              <svg
+                :style="{
+                  fill: '#087790',
+                  width: '15px',
+                  height: '15px',
+                  marginRight: '5px'
+                }"
+              >
+                <use :xlink:href="'#icon-explore'" rel="external nofollow" />
+              </svg>
+              <span style="fontsize: 14px">短文广场</span>
+            </div>
+
             <el-submenu index="1">
               <template slot="title">
                 <svg
@@ -30,10 +47,7 @@
                     marginRight: '5px'
                   }"
                 >
-                  <use
-                    :xlink:href="'#icon-semiDesign-semi-icons-edit'"
-                    rel="external nofollow"
-                  />
+                  <use :xlink:href="'#icon-ze-edit'" rel="external nofollow" />
                 </svg>
                 <span style="fontsize: 14px">我的专栏</span>
               </template>
@@ -46,6 +60,7 @@
                 >{{ item }}</el-menu-item
               >
             </el-submenu>
+
             <el-submenu index="2">
               <template slot="title">
                 <svg
@@ -56,7 +71,10 @@
                     marginRight: '5px'
                   }"
                 >
-                  <use :xlink:href="'#icon-my'" rel="external nofollow" />
+                  <use
+                    :xlink:href="'#icon-antOutline-user-add'"
+                    rel="external nofollow"
+                  />
                 </svg>
                 <span style="fontsize: 14px">加入的专栏</span>
               </template>
@@ -69,6 +87,38 @@
                 >{{ item }}</el-menu-item
               >
             </el-submenu>
+            <div
+              :class="{ activeText: activeMenuIndex === 1, 'menu-style': true }"
+              @click="createColumn"
+            >
+              <svg
+                :style="{
+                  fill: '#087790',
+                  width: '15px',
+                  height: '15px',
+                  marginRight: '5px'
+                }"
+              >
+                <use :xlink:href="'#icon-add'" rel="external nofollow" />
+              </svg>
+              <span style="fontsize: 14px">创建专栏</span>
+            </div>
+            <div
+              :class="{ activeText: activeMenuIndex === 2, 'menu-style': true }"
+              @click="privateManage"
+            >
+              <svg
+                :style="{
+                  fill: '#087790',
+                  width: '15px',
+                  height: '15px',
+                  marginRight: '5px'
+                }"
+              >
+                <use :xlink:href="'#icon-setting'" rel="external nofollow" />
+              </svg>
+              <span style="fontsize: 14px">专栏隐私管理</span>
+            </div>
           </el-menu>
         </div>
       </el-col>
@@ -79,7 +129,7 @@
         <el-col :span="18" class="mid_container">
           <div class="post-container">
             <div @click="postArticle" class="post-topic-head">
-              <div class="tip">点击发表主题...</div>
+              <div class="tip">点击发表文章...</div>
             </div>
             <div class="post-topic-footer">
               <div class="post-topic-btn">
@@ -87,22 +137,30 @@
                 <div class="post-action">
                   <router-link
                     :to="'/write?selectedColumn=' + selectedColumn"
-                    v-if="selectedColumn"
+                    v-if="
+                      userInfo.buy_article.my.indexOf(selectedColumn) !== -1
+                    "
                   >
                     <div class="common post-article">
                       <span>写文章</span>
                     </div>
                   </router-link>
 
-                  <div class="common post-article" @click="createColumn">
+                  <!-- <div class="common post-article" @click="createColumn">
                     <span>创建专栏</span>
-                  </div>
+                  </div> -->
                   <div
                     slot="reference"
                     class="common post-article"
                     @click="handleRemove"
                   >
-                    <span v-if="hasColumn"> 退出专栏 </span>
+                    <span
+                      v-if="
+                        userInfo.buy_article.join.indexOf(selectedColumn) !== -1
+                      "
+                    >
+                      退出专栏
+                    </span>
                   </div>
                   <el-dialog
                     title="删除提示"
@@ -124,8 +182,16 @@
               </div>
             </div>
           </div>
-          <div v-if="articleList.length > 0">
-            <div v-for="(item, index) in articleList" :key="index">
+          <div v-if="articleList.length > 0" v-loading="articleLoading">
+            <div
+              v-for="(item, index) in articleList"
+              :key="index"
+              :ref="
+                (e) => {
+                  setItemRef(item, e)
+                }
+              "
+            >
               <div class="topic-container">
                 <div style="padding: 10px">
                   <div class="header-container">
@@ -148,23 +214,46 @@
                       </span>
                       <el-dropdown-menu slot="dropdown">
                         <el-dropdown-item
-                          v-show="item.body.status !== 'top'"
+                          v-show="
+                            item.body.status !== 'top' &&
+                            userInfo.buy_article.my.indexOf(
+                              item.body.subscriptions_name
+                            ) !== -1
+                          "
                           @click.native="articleSet(item, index, '+')"
                           >置顶</el-dropdown-item
                         >
                         <el-dropdown-item
-                          v-show="item.body.status === 'top'"
+                          v-show="
+                            item.body.status === 'top' &&
+                            userInfo.buy_article.my.indexOf(
+                              item.body.subscriptions_name
+                            ) !== -1
+                          "
                           @click.native="articleSet(item, index, '-')"
                           >取消置顶</el-dropdown-item
                         >
                         <!-- <el-dropdown-item>置底</el-dropdown-item> -->
                         <el-dropdown-item
                           @click.native="articleSet(item, index, 'delete')"
+                          v-show="
+                            userInfo.buy_article.my.indexOf(
+                              item.body.subscriptions_name
+                            ) !== -1
+                          "
                           >删除</el-dropdown-item
                         >
                         <el-dropdown-item
                           @click.native="articleSet(item, index, 'collect')"
+                          v-show="!item.isFavorite"
                           >收藏</el-dropdown-item
+                        >
+                        <el-dropdown-item
+                          v-show="item.isFavorite"
+                          @click.native="
+                            articleSet(item, index, 'removeCollect')
+                          "
+                          >移除收藏</el-dropdown-item
                         >
                       </el-dropdown-menu>
                     </el-dropdown>
@@ -206,10 +295,7 @@
                       target="blank"
                       >View on Blockbrowser</a
                     >
-                    <div
-                      class="details-container"
-                      @click="goDetail(item, index)"
-                    >
+                    <div class="details-container" @click="goDetail(item)">
                       <div class="text">查看详情</div>
                       <div class="icon">
                         <Icon name="arrowR" />
@@ -288,90 +374,22 @@
                         <Icon name="discuss" />
                       </div> -->
                       <div
+                        v-if="!currentDetail.isFavorite"
                         title="收藏"
                         class="subscribe"
                         @click="articleSet(item, index, 'collect')"
                       >
-                        <Icon
-                          name="collect"
-                          :color="
-                            currentDetail.isFavorite ? '#4fbdd4' : '#5D5D5D'
-                          "
-                        />
+                        <Icon name="collect" :color="'#5D5D5D'" />
+                      </div>
+                      <div
+                        v-if="currentDetail.isFavorite"
+                        title="收藏"
+                        class="subscribe"
+                        @click="articleSet(item, index, 'removeCollect')"
+                      >
+                        <Icon name="collect" :color="'#4fbdd4'" />
                       </div>
                     </div>
-                    <!-- <el-input
-                      v-show="item.isEditReply"
-                      placeholder="请输入内容"
-                      v-model="item.reply"
-                      class="reply_input"
-                    >
-                      <el-button
-                        slot="append"
-                        @click="submitReply(item, index, currentDetail)"
-                        >回复</el-button
-                      >
-                    </el-input> -->
-                    <!-- <div
-                      class="comment-box"
-                      style="margin-bottom: 10px; padding-top: 8px"
-                      v-for="(v, i) in currentDetail.commentList"
-                      :key="i"
-                    >
-                      <div
-                        class="comment-item-container"
-                        @mouseenter="v.isShowReplyText = true"
-                        @mouseleave="v.isShowReplyText = false"
-                      >
-                        <div class="text">
-                          <span
-                            class="comment group-owner-light"
-                            v-if="
-                              v.parent_author && v.author !== v.parent_author
-                            "
-                            >{{ v.parent_author }}</span
-                          >
-                          <span
-                            v-if="
-                              v.parent_author && v.author !== v.parent_author
-                            "
-                            >&nbsp;回复&nbsp;</span
-                          >
-                          <span class="comment group-owner-light">{{
-                            v.body.author
-                          }}</span
-                          ><span>：</span
-                          ><span parsetype="pure" class="text">{{
-                            v.body.body
-                          }}</span>
-                        </div>
-                        <div class="operations">
-                          <div class="time">
-                            {{ v.created.replace('T', '  ') }}
-                          </div>
-                          <div class="operation">
-                            <span
-                              class="reply"
-                              @click="editComment(v, i)"
-                              v-show="v.isShowReplyText"
-                              >回复</span
-                            >
-                          </div>
-                        </div>
-                      </div>
-                      <el-input
-                        v-show="v.isEditReply"
-                        placeholder="请输入内容"
-                        v-model="v.reply"
-                        class="reply_input"
-                      >
-                        <el-button
-                          slot="append"
-                          @click="submitReply(v, i, currentDetail)"
-                          >回复</el-button
-                        >
-                      </el-input>
-                    </div> -->
                     <!-- <Comment
                       style="margin: 0 auto"
                       @doSend="doSend"
@@ -380,12 +398,55 @@
                       :commentNum="commentNum"
                       :avatar="avatar"
                     ></Comment> -->
-                    <Comment
-                      style="margin: 0 auto"
-                      @doSend="submitReply"
-                      :commentList="currentDetail.commentList"
-                      :detail="currentDetail"
-                    ></Comment>
+                    <div class="Comment" :style="{ width: '90%' }">
+                      <div style="display: flex">
+                        <el-avatar
+                          size="large"
+                          :src="
+                            userAvatar
+                              ? userAvatar
+                              : require(`../../assets/defaultAvatarUrl.png`)
+                          "
+                          style="margin: 0 10px"
+                        />
+                        <div style="flex: auto">
+                          <el-input
+                            type="textarea"
+                            :autosize="{ minRows: 4, maxRows: 8 }"
+                            placeholder="说点什么吧"
+                            v-model="textareaConetent"
+                          ></el-input>
+
+                          <div>
+                            <div style="margin: 10px 0">
+                              <el-button
+                                plain
+                                type="primary"
+                                @click="
+                                  submitReply(
+                                    item,
+                                    index,
+                                    currentDetail,
+                                    'ownReply'
+                                  )
+                                "
+                                style="float: right"
+                                >发送</el-button
+                              >
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <Comment
+                        style="margin: 0 auto"
+                        v-for="(commentp, index) in currentDetail.commentList"
+                        :key="index"
+                        :comment="commentp"
+                        :commentindex="index"
+                        :submit="submitReply"
+                        :detail="currentDetail"
+                      ></Comment>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -460,7 +521,7 @@
                   </div>
                   <div class="right">
                     <div class="text-range">(4～10000)</div>
-                    <div @click="submit" class="submit-btn">发布</div>
+                    <div @click="submit()" class="submit-btn">发布</div>
                   </div>
                 </div>
               </div>
@@ -546,6 +607,7 @@
           v-model="subscriptionsInfo.price"
         >
         </el-input>
+
         <el-select
           class="price_select"
           v-model="subscriptionsInfo.currency"
@@ -569,19 +631,30 @@
         v-model="subscriptionsInfo.introduction"
       >
       </el-input>
-      <el-upload
-        class="avatar-uploader"
-        :show-file-list="false"
-        :action="actionUrl"
-        :http-request="onUploadSubImgHandler"
-      >
-        <img
-          v-if="subscriptionsInfo.image"
-          :src="subscriptionsInfo.image"
-          class="avatar-img"
-        />
-        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-      </el-upload>
+      <div style="margin-top: 20px">
+        <div style="margin-bottom: 10px">专栏发文权限：</div>
+        <el-radio v-model="subscriptionsInfo.radio" label="self">自己</el-radio>
+        <el-radio v-model="subscriptionsInfo.radio" label="all"
+          >所有人</el-radio
+        >
+      </div>
+      <div style="margin-top: 20px">
+        <div style="margin-bottom: 10px">专栏封面：</div>
+        <el-upload
+          class="avatar-uploader"
+          :show-file-list="false"
+          :action="actionUrl"
+          :http-request="onUploadSubImgHandler"
+        >
+          <img
+            v-if="subscriptionsInfo.image"
+            :src="subscriptionsInfo.image"
+            class="avatar-img"
+          />
+          <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+        </el-upload>
+      </div>
+
       <span slot="footer" class="dialog-footer create-footer">
         <div class="rule">
           专栏规则： 第一个专栏免费 第二个专栏20busd 第三个及以上80busd
@@ -623,10 +696,11 @@ import {
   hotColumn,
   goTop,
   collect,
+  removeCollect,
   getfavorites
 } from '@/api/special/special'
 import MD5 from 'MD5'
-import { getUser, getAvatars } from '@/api/user/user'
+import { getUser } from '@/api/user/user'
 import { getToken } from '@/utils/auth'
 // import _ecc from '@/utils/ecc/index'
 import axios from 'axios'
@@ -635,6 +709,7 @@ import Signature from '@/utils/ecc/src/signature'
 import { actObj } from '@/utils/act'
 import Icon from '@/components/Icon/index'
 import Comment from '@/components/comment/Comment.vue'
+import { Loading } from 'element-ui'
 const defaultAvatar = require(`../../assets/defaultAvatarUrl.png`)
 
 export default {
@@ -644,6 +719,9 @@ export default {
   },
   data() {
     return {
+      radio: '',
+      activeMenuIndex: '',
+      textareaConetent: '',
       hotColumns: [],
       actionUrl: 'https://steemitimages.com/',
       fileList: [],
@@ -656,12 +734,16 @@ export default {
           label: 'poys'
         },
         {
-          value: 'op',
-          label: 'op'
-        },
-        {
           value: 'ofc',
           label: 'ofc'
+        },
+        {
+          value: 'busd',
+          label: 'busd'
+        },
+        {
+          value: 'bnb',
+          label: 'bnb'
         }
       ],
       searchResult: [],
@@ -756,7 +838,8 @@ export default {
         price: '',
         introduction: '',
         image: '',
-        currency: ''
+        currency: '',
+        radio: ''
       },
       dialogVisible: false,
       subscriptionsList: {},
@@ -764,7 +847,12 @@ export default {
       timeout: '',
       hasColumn: true,
       voteLists: [],
-      avatarLists: []
+      avatarLists: [],
+      articleRefs: {},
+      shortArticleList: [],
+      articleLoading: false,
+      activeMenuId: '1-0',
+      favorites: []
     }
   },
   computed: {
@@ -777,31 +865,56 @@ export default {
     },
     userInfo() {
       return JSON.parse(localStorage.getItem('quhu-userInfo'))
-    },
-    activeMenuId() {
-      return sessionStorage.getItem('selectedMenu')
     }
+    // activeMenuId() {
+    //   return sessionStorage.getItem('selectedMenu')
+    // }
   },
   async created() {
     this.updateColumn()
     this.getHotColumns()
+    this.getCollectList()
   },
   async mounted() {},
   methods: {
-    toTree(list, parId) {
-      let len = list.length
-      function loop(parId) {
-        let res = []
-        for (let i = 0; i < len; i++) {
-          let item = list[i]
-          if (item.parent_author === parId) {
-            item.children = loop(item.author)
-            res.push(item)
-          }
-        }
-        return res
+    async getCollectList() {
+      const loginType = localStorage.getItem('login-type')
+      const favorites = await getfavorites({
+        id:
+          loginType === 'password'
+            ? this.userInfo.user
+            : this.userInfo.eth_account,
+        token: getToken()
+      })
+      if (favorites && favorites.success === 'ok') {
+        this.favorites = favorites.data
       }
-      return loop(parId)
+    },
+    privateManage() {
+      this.activeMenuIndex = 2
+      this.activeMenuId = ''
+    },
+    setItemRef(item, el) {
+      this.articleRefs['article' + item.permlink] = el
+    },
+    buildTreeWithCycle(data, parent_author, visited = {}) {
+      const tree = []
+      for (let i = 0; i < data.length; i++) {
+        const node = data[i]
+        if (node.parent_author === parent_author) {
+          if (visited[node.author]) {
+            // 如果节点已被访问过，说明存在循环引用，跳过该节点
+            continue
+          }
+          visited[node.author] = true
+          const children = this.buildTreeWithCycle(data, node.author, visited)
+          if (children.length) {
+            node.child = children
+          }
+          tree.push(node)
+        }
+      }
+      return tree
     },
     async articleSet(v, i, type) {
       const userInfo = this.userInfo
@@ -827,10 +940,34 @@ export default {
           this.getArticlesByColumn(
             this.selectedColumn || this.subscriptionsList.my[0] || ''
           )
+          const res2 = await goTop({
+            id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
+            steem_id: userInfo.steem_id,
+            token,
+            permlink: [v.author, v.permlink],
+            subscriptions_name: this.selectedColumn,
+            type
+          })
+          if (res2 && res2.success === 'ok') {
+            this.$message.success('取消置顶成功')
+          }
+
           break
         case 'delete':
           this.articleList.splice(i, 1)
-          this.$message.success('删除成功')
+
+          const res3 = await goTop({
+            id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
+            steem_id: userInfo.steem_id,
+            token,
+            permlink: [v.author, v.permlink],
+            subscriptions_name: this.selectedColumn,
+            type
+          })
+          if (res3 && res3.success === 'ok') {
+            this.$message.success('删除成功')
+          }
+
           break
         case 'collect':
           const res1 = await collect({
@@ -838,8 +975,30 @@ export default {
             token: token,
             permlink: [v.author, v.permlink]
           })
-          if (res1.success === 'ok') {
+
+          if (res1 && res1.success === 'ok') {
             this.$message.success('收藏成功')
+            this.articleList.forEach((item) => {
+              if (item.permlink === this.currentDetail.permlink) {
+                this.currentDetail.isFavorite = true
+              }
+            })
+          }
+          break
+        case 'removeCollect':
+          const result = await removeCollect({
+            id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
+            token: token,
+            permlink: [v.author, v.permlink]
+          })
+
+          if (result && result.success === 'ok') {
+            this.$message.success('取消收藏成功')
+            this.articleList.forEach((item) => {
+              if (item.permlink === this.currentDetail.permlink) {
+                this.currentDetail.isFavorite = false
+              }
+            })
           }
           break
         default:
@@ -1041,6 +1200,10 @@ export default {
       if (currentInfo.success === 'ok') {
         if (currentInfo.data) {
           this.subscriptionsList = currentInfo.data.buy_article || {}
+          localStorage.setItem(
+            'quhu-userInfo',
+            JSON.stringify(currentInfo.data)
+          )
         }
         this.getArticlesByColumn(
           sessionStorage.getItem('selectedColumn') ||
@@ -1052,32 +1215,50 @@ export default {
         )
       }
     },
-    async getArticlesByColumn(v, i) {
-      // if (this.$route.path !== '/home') {
-      //   this.$router.push('/home')
-      // }
+    getArticlesData() {},
+    async getArticlesByColumn(v, i, type) {
+      // console.log(v, this.$route.query.selectedColumn)
+      if (
+        v !== this.$route.query.selectedColumn &&
+        this.$route.path !== '/home'
+      ) {
+        this.$router.push('/home')
+      }
+      this.articleLoading = true
+      const { author, permlink } = this.$route.query
+
       const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
       let selectedMenu = '1-0'
-      this.selectedColumn = v
-      if (this.subscriptionsList.my.indexOf(v) !== -1) {
-        selectedMenu = '1-' + i
-      } else {
-        if (this.subscriptionsList.join.indexOf(v) !== -1) {
-          selectedMenu = '2-' + i
+      if (v) {
+        this.selectedColumn = v
+        if (this.subscriptionsList.my.indexOf(v) !== -1) {
+          selectedMenu = '1-' + i
+          this.activeMenuIndex = ''
+        } else {
+          if (this.subscriptionsList.join.indexOf(v) !== -1) {
+            selectedMenu = '2-' + i
+            this.activeMenuIndex = ''
+          }
         }
+
+        sessionStorage.setItem('selectedColumn', v)
+        sessionStorage.setItem('selectedMenu', selectedMenu)
+      } else {
+        this.selectedColumn = ''
+        this.activeMenuIndex = 0
+        this.activeMenuId = ''
       }
 
-      sessionStorage.setItem('selectedColumn', v)
-      sessionStorage.setItem('selectedMenu', selectedMenu)
-      this.hasColumn =
-        this.subscriptionsList.join.indexOf(this.selectedColumn) !== -1
       if (localStorage.getItem('quhu-userInfo')) {
         const res = await getArticles({
           id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
           jsonrpc: '2.0',
           method: 'bridge.get_ranked_posts',
-          params: { sort: 'created', tag: 's' + MD5(v).substring(0, 10) }
+          params: {
+            sort: 'created',
+            tag: type === 'all' ? 'd-onlyfun' : 's' + MD5(v).substring(0, 10)
+          }
         })
 
         if (res && res.result) {
@@ -1093,9 +1274,21 @@ export default {
             element.body = this.eval(element.body)
             element.isEditReply = false
             element.reply = ''
+
             element.isShowDetailDialog = false
+
             element.isPraised = false
             element.isFavorite = false
+            if (this.favorites.length > 0) {
+              this.favorites.forEach((ele) => {
+                if (ele.permlink[1] === element.permlink) {
+                  element.isFavorite = true
+                } else {
+                  element.isFavorite = false
+                }
+              })
+            }
+            console.log(element.isFavorite)
             // console.log(element.body.status)
             if (element.body.status === 'top') {
               // arr.push(element)
@@ -1103,16 +1296,30 @@ export default {
               // index = index - 1
               newRes.unshift(newRes.splice(index, 1)[0])
             }
+            if (author === element.author && permlink === element.permlink) {
+              // console.log(this.articleRefs)
+              element.isShowDetailDialog = false
+              this.goDetail(
+                {
+                  author,
+                  permlink
+                },
+                element
+              )
+            }
           })
-          console.log(newRes)
-          // console.log(formatRes)
+          console.log(formatRes)
           newRes = arr.concat(newRes)
+
           this.articleList = newRes
         }
+        this.articleLoading = false
       }
     },
     createColumn() {
       this.dialogVisible = true
+      this.activeMenuIndex = 1
+      this.activeMenuId = ''
     },
     handleSubscriptionsClose() {
       this.dialogVisible = false
@@ -1121,15 +1328,47 @@ export default {
         price: '',
         introduction: '',
         image: '',
-        currency: ''
+        currency: '',
+        radio: ''
       }
     },
     async submitSubscriptions() {
-      const { name, introduction, image, price, currency } =
+      const { name, introduction, image, price, currency, radio } =
         this.subscriptionsInfo
+      const reg = /^[+]{0,1}(\d+)$/
+
+      if (!reg.test(price)) {
+        this.$message.error('价格请输入正整数！')
+        return
+      }
+      if (!name.trim()) {
+        this.$message.error('请输入专栏名称！')
+        return
+      }
+      if (!price) {
+        this.$message.error('请选择专栏价格！')
+        return
+      }
+      if (!currency) {
+        this.$message.error('请选择币种！')
+        return
+      }
+      if (!introduction.trim()) {
+        this.$message.error('请输入专栏简介！')
+        return
+      }
+      if (!radio) {
+        this.$message.error('请选择发文权限！')
+        return
+      }
+      if (!image) {
+        this.$message.error('请选择专栏封面！')
+        return
+      }
+
       const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
-      const res = await subscriptions({
+      const params = {
         id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
         token: getToken(),
         user_name: userInfo.user_name,
@@ -1138,7 +1377,12 @@ export default {
         introduction: introduction,
         image: image,
         price: price + currency
-      })
+      }
+      if (radio === 'all') {
+        params.allow = 'all'
+      }
+      const res = await subscriptions(params)
+
       if (res && res.success === 'ok') {
         this.updateColumn()
         this.$message.success('创建专栏成功')
@@ -1154,8 +1398,7 @@ export default {
     handleClose(key, keyPath) {
       // console.log(key, keyPath)
     },
-    async submitReply(v, i, detail, text) {
-      console.log(v, i, detail, text)
+    async submitReply(v, i, detail, type) {
       const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
       const {
@@ -1166,40 +1409,72 @@ export default {
         parent_permlink,
         created,
         reply
-      } = v ? v : detail
+      } = v
       const res = await post({
         type: 'comment',
         id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
         token: getToken(),
         subscriptions_name: detail.body.subscriptions_name,
-        permlink: [
-          text ? detail.author : v.author,
-          text ? detail.permlink : v.permlink
-        ],
+        permlink: [v.author, v.permlink],
         title: '',
-        body: text ? text : v.reply
+        body: type === 'ownReply' ? this.textareaConetent : v.reply
       })
 
       if (res && res.success === 'ok') {
         this.$message.success('回复成功')
-        v.isEditReply = false
-        this.currentDetail.commentList.unshift({
-          author,
-          permlink,
-          body: Object.assign({}, body, { body: reply }),
-          parent_author,
-          parent_permlink,
-          created,
-          reply,
-          children: []
-        })
+        if (type === 'ownReply') {
+          console.log(new Date().toLocaleString(), body)
+          this.currentDetail.commentList.push({
+            author: res.data.author,
+            permlink: res.data.permlink,
+            body: Object.assign({}, body, {
+              body: this.textareaConetent,
+              avatar: this.userAvatar,
+              author: this.userInfo.user_name,
+              created: new Date()
+                .toLocaleString()
+                .replace(' ', 'T')
+                .replace('/', '-')
+            }),
+            parent_author,
+            parent_permlink,
+            created,
+            reply: this.textareaConetent,
+            child: []
+          })
+        } else {
+          console.log(new Date().toLocaleString(), body)
+          v.child.push({
+            author: res.data.author,
+            permlink: res.data.permlink,
+            body: Object.assign({}, body, {
+              body: v.reply,
+              avatar: this.userAvatar,
+              author: this.userInfo.user_name,
+              created: new Date()
+                .toLocaleString()
+                .replace(' ', 'T')
+                .replace('/', '-')
+            }),
+            parent_author: parent_author,
+            parent_permlink: parent_permlink,
+            created,
+            reply: v.reply,
+            child: []
+          })
+        }
 
         // v.reply = ''
       } else {
         this.$message.error('发文失败！ 请重新发文')
         this.closeEditor()
-        v.isEditReply = false
+
         // v.reply = ''
+      }
+      if (v) {
+        v.isEditReply = false
+      } else {
+        detail.isEditReply = false
       }
     },
     postArticle() {
@@ -1222,14 +1497,18 @@ export default {
       }
 
       // console.log(imgHtml)
+      const loading = Loading.service({
+        text: '加载中...',
+        spinner: 'el-icon-loading ElementLoading',
+        background: 'rgba(0, 0, 0, 0.2)'
+      })
       const res = await post({
         type: 'post',
         id: loginType === 'password' ? userInfo.user : userInfo.eth_account,
         token: getToken(),
         user_name: userInfo.user_name,
         steem_id: userInfo.steem_id,
-        subscriptions_name:
-          this.selectedColumn || this.subscriptionsList.my[0] || '',
+        subscriptions_name: this.selectedColumn || '',
         permlink: '',
         title: this.titleText,
         body: this.content + imgHtml
@@ -1247,6 +1526,9 @@ export default {
         this.$message.error('发文失败！ 请重新发文')
         this.closeEditor()
       }
+      if (loading) {
+        loading.close()
+      }
     },
     closeEditor() {
       this.showEditor = false
@@ -1255,9 +1537,19 @@ export default {
       this.fileList = []
     },
     closeDetail(val) {
+      // console.log(val)
       val.isShowDetailDialog = false
     },
-    async goDetail(val, index) {
+    async goDetail(val, ele) {
+      if (ele) {
+        setTimeout(() => {
+          console.log(this.articleRefs['article' + ele.permlink])
+          const el = this.articleRefs['article' + ele.permlink]
+          // const target = el.offsetTop
+          el.scrollIntoView()
+        }, 500)
+      }
+
       const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
       const token = getToken()
@@ -1267,20 +1559,15 @@ export default {
         method: 'bridge.get_discussion',
         params: { author: val.author, permlink: val.permlink }
       })
-      const votes = await getVote({ permlink: val.permlink })
-      const favorites = await getfavorites({
-        id: loginType === 'password' ? userInfo.user : userInfo.eth_account,
-        token
+      const votes = await getVote({
+        permlink: val.permlink,
+        steem_id: userInfo.steem_id
       })
-      const formatFavorites = favorites.data.map((favorite, i) => {
-        return favorite[1]
-      })
-      console.log(val, votes, formatFavorites)
-
       const obj = res.result[val.author + '/' + val.permlink]
       // const commentList = this.getReply(obj, res.result)
       const commentList = []
       const result = Object.assign(res.result, {})
+      // 判断评论和正文
       for (const key in result) {
         if (
           key.startsWith('onlyfun-data', 0) &&
@@ -1294,26 +1581,35 @@ export default {
         comment.isShowReplyText = false
         // comment.isEditReply = false
         comment.reply = ''
+        comment.child = []
       })
-      const commentTree = this.toTree(commentList, val.author)
-      console.log(commentTree)
+
+      // const commentTree = this.toTree(commentList, val.author)
+      // console.log(commentList[0].parent_author)
+      const commentTree = this.buildTreeWithCycle(commentList, val.author)
+      // console.log(commentTree)
       if (obj) {
         obj.body = this.eval(obj.body)
         let isPraised = false
         let voteNum = 0
         let isFavorite = false
         const vote = votes.data.forEach((item, i) => {
-          isPraised = item.list.indexOf(userInfo.steem_id) !== -1
+          isPraised = item.voted
           voteNum = item.vote
+          isFavorite = item.favorites
         })
-        isFavorite = formatFavorites.indexOf(val.permlink) !== -1
+        // isFavorite = formatFavorites.indexOf(val.permlink) !== -1
         // console.log(isFavorite, formatFavorites, val.permlink)
         obj.isPraised = isPraised
         obj.voteNum = voteNum
         obj.isFavorite = isFavorite
         obj.commentList = commentTree
         this.currentDetail = obj
-        val.isShowDetailDialog = true
+        if (ele) {
+          ele.isShowDetailDialog = true
+        } else {
+          val.isShowDetailDialog = true
+        }
       }
       // console.log(val)
     },
@@ -1346,6 +1642,33 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.short-square {
+}
+.menu-style {
+  padding: 0 20px;
+  font-size: 14px;
+  color: #303133;
+  cursor: pointer;
+  transition: border-color 0.3s, background-color 0.3s, color 0.3s;
+  box-sizing: border-box;
+  height: 56px;
+  line-height: 56px;
+}
+.menu-style:hover {
+  background-color: rgb(204, 204, 204);
+}
+.menu-style * {
+  vertical-align: middle;
+}
+.activeText {
+  color: rgb(79, 189, 212);
+}
+::v-deep .el-submenu__icon-arrow.el-icon-arrow-down {
+  display: none;
+}
+::v-deep .el-submenu.is-opened > .el-submenu__title .el-submenu__icon-arrow {
+  display: none;
+}
 .create-footer {
   position: relative;
   .rule {
@@ -1499,7 +1822,7 @@ export default {
   position: fixed;
   width: 100%;
   height: 100%;
-  overflow-y: scroll;
+  overflow-y: auto;
   top: 0;
   left: 0;
   background: rgba(0, 0, 0, 0.5);
@@ -1508,7 +1831,7 @@ export default {
 .topic-detail .content {
   width: 80%;
   min-width: 200px;
-  margin: 60px auto;
+  margin: 10px auto;
   min-height: 300px;
 }
 .header-container {
@@ -1620,7 +1943,7 @@ export default {
 }
 .post-article {
   position: relative;
-  padding: 2px 8px;
+  // padding: 2px 8px;
   margin-left: 16px;
   height: 30px;
   line-height: 30px;
@@ -1928,7 +2251,7 @@ export default {
   border-radius: 4px;
   padding: 20px 30px 30px;
   max-height: 2000px;
-  overflow: scroll;
+  // overflow: auto;
 }
 .el-col {
   margin-bottom: 20px;

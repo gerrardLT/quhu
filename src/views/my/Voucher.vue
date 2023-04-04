@@ -20,23 +20,30 @@
       <div class="coin-header">
         <div class="coin-title">币种资产</div>
         <div class="balance-title">余额</div>
+        <div class="balance-title">锁仓额</div>
       </div>
       <div class="coin">
         <div class="coin-item" v-for="item in coinList" :key="item.id">
           <div class="coin-name">{{ item.name }}</div>
           <div class="balance">{{ item.balance }}</div>
+          <div class="balance">{{ item.lock_balance }}</div>
         </div>
       </div>
     </div>
     <div class="cost-list">
       <div class="cost-title">交易记录</div>
-      <el-table :data="tableData" stripe style="width: 100%">
-        <el-table-column prop="date" label="日期" width="180">
+      <el-table
+        :data="tableData"
+        stripe
+        style="width: 100%"
+        v-loading="tableLoading"
+      >
+        <el-table-column prop="timestamp" label="日期" width="240">
         </el-table-column>
-        <el-table-column prop="order" label="订单号" width="180">
+        <el-table-column prop="orderid" label="订单号" width="180">
         </el-table-column>
-        <el-table-column prop="name" label="商品名"> </el-table-column>
-        <el-table-column prop="payType" label="支付币种" width="180">
+        <el-table-column prop="type" label="商品名"> </el-table-column>
+        <el-table-column prop="token" label="支付币种" width="180">
         </el-table-column>
         <el-table-column prop="amount" label="支付金额"> </el-table-column>
       </el-table>
@@ -46,18 +53,23 @@
 
 <script>
 import clipboard from '@/utils/clipboard'
+import { transactions } from '@/api/user/user'
+import { getToken } from '@/utils/auth'
+import { transformTime } from '@/utils/tool'
+// import { moment } from 'moment'
 export default {
   data() {
     return {
       address: '',
       isShowAddress: false,
+      tableLoading: false,
       tableData: [
         {
-          date: '2023-1-1',
-          order: '1232',
-          name: '会员',
-          payType: 'ofc',
-          amount: '123'
+          timestamp: '',
+          orderid: '',
+          type: '',
+          token: '',
+          amount: ''
         }
       ]
     }
@@ -70,14 +82,37 @@ export default {
         arr.push({
           name: key,
           balance: userInfo.lock_token[key],
+          lock_balance: userInfo.token_num[key],
           id: i
         })
       })
-      console.log(arr)
       return arr || []
+    },
+    userInfo() {
+      return JSON.parse(localStorage.getItem('quhu-userInfo')) || {}
+    },
+    loginType() {
+      return localStorage.getItem('login-type')
     }
   },
-  created() {},
+  async created() {
+    this.tableLoading = true
+    const res = await transactions({
+      id:
+        this.loginType === 'eth'
+          ? this.userInfo.eth_account
+          : this.userInfo.user,
+      token: getToken()
+    })
+    if (res && res.success) {
+      res.data.forEach((element) => {
+        console.log(element.timestamp)
+        element.timestamp = transformTime(element.timestamp)
+      })
+      this.tableData = res.data
+    }
+    this.tableLoading = false
+  },
   mounted() {},
   methods: {
     showAddress() {
@@ -120,12 +155,10 @@ export default {
   height: 60px;
   border: 1px solid #c0c0c0;
   font-weight: bold;
-  border-radius: 10px 10px 0 0;
   .coin-title {
     flex: 1;
     text-align: center;
     line-height: 60px;
-    border-right: 1px solid #c0c0c0;
   }
   .balance-title {
     flex: 1;
@@ -159,7 +192,6 @@ export default {
   flex: 1;
   text-align: center;
   line-height: 100px;
-  border-right: 1px solid #c0c0c0;
 }
 .balance {
   flex: 1;

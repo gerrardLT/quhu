@@ -4,7 +4,7 @@
       <Info></Info>
     </div>
     <el-row class="special_row">
-      <el-col :span="18" class="my_special">
+      <el-col :span="18" class="my_special" v-loading="specialLoading">
         <div class="special_top">
           <span>我的专栏</span>
           <el-button class="learnMore" @click="learnMoreSpecial" type="text"
@@ -12,22 +12,36 @@
           >
         </div>
         <div v-if="specialList.length > 0" class="special_content">
-          <div v-for="(item, i) in specialList" :key="i" class="special_item">
-            <div class="title">{{ item.title }}</div>
-            <div class="introduce">这是简介</div>
-            <div class="members">共{{ item.member }}人</div>
+          <div
+            v-for="(item, i) in specialList"
+            :key="i"
+            class="special_item"
+            @click="goColumnDetail(item)"
+            title="点击查看专栏详情"
+          >
+            <img :src="item.image" class="image" alt="" />
+            <div class="right">
+              <div class="title">{{ item.title }}</div>
+              <div class="members">共{{ item.member }}人</div>
+            </div>
           </div>
         </div>
         <el-empty v-else description="暂无数据"></el-empty>
       </el-col>
-      <el-col :span="6" class="collect">
+      <el-col :span="6" class="collect" v-loading="favoriteLoading">
         <div class="collect_title">我的收藏</div>
         <div v-if="favorites.length > 0" class="collect_content">
-          <div class="collect_item" v-for="(item, i) in favorites" :key="i">
-            <img :src="item.image" alt="" class="collect_left" />
+          <div
+            class="collect_item"
+            v-for="(item, i) in favorites"
+            :key="i"
+            @click="goLink(item, i)"
+            title="点击跳转文章详情"
+          >
+            <!-- <img :src="userInfo.avatar" alt="" class="collect_left" /> -->
             <div class="collect_right">
-              <div class="title">{{ item.name }}</div>
-              <div class="content">共{{ item.member }}人</div>
+              <div class="title" :title="item.title">{{ item.title }}</div>
+              <div class="content" :title="item.body">{{ item.body }}</div>
             </div>
           </div>
         </div>
@@ -35,7 +49,7 @@
       </el-col>
     </el-row>
     <el-row>
-      <el-col :span="18">
+      <el-col :span="18" v-loading="trailLoading">
         <el-card class="box-card">
           <div slot="header">
             <span>最新动态</span>
@@ -43,8 +57,14 @@
               >查看更多</el-button
             > -->
           </div>
-          <div v-if="trailList.length > 0">
-            <div v-for="(v, i) in trailList" :key="i" class="trail_item">
+          <div v-if="trailList.length > 0" class="trail_container">
+            <div
+              v-for="(v, i) in trailList"
+              :key="i"
+              class="trail_item"
+              @click="goLink(v, i)"
+              title="点击跳转文章详情"
+            >
               <img :src="userInfo.avatar" alt="" />
               <div class="content">
                 <div>{{ v.title }}</div>
@@ -70,14 +90,17 @@
 <script>
 import { cloneDeep } from 'lodash'
 import Info from './component/info.vue'
-import { trail } from '@/api/user/user'
+import { trail, getUser } from '@/api/user/user'
 import { getToken } from '@/utils/auth'
+import { getfavorites } from '@/api/special/special'
 export default {
   name: 'Introduce',
   components: {
     Info
   },
   async created() {
+    this.trailLoading = true
+    this.favoriteLoading = true
     const res = await trail({
       id:
         this.loginType === 'eth'
@@ -88,6 +111,18 @@ export default {
     if (res && res.success === 'ok') {
       this.trailList = res.data
     }
+    this.trailLoading = false
+    const favorites = await getfavorites({
+      id:
+        this.loginType === 'password'
+          ? this.userInfo.user
+          : this.userInfo.eth_account,
+      token: getToken()
+    })
+    if (favorites && favorites.success === 'ok') {
+      this.favorites = favorites.data
+    }
+    this.favoriteLoading = false
   },
   computed: {
     userInfo() {
@@ -109,17 +144,35 @@ export default {
         }
       })
       return arr
-    },
-    favorites() {
-      return cloneDeep(this.userInfo.article).splice(0, 6)
     }
   },
   data() {
     return {
-      trailList: []
+      trailList: [],
+      favorites: [],
+      currentInfo: {},
+      specialLoading: false,
+      favoriteLoading: false,
+      trailLoading: false
     }
   },
   methods: {
+    goColumnDetail(v) {
+      console.log(v)
+      this.$router.push({
+        path: '/columnDetail',
+        query: {
+          subName: v.title
+        }
+      })
+    },
+    goLink(v, i) {
+      this.$EventBus.$emit('changeTab', { name: 'home' }, 0, {
+        author: v.permlink[0],
+        permlink: v.permlink[1],
+        isShowDetailDialog: true
+      })
+    },
     learnMoreSpecial() {
       this.$EventBus.$emit('changeTab', { name: 'home' }, 0)
     },
@@ -163,6 +216,9 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.trail_container {
+  overflow: auto;
+}
 .special_row {
   .my_special {
     padding: 10px 20px;
@@ -181,20 +237,40 @@ export default {
     .special_content {
       display: flex;
       flex-wrap: wrap;
+      justify-content: flex-start;
       width: 100%;
       .special_item {
         min-width: 28%;
         height: 100px;
         border: 1px solid #c0c0c0;
+        margin-left: 1%;
         margin-bottom: 10px;
         margin-top: 10px;
         padding: 2%;
-        .title {
+        display: flex;
+        cursor: pointer;
+        img {
+          width: 50px;
+          height: 50px;
+          object-fit: cover;
+          border-radius: 50%;
         }
-        .introduce {
-          min-height: 50px;
-        }
-        .members {
+        .right {
+          padding-left: 20px;
+          height: 50px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-around;
+          min-width: 200px;
+          max-width: 400px;
+          .title {
+            width: 90%;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+          }
+          .members {
+          }
         }
       }
     }
@@ -206,6 +282,7 @@ export default {
     padding: 10px 20px;
     font-size: 14px;
     height: 350px;
+    overflow: auto;
     .collect_title {
       margin-bottom: 20px;
     }
@@ -213,24 +290,31 @@ export default {
       .collect_item {
         height: 50px;
         display: flex;
-        .collect_left {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-        }
+        cursor: pointer;
+        // .collect_left {
+        //   width: 40px;
+        //   height: 40px;
+        //   border-radius: 50%;
+        // }
         .collect_right {
           font-size: 12px;
-          padding-left: 20px;
+          // padding-left: 20px;
           height: 40px;
           width: calc(100% - 40px);
           .title {
             width: 100%;
             height: 20px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
           }
           .content {
             width: 100%;
             height: 20px;
             color: #c0c0c0;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
           }
         }
       }
@@ -257,6 +341,8 @@ export default {
   height: 80px;
   justify-content: center;
   align-items: center;
+  border-bottom: 1px dashed #c0c0c0;
+  cursor: pointer;
   img {
     width: 70px;
     height: 70px;
@@ -270,8 +356,15 @@ export default {
     font-size: 14px;
     margin-left: 20px;
     width: calc(100% - 50px);
+    position: relative;
     div {
       margin-bottom: 5px;
+    }
+    .steemLink {
+      position: absolute;
+      right: 5px;
+      bottom: 10px;
+      font-size: 12px;
     }
     .detail {
       width: 100%;

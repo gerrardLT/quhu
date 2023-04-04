@@ -73,3 +73,13 @@ export async function trail (data) {
     data
   })
 }
+
+
+// 交易记录
+export async function transactions (data) {
+  return request({
+    url: '/transactions',
+    method: 'post',
+    data
+  })
+}

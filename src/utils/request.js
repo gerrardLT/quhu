@@ -47,11 +47,11 @@ service.interceptors.request.use((config) => {
     config.headers['QUHU-AUTH-TOKEN'] = md5(config.data.id || '')
   } else {
     if (userInfo) {
-      const authId = userInfo.eth_account === 'none' ? userInfo.user : userInfo.eth_account
+      const authId = localStorage.getItem('login-type') === 'eth' ? userInfo.eth_account:userInfo.user
       config.headers['QUHU-AUTH-TOKEN'] = md5(authId)
     }
   }
-
+// console.log(config.url)
   // loading = Loading.service({
   //   text: '加载中...',
   //   spinner: 'el-icon-loading ElementLoading',

@@ -45,6 +45,7 @@ import { sha256 } from '@/utils/ecc/src/hash'
 import Signature from '@/utils/ecc/src/signature'
 import { actObj } from '@/utils/act'
 import axios from 'axios'
+import { Loading } from 'element-ui'
 export default {
   name: 'Write',
   data() {
@@ -242,6 +243,11 @@ export default {
       const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
       const selectedColumn = this.$route.query.selectedColumn
+      const loading = Loading.service({
+        text: '加载中...',
+        spinner: 'el-icon-loading ElementLoading',
+        background: 'rgba(0, 0, 0, 0.2)'
+      })
       const res = await post({
         type: 'post',
         id: loginType === 'password' ? userInfo.user : userInfo.eth_account,
@@ -260,6 +266,9 @@ export default {
         }, 1000)
       } else {
         this.$message.error('发文失败！ 请重新发文')
+      }
+      if (loading) {
+        loading.close()
       }
     }
   }

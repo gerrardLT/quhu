@@ -93,11 +93,13 @@ export default {
     window.addEventListener(
       'popstate',
       function (e) {
-        const path = e.currentTarget.location.hash
-          .split('?')[0]
-          .replace('#/', '')
-        self.activeName = path
-        self.toggleStyle(self.nameList.indexOf(path))
+        console.log(e)
+        const path = e.currentTarget.location.pathname
+        // self.toggleStyle(self.nameList.indexOf(path))
+        self.tabClick(
+          { name: path.replace('/', '') },
+          self.nameList.indexOf(path)
+        )
       },
       false
     )
@@ -108,8 +110,8 @@ export default {
         : sessionStorage.getItem('tabName')
     }
     this.toggleStyle(this.nameList.indexOf(path))
-    this.$EventBus.$on('changeTab', (v, index) => {
-      this.tabClick(v, index)
+    this.$EventBus.$on('changeTab', (v, index, query) => {
+      this.tabClick(v, index, query)
     })
   },
   // beforeRouteEnter(to, from, next) {
@@ -179,12 +181,16 @@ export default {
         cb(this.searchResult)
       }
     },
-    tabClick(v, i) {
+    tabClick(v, i, query) {
+      console.log(query)
       this.activeName = v.name
       sessionStorage.setItem('tabName', v.name)
       if (this.$route.path !== '/' + this.activeName) {
         this.toggleStyle(i)
-        this.$router.push('/' + this.activeName)
+        this.$router.push({
+          path: '/' + this.activeName,
+          query: query
+        })
       } else {
         // location.reload()
       }

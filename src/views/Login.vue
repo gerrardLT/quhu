@@ -62,6 +62,7 @@ import { mapActions } from 'vuex'
 import MD5 from 'MD5'
 import { login, register } from '@/api/store/login'
 import { setToken } from '@/utils/auth'
+import { Loading } from 'element-ui'
 export default {
   mounted() {
     this.invitedId = this.$route.query.invitedId
@@ -219,11 +220,19 @@ export default {
             '密码应为字母，数字，特殊符号(~!@#$%^&*()_.)，两种及以上组合，8-16位字符串，如：xxxxx@abc'
           )
         } else {
+          const loading = Loading.service({
+            text: '加载中...',
+            spinner: 'el-icon-loading ElementLoading',
+            background: 'rgba(0, 0, 0, 0.2)'
+          })
           if (this.userType === 'login') {
             login({
               type: 'password',
               data: [user, MD5(password)]
             }).then((data) => {
+              if (loading) {
+                loading.close()
+              }
               setToken(data.token)
               localStorage.setItem('login-type', 'password')
               this.$message.success('登录成功！')
@@ -242,6 +251,9 @@ export default {
               captcha: '',
               invitedId: this.invitedId || ''
             }).then((data) => {
+              if (loading) {
+                loading.close()
+              }
               if (data.success === 'ok') {
                 this.loginForm = {
                   user,

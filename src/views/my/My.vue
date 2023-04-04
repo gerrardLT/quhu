@@ -35,12 +35,31 @@
 </template>
 
 <script>
+import { getUser } from '@/api/user/user'
+import { getToken } from '@/utils/auth'
 export default {
   name: 'My',
-  async created() {},
+  async created() {
+    const currentInfo = await getUser({
+      id:
+        this.loginType === 'eth'
+          ? this.userInfo.eth_account
+          : this.userInfo.user,
+      token: getToken()
+    })
+    if (currentInfo && currentInfo.success === 'ok') {
+      localStorage.setItem('quhu-userInfo', JSON.stringify(currentInfo.data))
+    }
+  },
   computed: {
     isMainPage() {
       return this.$route.path === '/introduce'
+    },
+    userInfo() {
+      return JSON.parse(localStorage.getItem('quhu-userInfo')) || {}
+    },
+    loginType() {
+      return localStorage.getItem('login-type')
     }
   },
   data() {

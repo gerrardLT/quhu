@@ -29,12 +29,7 @@
                   :disabled="userChanged"
                 ></el-input>
               </el-form-item>
-              <el-form-item
-                label="密码"
-                prop="password"
-                v-if="!userChanged"
-                style="width: 400px"
-              >
+              <el-form-item label="密码" prop="password" style="width: 400px">
                 <el-input
                   v-model="baseInfoForm.password"
                   clearable
@@ -42,12 +37,15 @@
                   show-password
                 ></el-input>
               </el-form-item>
-              <el-form-item>
-                <el-button type="primary" @click="save">保存</el-button>
+              <el-form-item class="save_btn">
                 <el-button
                   type="primary"
-                  @click="bindEthAccount"
-                  style="margin-left: 100px"
+                  v-if="!userChanged"
+                  style="margin-right: 80px"
+                  @click="save"
+                  >保存</el-button
+                >
+                <el-button type="primary" @click="bindEthAccount"
                   >绑定ETH账号</el-button
                 >
               </el-form-item>
@@ -136,9 +134,9 @@
 import Icon from '@/components/Icon/index'
 import Info from './component/info.vue'
 import MD5 from 'MD5'
-import { mapState } from 'vuex'
 import { bindEth, changePwd } from '@/api/user/user'
 import { getToken } from '@/utils/auth'
+import { Loading } from 'element-ui'
 
 export default {
   components: {
@@ -197,9 +195,9 @@ export default {
     isEthLogin() {
       return localStorage.getItem('login-type') === 'eth'
     },
-    ...mapState({
-      userInfo: (state) => state.userInfo
-    }),
+    userInfo() {
+      return JSON.parse(localStorage.getItem('quhu-userInfo')) || {}
+    },
     userChanged() {
       return this.userInfo.user !== 'none'
     }
@@ -242,6 +240,11 @@ export default {
 
       if (this.safeInfoForm.newPassword === this.safeInfoForm.passwordAgain) {
         if (loginType === 'password') {
+          const loading = Loading.service({
+            text: '加载中...',
+            spinner: 'el-icon-loading ElementLoading',
+            background: 'rgba(0, 0, 0, 0.2)'
+          })
           changePwd({
             id: userInfo.user,
             token,
@@ -250,6 +253,9 @@ export default {
             sign: ''
           }).then((res) => {
             if (res && res.success === 'ok') {
+              if (loading) {
+                loading.close()
+              }
               self.$message.success('修改成功！')
               this.safeInfoForm = {
                 oldPassword: '',
@@ -308,7 +314,7 @@ export default {
         this.$message.error('密码不一致，请重新输入')
       }
     },
-    callMeta(fn) {
+    callMeta(fn, signType) {
       const self = this
       window.ethereum
         .request({ method: 'eth_requestAccounts' })
@@ -321,7 +327,7 @@ export default {
             self.Web3.givenProvider || 'ws://some.local-or-remote.node:8546'
           )
           web3.eth.personal.sign(
-            web3.utils.utf8ToHex('eth'),
+            web3.utils.utf8ToHex(signType),
             accounts[0],
             (err, res) => {
               fn(err, res, accounts)
@@ -351,7 +357,7 @@ export default {
           if (typeof window.ethereum.isMetaMask === 'undefined') {
             self.$message.error('请安装 MetaMask！')
           } else {
-            self.callMeta(self.handleSign)
+            self.callMeta(self.handleSign, 'change')
           }
         } else {
           self.$message.error('请安装 MetaMask！')
@@ -371,22 +377,35 @@ export default {
       const token = getToken()
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
       const self = this
-      this.callMeta(async (err, res, account) => {
-        if (err) {
-          self.$message.error('签名失败，因为' + err.message)
-        } else {
-          const result = await bindEth({
-            id: userInfo.user,
-            token,
-            password: '',
-            eth_account: account[0],
-            sign: res
-          })
-          if (res && res.success === 'ok') {
-            self.$message.success('绑定成功！')
+      if (this.baseInfoForm.password.trim() === '') {
+        self.$message.error('请输入密码！')
+        return
+      } else {
+        this.callMeta(async (err, res, account) => {
+          if (err) {
+            self.$message.error('签名失败，因为' + err.message)
+          } else {
+            const loading = Loading.service({
+              text: '加载中...',
+              spinner: 'el-icon-loading ElementLoading',
+              background: 'rgba(0, 0, 0, 0.2)'
+            })
+            const result = await bindEth({
+              id: userInfo.user,
+              token,
+              password: MD5(this.baseInfoForm.password),
+              eth_account: account[0],
+              sign: res
+            })
+            if (res && res.success === 'ok') {
+              self.$message.success('绑定成功！')
+            }
+            if (loading) {
+              loading.close()
+            }
           }
-        }
-      })
+        }, 'eth')
+      }
     }
   },
 
@@ -401,6 +420,10 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.save_btn {
+  display: flex;
+  justify-content: center;
+}
 .tab_content {
   height: 500px;
   display: flex;
