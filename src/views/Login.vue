@@ -280,6 +280,21 @@ export default {
 </script>
 
 <style scoped lang="scss">
+@media only screen and (max-width: 500px) {
+  .logo_container {
+    right: 16% !important;
+    top: 20% !important;
+  }
+  .login_box {
+    width: auto !important;
+  }
+  .login_container {
+    transform: scale(0.5);
+    transform-origin: top left;
+    width: 100%;
+    height: 200% !important;
+  }
+}
 .login_container {
   background-image: url('../assets/fengwo.jpg');
   // background-image: url('../assets/quhu-bglogo.jpg');

@@ -7,9 +7,9 @@
       <el-col :span="18" class="my_special" v-loading="specialLoading">
         <div class="special_top">
           <span>我的专栏</span>
-          <el-button class="learnMore" @click="learnMoreSpecial" type="text"
+          <!-- <el-button class="learnMore" @click="learnMoreSpecial" type="text"
             >查看更多</el-button
-          >
+          > -->
         </div>
         <div v-if="specialList.length > 0" class="special_content">
           <div
@@ -93,6 +93,7 @@ import Info from './component/info.vue'
 import { trail, getUser } from '@/api/user/user'
 import { getToken } from '@/utils/auth'
 import { getfavorites } from '@/api/special/special'
+
 export default {
   name: 'Introduce',
   components: {
@@ -124,6 +125,9 @@ export default {
     }
     this.favoriteLoading = false
   },
+  mounted() {
+    // console.log(this.$store.state.userInfo)
+  },
   computed: {
     userInfo() {
       return JSON.parse(localStorage.getItem('quhu-userInfo')) || {}
@@ -131,17 +135,14 @@ export default {
     loginType() {
       return localStorage.getItem('login-type')
     },
-
     specialList() {
       const arr = []
       this.userInfo.article.forEach((e, i) => {
-        if (i < 6) {
-          arr.push({
-            title: e.name,
-            image: e.image,
-            member: e.member
-          })
-        }
+        arr.push({
+          title: e.name,
+          image: e.image,
+          member: e.member
+        })
       })
       return arr
     }
@@ -157,8 +158,16 @@ export default {
     }
   },
   methods: {
+    copy(e) {
+      const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+      clipboard(
+        'https://app.onlyfun.city/login?invitedId=' + userInfo.invitedId,
+        e
+      )
+      this.$message.success('复制成功！')
+    },
     goColumnDetail(v) {
-      console.log(v)
+      // console.log(v)
       this.$router.push({
         path: '/columnDetail',
         query: {
@@ -216,9 +225,29 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.box-card {
+  max-height: 400px;
+  overflow-y: scroll;
+}
+.box-card::-webkit-scrollbar {
+  display: none;
+}
+
+.box-card::-webkit-scrollbar {
+  width: 0 !important;
+}
+/*IE 10+*/
+.box-card {
+  -ms-overflow-style: none;
+}
+/*Firefox*/
+.box-card {
+  overflow: -moz-scrollbars-none;
+}
 .trail_container {
   overflow: auto;
 }
+
 .special_row {
   .my_special {
     padding: 10px 20px;
@@ -234,14 +263,32 @@ export default {
         padding: 0;
       }
     }
+    .special_content::-webkit-scrollbar {
+      display: none;
+    }
+
+    .special_content::-webkit-scrollbar {
+      width: 0 !important;
+    }
+    /*IE 10+*/
+    .special_content {
+      -ms-overflow-style: none;
+    }
+    /*Firefox*/
+    .special_content {
+      overflow: -moz-scrollbars-none;
+    }
     .special_content {
       display: flex;
       flex-wrap: wrap;
       justify-content: flex-start;
       width: 100%;
+      height: 300px;
+      overflow-y: auto;
       .special_item {
-        min-width: 28%;
-        height: 100px;
+        // min-width: 28%;
+        width: 28%;
+        height: 90px;
         border: 1px solid #c0c0c0;
         margin-left: 1%;
         margin-bottom: 10px;
@@ -274,6 +321,21 @@ export default {
         }
       }
     }
+  }
+  .collect::-webkit-scrollbar {
+    display: none;
+  }
+
+  .collect::-webkit-scrollbar {
+    width: 0 !important;
+  }
+  /*IE 10+*/
+  .collect {
+    -ms-overflow-style: none;
+  }
+  /*Firefox*/
+  .collect {
+    overflow: -moz-scrollbars-none;
   }
   .collect {
     width: calc(25% - 20px);
@@ -381,6 +443,7 @@ export default {
 
 .right_container {
   padding: 20px;
+  padding-top: 40px;
   .right_top {
     // width: 100%;
     height: 200px;

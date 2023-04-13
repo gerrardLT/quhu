@@ -13,7 +13,7 @@
       <el-button type="primary" around @click="spend">提现</el-button>
     </div>
     <div v-show="isShowAddress" class="address-container">
-      <span>转入地址：{{ address }}</span>
+      <span>转入地址（bsc链）：{{ address }}</span>
       <i class="el-icon-copy-document" @click="copy(address, $event)"></i>
     </div>
     <div class="coin-list">
@@ -36,6 +36,7 @@
         :data="tableData"
         stripe
         style="width: 100%"
+        height="300"
         v-loading="tableLoading"
       >
         <el-table-column prop="timestamp" label="日期" width="240">
@@ -48,6 +49,17 @@
         <el-table-column prop="amount" label="支付金额"> </el-table-column>
       </el-table>
     </div>
+    <div class="record-page">
+      <el-pagination
+        @current-change="handleCurrentChange"
+        :current-page.sync="currentPage"
+        :page-size="20"
+        :page-count="pageInfo.max_page"
+        layout="total, prev, pager, next, jumper"
+        :total="pageInfo.total"
+      >
+      </el-pagination>
+    </div>
   </div>
 </template>
 
@@ -56,10 +68,13 @@ import clipboard from '@/utils/clipboard'
 import { transactions } from '@/api/user/user'
 import { getToken } from '@/utils/auth'
 import { transformTime } from '@/utils/tool'
-// import { moment } from 'moment'
+
 export default {
   data() {
     return {
+      currentPage: 1,
+      pagesize: 10,
+      search: '',
       address: '',
       isShowAddress: false,
       tableLoading: false,
@@ -71,7 +86,8 @@ export default {
           token: '',
           amount: ''
         }
-      ]
+      ],
+      pageInfo: {}
     }
   },
   computed: {
@@ -81,8 +97,8 @@ export default {
       Object.keys(userInfo.lock_token).forEach((key, i) => {
         arr.push({
           name: key,
-          balance: userInfo.lock_token[key],
-          lock_balance: userInfo.token_num[key],
+          balance: userInfo.token_num[key],
+          lock_balance: userInfo.lock_token[key],
           id: i
         })
       })
@@ -96,25 +112,38 @@ export default {
     }
   },
   async created() {
-    this.tableLoading = true
-    const res = await transactions({
-      id:
-        this.loginType === 'eth'
-          ? this.userInfo.eth_account
-          : this.userInfo.user,
-      token: getToken()
-    })
-    if (res && res.success) {
-      res.data.forEach((element) => {
-        console.log(element.timestamp)
-        element.timestamp = transformTime(element.timestamp)
-      })
-      this.tableData = res.data
-    }
-    this.tableLoading = false
+    this.getTableData(1)
   },
   mounted() {},
   methods: {
+    handleCurrentChange(v) {
+      this.getTableData(v)
+    },
+    async getTableData(page) {
+      this.tableLoading = true
+      const res = await transactions({
+        id:
+          this.loginType === 'eth'
+            ? this.userInfo.eth_account
+            : this.userInfo.user,
+        token: getToken(),
+        page
+      })
+      if (res && res.success) {
+        this.pageInfo = {
+          max_page: res.max_page,
+          page: res.page,
+          total: res.total
+        }
+
+        res.data.forEach((element) => {
+          // console.log(element.timestamp)
+          element.timestamp = transformTime(element.timestamp)
+        })
+        this.tableData = res.data
+      }
+      this.tableLoading = false
+    },
     showAddress() {
       const address = JSON.parse(
         localStorage.getItem('quhu-userInfo')

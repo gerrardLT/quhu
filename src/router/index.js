@@ -129,6 +129,7 @@ const router = new VueRouter({
   routes
 })
 
+window._axiosPromiseArr = []
 // 挂载路由导航守卫
 router.beforeEach((to, from, next) => {
   // to 将要访问的路径
@@ -138,6 +139,13 @@ router.beforeEach((to, from, next) => {
   if (to.path === '/login' && from.path === '/setting') {
     Vue.prototype.$isTabPage = false
   }
+
+console.log(window._axiosPromiseArr)
+  window._axiosPromiseArr.forEach((ele, index) => {
+    ele.cancel()
+    delete window._axiosPromiseArr[index]
+  })
+
   // 获取token
   const tokenStr = getToken()
   const tabPageList = ['/home', '/special', '/article', '/my', '/auction']

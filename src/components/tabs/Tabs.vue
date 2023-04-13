@@ -15,7 +15,7 @@ e
         style="border-color: #f9f9f9; background-color: #fff"
       >
         <div class="woo-box-flex woo-box-alignCenter Nav_main">
-          <el-col :span="4">
+          <el-col :span="4" class="nav_logo">
             <div class="woo-box-flex woo-box-alignCenter Nav_left">
               <a href="/" aria-label="quhu" class="Nav_logoWrap">
                 <img src="../../assets/quhu-white.png" alt="" />
@@ -66,10 +66,10 @@ e
                 placeholder="请输入专栏名称"
                 @select="handleSelect"
                 :popper-append-to-body="false"
+                popper-class="complete_list"
               >
                 <i class="el-icon-search el-input__icon" slot="suffix"> </i>
                 <template slot-scope="{ item }">
-                  <!-- <i class="el-icon-search search_arrow_icon"> </i> -->
                   <div class="name">{{ item.value }}</div>
                 </template>
               </el-autocomplete>
@@ -94,11 +94,12 @@ export default {
       'popstate',
       function (e) {
         console.log(e)
-        const path = e.currentTarget.location.pathname
+        const path1 = e.currentTarget.location.pathname
         // self.toggleStyle(self.nameList.indexOf(path))
+        console.log(self.nameList, path1.replace('/', ''))
         self.tabClick(
-          { name: path.replace('/', '') },
-          self.nameList.indexOf(path)
+          { name: path1.replace('/', '') },
+          self.nameList.indexOf(path1.replace('/', ''))
         )
       },
       false
@@ -110,6 +111,7 @@ export default {
         : sessionStorage.getItem('tabName')
     }
     this.toggleStyle(this.nameList.indexOf(path))
+    // this.$eventBus.$off('changeTab')
     this.$EventBus.$on('changeTab', (v, index, query) => {
       this.tabClick(v, index, query)
     })
@@ -169,30 +171,32 @@ export default {
       })
     },
     async querySearch(queryString, cb) {
-      const res = await searchColumn({
-        subscriptions_name: this.searchValue.trim()
-      })
-
-      if (res && res.success === 'ok') {
-        this.searchResult = res.data.map((v, i) => {
-          v = { value: v }
-          return v
+      if (queryString) {
+        const res = await searchColumn({
+          subscriptions_name: this.searchValue.trim()
         })
-        cb(this.searchResult)
+
+        if (res && res.success === 'ok') {
+          this.searchResult = res.data.map((v, i) => {
+            v = { value: v }
+            return v
+          })
+          cb(this.searchResult)
+        }
       }
     },
     tabClick(v, i, query) {
-      console.log(query)
+      console.log(v, i, query)
       this.activeName = v.name
       sessionStorage.setItem('tabName', v.name)
+      // console.log(this.$route.path, this.activeName)
+      this.toggleStyle(i)
       if (this.$route.path !== '/' + this.activeName) {
-        this.toggleStyle(i)
         this.$router.push({
-          path: '/' + this.activeName,
+          path: v.name,
           query: query
         })
       } else {
-        // location.reload()
       }
     },
     toggleStyle(i) {
@@ -214,6 +218,17 @@ export default {
 </script>
 
 <style scoped lang="scss">
+@media only screen and (max-width: 500px) {
+  .nav_logo {
+    width: auto;
+  }
+  .Nav_mid {
+    min-width: 400px !important;
+  }
+  .complete_list {
+    left: auto !important;
+  }
+}
 ::v-deep .searchBar {
   width: calc(100% - 20px);
   .name {

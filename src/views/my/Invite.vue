@@ -26,7 +26,7 @@ export default {
     copy(e) {
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
       clipboard(
-        'https://app.onlyfun.city/#/login?invitedId=' + userInfo.invitedId,
+        'https://app.onlyfun.city/login?invitedId=' + userInfo.invitedId,
         e
       )
       // clipboard(

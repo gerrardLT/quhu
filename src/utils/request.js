@@ -15,7 +15,7 @@ import { getToken } from '@/utils/auth'
 import store from '@/store'
 const md5 = require('@/utils/md5.js')
 
-console.log(md5('abcdef'))
+// console.log(md5('abcdef'))
 // 创建axios实例
 const service = axios.create({
   // axios中请求配置有baseURL选项，表示请求URL公共部分
@@ -33,7 +33,8 @@ const service = axios.create({
 let loading // 加载动画
 let hasPermission = false // 当401时会弹层提示 此字段用来防止二次弹层
 // const indexPath = process.env.NODE_ENV === 'production' ? window.globalVar.indexPath : '/'
-
+const CancelToken = axios.CancelToken; 
+const source = CancelToken.source();  
 // 请求拦截器
 service.interceptors.request.use((config) => {
   const token = getToken()
@@ -42,6 +43,8 @@ service.interceptors.request.use((config) => {
   if (config.url === '/register') {
     config.headers['QUHU-AUTH-TOKEN'] = md5(config.data.user || '')
   } else if (config.url === '/login') {
+    console.log(config.data.data[0])
+    console.log(md5(config.data.data[0]))
     config.headers['QUHU-AUTH-TOKEN'] = md5(config.data.data[0] || '')
   } else if (config.url === '/user') {
     config.headers['QUHU-AUTH-TOKEN'] = md5(config.data.id || '')
@@ -51,6 +54,10 @@ service.interceptors.request.use((config) => {
       config.headers['QUHU-AUTH-TOKEN'] = md5(authId)
     }
   }
+  config.cancelToken = new axios.CancelToken(cancel => {
+    window._axiosPromiseArr.push({ cancel })
+  })
+  // console.log( window._axiosPromiseArr)
 // console.log(config.url)
   // loading = Loading.service({
   //   text: '加载中...',
@@ -60,7 +67,7 @@ service.interceptors.request.use((config) => {
   return config
 },
   (error) => {
-    return Promise.reject(error)
+    return Promise.reject(error).catch(() => { })
   })
 
 // 响应拦截器
@@ -78,6 +85,12 @@ service.interceptors.response.use((response) => {
         type: 'warning',
         duration: 5 * 1000
       })
+
+      if(res.error ==='Token expired'){
+        setTimeout(() => {
+          store.dispatch('loginOutFalse')
+        }, 1000);
+      }
     }
     if (res.error_code === 500) { // 默认-1  只有为-1时才做轻提示
       const message = '服务端错误'
@@ -91,23 +104,21 @@ service.interceptors.response.use((response) => {
   }
 },
   (error) => {
-    if (loading) {
-      loading.close()
-    }
     if (!error.response) {
-      if (error.message.includes('timeout')) {
-        Message({
-          message: '请求超时',
-          type: 'error',
-          duration: 5 * 1000
-        })
-      } else {
-        Message({
-          message: error.message,
-          type: 'error',
-          duration: 5 * 1000
-        })
-      }
+  
+      // if (error.message && error.message.includes('timeout')) {
+      //   Message({
+      //     message: '请求超时',
+      //     type: 'error',
+      //     duration: 5 * 1000
+      //   })
+      // } else {
+      //   Message({
+      //     message: error.message,
+      //     type: 'error',
+      //     duration: 5 * 1000
+      //   })
+      // }
     } else {
       const status = error.response.status
       if (status === 401) {
@@ -148,7 +159,7 @@ service.interceptors.response.use((response) => {
         })
       }
     }
-    return Promise.reject()
+    return Promise.reject().catch(() => { })
   }
 )
 

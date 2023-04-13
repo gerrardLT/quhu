@@ -122,11 +122,15 @@
           </el-menu>
         </div>
       </el-col>
-      <el-col :span="20" v-if="currentPath === '/write'">
+      <el-col
+        :span="20"
+        v-if="currentPath === '/write'"
+        class="write_container"
+      >
         <router-view></router-view>
       </el-col>
-      <el-col :span="20" v-else>
-        <el-col :span="18" class="mid_container">
+      <el-col :span="15" v-else class="mid_container">
+        <div class="mid_wrapper">
           <div class="post-container">
             <div @click="postArticle" class="post-topic-head">
               <div class="tip">点击发表文章...</div>
@@ -138,7 +142,9 @@
                   <router-link
                     :to="'/write?selectedColumn=' + selectedColumn"
                     v-if="
-                      userInfo.buy_article.my.indexOf(selectedColumn) !== -1
+                      currentInfo.buy_article &&
+                      currentInfo.buy_article.my &&
+                      currentInfo.buy_article.my.indexOf(selectedColumn) !== -1
                     "
                   >
                     <div class="common post-article">
@@ -156,7 +162,10 @@
                   >
                     <span
                       v-if="
-                        userInfo.buy_article.join.indexOf(selectedColumn) !== -1
+                        currentInfo.buy_article &&
+                        currentInfo.buy_article.join &&
+                        currentInfo.buy_article.join.indexOf(selectedColumn) !==
+                          -1
                       "
                     >
                       退出专栏
@@ -182,7 +191,48 @@
               </div>
             </div>
           </div>
-          <div v-if="articleList.length > 0" v-loading="articleLoading">
+          <el-dialog
+            title="提示"
+            :visible.sync="applyDialogVisible"
+            width="30%"
+          >
+            <span
+              >您订阅的专栏"{{ selectedColumn }}"已过期。确定花费{{
+                keepThreeNum((columnPrice.num / 12) * subscribeMonth) +
+                columnPrice.label
+              }}续订当前专栏吗？</span
+            >
+            <div class="subscribe_time">
+              <el-tag>订阅时长</el-tag>
+              <el-select
+                class="price_select"
+                v-model="subscribeMonth"
+                clearable
+                placeholder="请选择订阅时长"
+                @change="$forceUpdate()"
+              >
+                <el-option
+                  v-for="item in subscribeTimeList"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                >
+                </el-option>
+              </el-select>
+            </div>
+            <span slot="footer" class="dialog-footer">
+              <el-button @click="applyDialogVisible = false">取 消</el-button>
+              <el-button type="primary" @click="applyColumn">确 定</el-button>
+            </span>
+          </el-dialog>
+          <div
+            v-if="
+              selectedMenu === 'short-square'
+                ? true
+                : articleList.length > 0 && columnK
+            "
+            v-loading="articleLoading"
+          >
             <div
               v-for="(item, index) in articleList"
               :key="index"
@@ -200,7 +250,7 @@
                       <div class="info">
                         <div class="role owner">{{ item.body.author }}</div>
                         <div class="date">
-                          {{ item.created.replace('T', '  ') }}
+                          {{ item.created }}
                         </div>
                       </div>
                     </div>
@@ -258,31 +308,69 @@
                       </el-dropdown-menu>
                     </el-dropdown>
                   </div>
-                  <div class="talk-content-container">
-                    <div class="content">
-                      <div>{{ item.title }}</div>
-                      <br />
-                      <div v-html="item.body.body"></div>
+                  <Collapse>
+                    <div
+                      :class="[
+                        item.isArticleActive ? 'hide_content' : 'show_content',
+                        'talk-content-container'
+                      ]"
+                    >
+                      <div
+                        class="content"
+                        :ref="
+                          (e) => {
+                            setContentRef(item, e)
+                          }
+                        "
+                      >
+                        <div>{{ item.title }}</div>
+                        <br />
+                        <div
+                          v-html="
+                            item.json_metadata.encrypted &&
+                            selectedMenu !== 'short-square'
+                              ? decrypt(item.body.body, columnK)
+                              : item.body.body
+                          "
+                        ></div>
+                      </div>
+
+                      <div class="openOrFold" v-if="item.isArticleActive">
+                        <button @click="openOrFoldBtn(item)" class="fold">
+                          <svg
+                            :style="{
+                              width: '15px',
+                              height: '15px'
+                            }"
+                          >
+                            <use
+                              :xlink:href="'#icon-' + item.openOrFoldFlag"
+                              rel="external nofollow"
+                            />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  </Collapse>
                   <div class="operation-icon-container">
                     <div class="operation-icon">
-                      <!-- <div title="点赞" class="like" @click="praise(item)">
-                    <Icon
-                      name="praise"
-                      :color="item.isPraised ? '#4fbdd4' : '#5D5D5D'"
-                    />
-                  </div> -->
-                      <!-- <div
-                    title="评论"
-                    class="comment"
-                    @click="editComment(item, index)"
-                  >
-                    <Icon name="discuss" />
-                  </div> -->
-                      <!-- <div title="收藏" class="subscribe">
-                    <Icon name="collect" />
-                  </div> -->
+                      <div
+                        title="点赞"
+                        class="like"
+                        @click="praise(item, 'article')"
+                      >
+                        <Icon name="praise" :color="'#5D5D5D'" />
+                      </div>
+                      <div
+                        title="评论"
+                        class="comment"
+                        @click="editComment(item, index)"
+                      >
+                        <Icon name="discuss" />
+                      </div>
+                      <!-- <div title="分享" class="subscribe">
+                        <Icon name="share" />
+                      </div> -->
                     </div>
                     <a
                       class="steemLink"
@@ -309,7 +397,9 @@
                     v-model="item.reply"
                     class="reply_input"
                   >
-                    <el-button slot="append" @click="submitReply(item, index)"
+                    <el-button
+                      slot="append"
+                      @click="submitReply(item, index, 'articleReply')"
                       >回复</el-button
                     >
                   </el-input>
@@ -331,7 +421,7 @@
                             {{ currentDetail.body.author }}
                           </div>
                           <div class="date">
-                            {{ currentDetail.created.replace('T', '  ') }}
+                            {{ currentDetail.created }}
                           </div>
                         </div>
                       </div>
@@ -345,7 +435,14 @@
                         <div class="content">
                           <div>{{ currentDetail.title }}</div>
                           <br />
-                          <div v-html="currentDetail.body.body"></div>
+                          <div
+                            v-html="
+                              currentDetail.json_metadata.encrypted &&
+                              selectedMenu !== 'short-square'
+                                ? decrypt(currentDetail.body.body, columnK)
+                                : currentDetail.body.body
+                            "
+                          ></div>
                         </div>
                       </div>
                     </div>
@@ -354,7 +451,7 @@
                       <div
                         title="点赞"
                         class="like"
-                        @click="praise(currentDetail)"
+                        @click="praise(currentDetail, 'detail')"
                       >
                         <Icon
                           name="praise"
@@ -422,14 +519,7 @@
                               <el-button
                                 plain
                                 type="primary"
-                                @click="
-                                  submitReply(
-                                    item,
-                                    index,
-                                    currentDetail,
-                                    'ownReply'
-                                  )
-                                "
+                                @click="submitReply(item, index, 'ownReply')"
                                 style="float: right"
                                 >发送</el-button
                               >
@@ -445,6 +535,8 @@
                         :commentindex="index"
                         :submit="submitReply"
                         :detail="currentDetail"
+                        :columnK="columnK"
+                        :selectedMenu="selectedMenu"
                       ></Comment>
                     </div>
                   </div>
@@ -482,12 +574,13 @@
                     "
                   >
                     <quill-editor
-                      v-model="content"
+                      v-model="postContent"
                       ref="myQuillEditor"
                       :options="editorOption"
-                      spellcheck="false"
                       class="quill-editor"
+                      spellcheck="false"
                       @ready="onEditorReady()"
+                      @change="onEditorChange($event)"
                     >
                     </quill-editor>
                   </div>
@@ -520,77 +613,78 @@
                 <div  class="scheduled"></div> -->
                   </div>
                   <div class="right">
-                    <div class="text-range">(4～10000)</div>
+                    <div class="text-range">{{ TiLength }}/300</div>
                     <div @click="submit()" class="submit-btn">发布</div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="recommend_container">
-            <div
-              class="wbpro-side woo-panel-main woo-panel-top woo-panel-right woo-panel-bottom woo-panel-left Card_wrap_2ibWe Card_bottomGap_2Xjqi"
-            >
-              <div>
-                <div class="wbpro-side-tit woo-box-flex woo-box-alignCenter">
-                  <div
-                    class="f14 cla woo-box-item-flex"
-                    style="align-self: center"
-                  >
-                    热门专栏
-                  </div>
-                  <div
-                    class="woo-box-flex woo-box-alignCenter"
-                    @click="getHotColumns"
-                  >
-                    <i class="el-icon-refresh"></i
-                    ><span class="f12 clb">点击刷新</span>
-                  </div>
+        </div>
+      </el-col>
+      <el-col
+        :span="5"
+        class="recommend_container"
+        v-if="currentPath === '/home'"
+      >
+        <div class="recommend_wrapper">
+          <div
+            class="wbpro-side woo-panel-main woo-panel-top woo-panel-right woo-panel-bottom woo-panel-left Card_wrap_2ibWe Card_bottomGap_2Xjqi"
+          >
+            <div>
+              <div class="wbpro-side-tit woo-box-flex woo-box-alignCenter">
+                <div
+                  class="f14 cla woo-box-item-flex"
+                  style="align-self: center"
+                >
+                  热门专栏
                 </div>
-                <div class="woo-divider-main woo-divider-x"></div>
-                <div v-if="hotColumns.length > 0">
-                  <div
-                    class="wbpro-side-card7"
-                    v-for="(hot, hotIndex) in hotColumns"
-                    :key="hotIndex"
-                  >
-                    <div class="wbpro-side-panel">
-                      <div class="con woo-box-flex woo-box-alignCenter">
-                        <div class="rank top f16">
-                          {{ Number(hotIndex) + 1 }}
-                        </div>
-                        <div
-                          title=""
-                          class="wbpro-textcut f14 cla"
-                          @click="handleSelect(hot)"
-                        >
-                          {{ hot.value }}
-                        </div>
-                        <div class="icon">
-                          <span
-                            v-if="hot.isHot"
-                            class="wbpro-icon-search-tp1"
-                            style="
-                              background: rgb(255, 148, 6);
-                              cursor: pointer;
-                            "
-                            >热</span
-                          >
-                        </div>
-                      </div>
-                      <div class="woo-divider-main woo-divider-x"></div>
-                    </div>
-                  </div>
+                <div
+                  class="woo-box-flex woo-box-alignCenter"
+                  @click="getHotColumns"
+                >
+                  <i class="el-icon-refresh"></i
+                  ><span class="f12 clb">点击刷新</span>
                 </div>
-
-                <el-empty v-else description="暂无数据"></el-empty>
-                <div class="woo-divider-main woo-divider-x"></div>
               </div>
+              <div class="woo-divider-main woo-divider-x"></div>
+              <div v-if="hotColumns.length > 0">
+                <div
+                  class="wbpro-side-card7"
+                  v-for="(hot, hotIndex) in hotColumns"
+                  :key="hotIndex"
+                >
+                  <div class="wbpro-side-panel">
+                    <div class="con woo-box-flex woo-box-alignCenter">
+                      <div class="rank top f16">
+                        {{ Number(hotIndex) + 1 }}
+                      </div>
+                      <div
+                        :title="hot.value"
+                        class="wbpro-textcut f14 cla"
+                        @click="handleSelect(hot)"
+                      >
+                        {{ hot.value }}
+                      </div>
+                      <div class="icon">
+                        <span
+                          v-if="hot.isHot"
+                          class="wbpro-icon-search-tp1"
+                          style="background: rgb(255, 148, 6); cursor: pointer"
+                          >热</span
+                        >
+                      </div>
+                    </div>
+                    <div class="woo-divider-main woo-divider-x"></div>
+                  </div>
+                </div>
+              </div>
+
+              <el-empty v-else description="暂无数据"></el-empty>
+              <div class="woo-divider-main woo-divider-x"></div>
             </div>
           </div>
-        </el-col>
+        </div>
       </el-col>
     </el-row>
     <el-dialog
@@ -622,6 +716,9 @@
           >
           </el-option>
         </el-select>
+      </div>
+      <div class="price_tips">
+        此价格默认订阅时长为12个月，订阅者可自行选择1、3、6、9、12个月订阅时长
       </div>
       <el-input
         class="margin-top-10"
@@ -686,12 +783,14 @@
 import {
   subscriptions,
   addColumn,
+  add2Column,
   removeColumn,
   searchColumn,
   post,
   getArticles,
   getArticleDetail,
   vote,
+  vote2,
   getVote,
   hotColumn,
   goTop,
@@ -710,15 +809,21 @@ import { actObj } from '@/utils/act'
 import Icon from '@/components/Icon/index'
 import Comment from '@/components/comment/Comment.vue'
 import { Loading } from 'element-ui'
+import { decrypt } from '@/utils/ascill'
+import { debounce } from 'lodash'
+import Collapse from '@/utils/collapse'
 const defaultAvatar = require(`../../assets/defaultAvatarUrl.png`)
 
 export default {
   components: {
     Icon,
-    Comment
+    Comment,
+    Collapse
   },
   data() {
     return {
+      articleStyleObj: {},
+      applyDialogVisible: false,
       radio: '',
       activeMenuIndex: '',
       textareaConetent: '',
@@ -728,6 +833,7 @@ export default {
       fileUpload: {},
       removePopVisible: false,
       subscriptionPrice: '',
+      columnPrice: {},
       payTypes: [
         {
           value: 'poys',
@@ -748,7 +854,7 @@ export default {
       ],
       searchResult: [],
       articleList: [],
-      content: '',
+      postContent: '',
       editorOption: {
         modules: {
           'emoji-toolbar': true,
@@ -827,7 +933,7 @@ export default {
             }
           }
         },
-        placeholder: '请输入正文',
+        placeholder: '',
         theme: 'snow'
       },
       showEditor: false,
@@ -851,8 +957,22 @@ export default {
       articleRefs: {},
       shortArticleList: [],
       articleLoading: false,
-      activeMenuId: '1-0',
-      favorites: []
+      activeMenuId: '',
+      favorites: [],
+      currentInfo: {},
+      columnK: '',
+      selectedMenu: '',
+      subscribeTimeList: [
+        { label: '1个月', value: 1 },
+        { label: '3个月', value: 3 },
+        { label: '6个月', value: 6 },
+        { label: '9个月', value: 9 },
+        { label: '12个月', value: 12 }
+      ],
+      subscribeMonth: 12,
+      TiLength: 0,
+      pageListStart: {},
+      contentRefList: {}
     }
   },
   computed: {
@@ -875,8 +995,95 @@ export default {
     this.getHotColumns()
     this.getCollectList()
   },
-  async mounted() {},
+  async mounted() {
+    if (screen.width < 500) {
+      if (document.documentElement) {
+        document.documentElement.style.zoom = 0.5
+      }
+    }
+  },
+  beforeDestroy() {
+    window.removeEventListener('scroll', this.getArticlesData)
+    clearTimeout('articleTimeout')
+  },
   methods: {
+    decrypt,
+    setContentStatus() {
+      this.$nextTick(() => {
+        this.articleList.forEach((item) => {
+          if (
+            this.contentRefList['content' + item.permlink] &&
+            this.contentRefList['content' + item.permlink].offsetHeight > 600
+          ) {
+            item.isArticleActive = true
+          } else {
+            item.isArticleActive = false
+          }
+        })
+      })
+    },
+    loadMoreArticle() {
+      if (sessionStorage.getItem('selectedMenu') === 'short-square') {
+        this.getArticlesByColumn('', '', 'all', 'load')
+      } else {
+        this.getArticlesByColumn(
+          sessionStorage.getItem('selectedColumn') ||
+            this.subscriptionsList.my[0] ||
+            '',
+          (sessionStorage.getItem('selectedMenu') &&
+            sessionStorage.getItem('selectedMenu').split('-')[1]) ||
+            0,
+          '',
+          'load'
+        )
+      }
+    },
+    onEditorChange(e) {
+      e.quill.deleteText(300, 1)
+
+      if (this.postContent == '') {
+        this.TiLength = 0
+      } else {
+        this.TiLength = e.quill.getLength() - 1
+      }
+    },
+    keepThreeNum(value) {
+      let resValue = 0
+      //小数点的位置
+      let index = value && value.toString().indexOf('.') + 1
+      //小数的位数
+      let num = value && Math.abs(Number(value)).toString().length - index
+      if (index && num > 3) {
+        resValue = value && Number(value).toFixed(3)
+      } else {
+        resValue = value
+      }
+      return resValue
+    },
+    async applyColumn() {
+      if (!this.subscribeMonth) {
+        return false
+      }
+      const userInfo = this.userInfo
+      const loginType = localStorage.getItem('login-type')
+      const params = {
+        id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
+        token: getToken(),
+        user_name: userInfo.user_name,
+        steem_id: userInfo.steem_id,
+        subscriptions_name: this.selectedColumn,
+        month: this.subscribeMonth
+      }
+
+      const res = await add2Column(params)
+
+      if (res && res.success === 'ok') {
+        this.$message.success('续费成功！')
+        window.reload()
+      } else {
+        this.$message.error(res.error)
+      }
+    },
     async getCollectList() {
       const loginType = localStorage.getItem('login-type')
       const favorites = await getfavorites({
@@ -896,6 +1103,9 @@ export default {
     },
     setItemRef(item, el) {
       this.articleRefs['article' + item.permlink] = el
+    },
+    setContentRef(item, el) {
+      this.contentRefList['content' + item.permlink] = el
     },
     buildTreeWithCycle(data, parent_author, visited = {}) {
       const tree = []
@@ -1021,29 +1231,50 @@ export default {
         this.hotColumns = arr
       }
     },
-    async praise(v) {
+    async praise(v, type) {
       // console.log(v)
       const userInfo = this.userInfo
       const token = getToken()
       const loginType = localStorage.getItem('login-type')
-      const res = await vote({
-        id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
-        steem_id: userInfo.steem_id,
-        token,
-        permlink: [v.author, v.permlink]
-      })
-      if (res && res.success === 'ok') {
-        if (res.type === '+') {
-          this.$message.success('点赞成功')
-          v.isPraised = true
-          v.voteNum += 1
-        } else if (res.type === '-') {
-          this.$message.success('取消点赞成功')
-          v.isPraised = false
-          v.voteNum -= 1
-        }
+      let res = {}
+      if (type === 'article') {
+        res = await vote2({
+          id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
+          steem_id: userInfo.steem_id,
+          token,
+          permlink: [v.author, v.permlink]
+        })
       } else {
-        this.$message.success('网络问题！请重试')
+        res = await vote({
+          id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
+          steem_id: userInfo.steem_id,
+          token,
+          permlink: [v.author, v.permlink]
+        })
+      }
+      if (type === 'detail') {
+        if (res && res.success === 'ok') {
+          if (res.type === '+') {
+            this.$message.success('点赞成功')
+            v.isPraised = true
+            v.voteNum += 1
+          } else if (res.type === '-') {
+            this.$message.success('取消点赞成功')
+            v.isPraised = false
+            v.voteNum -= 1
+          }
+        } else {
+          this.$message.success('网络问题！请重试')
+        }
+      }
+      if (type === 'article') {
+        if (res && res.success === 'ok') {
+          if (res.type === '+') {
+            this.$message.success('点赞成功')
+            v.isPraised = true
+            v.voteNum += 1
+          }
+        }
       }
     },
     showIcon(v) {
@@ -1077,10 +1308,10 @@ export default {
           fn(response)
         })
     },
-    async loadHandler(e, cb) {
+    async loadHandler(file, cb) {
       let dataUrl = ''
-      if (e.file) {
-        // console.log('** image being loaded.. ----->', e.file)
+      if (file) {
+        // console.log('** image being loaded.. ----->', file)
         let width = 0
         let height = 0
         const reader = new FileReader()
@@ -1101,8 +1332,8 @@ export default {
           const bufSha = sha256(buf)
           const sig = Signature.signBufferSha256(bufSha, actObj.postKey).toHex()
           const formData = new FormData()
-          if (e.file) {
-            formData.append('file', e.file)
+          if (file) {
+            formData.append('file', file)
             this.uploadDispatch(
               'https://steemitimages.com/' +
                 actObj.arr[Math.floor(Math.random() * actObj.arr.length)] +
@@ -1135,7 +1366,7 @@ export default {
             )
           }
         })
-        reader.readAsDataURL(e.file)
+        reader.readAsDataURL(file)
       }
     },
     async onUploadSubImgHandler(e) {
@@ -1145,11 +1376,13 @@ export default {
     },
     async onUploadHandler(e) {
       // console.log(e)
-      this.loadHandler(e, (v) => {
+      this.loadHandler(e.file, (v) => {
         this.fileList = this.fileList.concat([v])
       })
     },
     onEditorReady() {
+      console.log(this.$refs.myQuillEditor.quill)
+      // valueChanges.subscribe
       // document.querySelector('.ql-formats .ql-uploadImg').innerText = '图'
       // document.querySelector('.ql-formats .ql-uploadFile').innerText = '文';
     },
@@ -1188,7 +1421,7 @@ export default {
       })
     },
     editComment(item, index) {
-      // item.isEditReply = !item.isEditReply
+      item.isEditReply = !item.isEditReply
     },
     async updateColumn() {
       const userInfo = this.userInfo
@@ -1197,33 +1430,90 @@ export default {
         id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
         token: getToken()
       })
-      if (currentInfo.success === 'ok') {
+
+      if (currentInfo && currentInfo.success === 'ok') {
         if (currentInfo.data) {
+          this.currentInfo = currentInfo.data
           this.subscriptionsList = currentInfo.data.buy_article || {}
           localStorage.setItem(
             'quhu-userInfo',
             JSON.stringify(currentInfo.data)
           )
         }
-        this.getArticlesByColumn(
-          sessionStorage.getItem('selectedColumn') ||
-            this.subscriptionsList.my[0] ||
-            '',
-          (sessionStorage.getItem('selectedMenu') &&
-            sessionStorage.getItem('selectedMenu').split('-')[1]) ||
-            0
-        )
+        if (sessionStorage.getItem('selectedMenu') === 'short-square') {
+          this.getArticlesByColumn('', '', 'all')
+        } else {
+          this.getArticlesByColumn(
+            sessionStorage.getItem('selectedColumn') ||
+              this.subscriptionsList.my[0] ||
+              '',
+            (sessionStorage.getItem('selectedMenu') &&
+              sessionStorage.getItem('selectedMenu').split('-')[1]) ||
+              0
+          )
+        }
       }
     },
-    getArticlesData() {},
-    async getArticlesByColumn(v, i, type) {
-      // console.log(v, this.$route.query.selectedColumn)
+    getArticlesData() {
+      const self = this
+      //为了保证兼容性，这里取两个值，哪个有值取哪一个
+      //scrollTop就是触发滚轮事件时滚轮的高度
+      const scrollTop =
+        document.documentElement.scrollTop || document.body.scrollTop
+
+      const containerHeight = document.body.offsetHeight
+      // 获取滚动容器的滚动高度
+      const containerScrollHeight = document.body.scrollHeight
+      const debounceLoad = debounce(self.loadMoreArticle)
+      // console.log(
+      //   'scrollTop : ' + scrollTop,
+      //   'containerHeight : ' + containerHeight,
+      //   'containerScrollHeight : ' + containerScrollHeight
+      // )
+      // 如果滚动到了底部且没有正在加载数据，则调用 loadMore 方法加载新的数据
+      // console.log(containerHeight + scrollTop, containerScrollHeight)
+      if (containerHeight + scrollTop >= containerScrollHeight) {
+        // 标记正在加载数据
+        console.log('调用了')
+        debounceLoad() // 加载数据
+      }
+    },
+    async getArticlesByColumn(v, i, type, loadType) {
+      console.log(sessionStorage.getItem('selectedColumn'), v)
+      const isSameColumn = sessionStorage.getItem('selectedColumn') === v
+      if (!isSameColumn || (isSameColumn && loadType !== 'load')) {
+        this.pageListStart = {}
+      }
       if (
         v !== this.$route.query.selectedColumn &&
         this.$route.path !== '/home'
       ) {
         this.$router.push('/home')
       }
+
+      if (this.currentInfo.article) {
+        const columns = this.currentInfo.article
+        columns.forEach((item) => {
+          if (v === item.name) {
+            this.columnK = item.k
+            this.payTypes.forEach((payType) => {
+              if (item.price && item.price.indexOf(payType.value) !== -1) {
+                this.columnPrice = {
+                  num: item.price.split(payType.value)[0],
+                  label: payType.value
+                }
+              }
+            })
+          }
+        })
+      }
+
+      if (this.selectedColumn && this.userInfo) {
+        if (!this.columnK) {
+          this.applyDialogVisible = true
+        }
+      }
+
       this.articleLoading = true
       const { author, permlink } = this.$route.query
 
@@ -1233,33 +1523,54 @@ export default {
       if (v) {
         this.selectedColumn = v
         if (this.subscriptionsList.my.indexOf(v) !== -1) {
-          selectedMenu = '1-' + i
+          if (i !== undefined) {
+            selectedMenu = '1-' + i
+          } else {
+            selectedMenu = sessionStorage.getItem('selectedMenu')
+          }
+          this.selectedMenu = selectedMenu
           this.activeMenuIndex = ''
         } else {
           if (this.subscriptionsList.join.indexOf(v) !== -1) {
-            selectedMenu = '2-' + i
+            if (i !== undefined) {
+              selectedMenu = '2-' + i
+            } else {
+              selectedMenu = sessionStorage.getItem('selectedMenu')
+            }
+            this.selectedMenu = selectedMenu
             this.activeMenuIndex = ''
           }
         }
-
+        this.activeMenuId = selectedMenu
+        // console.log(this.activeMenuId)
         sessionStorage.setItem('selectedColumn', v)
         sessionStorage.setItem('selectedMenu', selectedMenu)
       } else {
+        this.activeMenuId = ''
         this.selectedColumn = ''
         this.activeMenuIndex = 0
-        this.activeMenuId = ''
+        // this.$set(this, 'activeMenuId', '')
+        this.selectedMenu = 'short-square'
+        sessionStorage.setItem('selectedMenu', 'short-square')
+        sessionStorage.setItem('selectedColumn', v)
       }
 
       if (localStorage.getItem('quhu-userInfo')) {
-        const res = await getArticles({
+        const params = {
           id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
           jsonrpc: '2.0',
           method: 'bridge.get_ranked_posts',
           params: {
+            limit: 20,
             sort: 'created',
             tag: type === 'all' ? 'd-onlyfun' : 's' + MD5(v).substring(0, 10)
           }
-        })
+        }
+        if (this.pageListStart.author) {
+          params.params.start_author = this.pageListStart.author
+          params.params.start_permlink = this.pageListStart.permlink
+        }
+        const res = await getArticles(params)
 
         if (res && res.result) {
           let formatRes = res.result && res.result.concat()
@@ -1274,6 +1585,8 @@ export default {
             element.body = this.eval(element.body)
             element.isEditReply = false
             element.reply = ''
+            element.isArticleActive = true
+            element.openOrFoldFlag = 'down_article'
 
             element.isShowDetailDialog = false
 
@@ -1288,8 +1601,6 @@ export default {
                 }
               })
             }
-            console.log(element.isFavorite)
-            // console.log(element.body.status)
             if (element.body.status === 'top') {
               // arr.push(element)
               // formatRes.splice(index, 1)
@@ -1310,9 +1621,38 @@ export default {
           })
           console.log(formatRes)
           newRes = arr.concat(newRes)
+          if (formatRes.length >= 20) {
+            this.pageListStart = {
+              author: formatRes[formatRes.length - 1].author,
+              permlink: formatRes[formatRes.length - 1].permlink
+            }
+            window.addEventListener('scroll', this.getArticlesData)
+          }
+          if (formatRes.length < 20) {
+            this.pageListStart = {}
+            window.removeEventListener('scroll', this.getArticlesData)
+          }
 
-          this.articleList = newRes
+          if (!isSameColumn) {
+            document.body.scrollTop = 0
+            document.documentElement.scrollTop = 0
+            this.articleList = newRes
+          } else {
+            if (loadType === 'load') {
+              this.articleList = this.articleList.concat(newRes)
+            } else {
+              document.body.scrollTop = 0
+              document.documentElement.scrollTop = 0
+              this.articleList = newRes
+            }
+          }
+
+          // console.log(this.articleList, newRes, this.pageListStart)
+          // this.articleList = newRes
         }
+        const articleTimeout = setTimeout(() => {
+          this.setContentStatus()
+        }, 100)
         this.articleLoading = false
       }
     },
@@ -1398,7 +1738,7 @@ export default {
     handleClose(key, keyPath) {
       // console.log(key, keyPath)
     },
-    async submitReply(v, i, detail, type) {
+    async submitReply(v, i, type) {
       const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
       const {
@@ -1410,18 +1750,26 @@ export default {
         created,
         reply
       } = v
+      const loading = Loading.service({
+        text: '加载中...',
+        spinner: 'el-icon-loading ElementLoading',
+        background: 'rgba(0, 0, 0, 0.2)'
+      })
       const res = await post({
         type: 'comment',
         id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
         token: getToken(),
-        subscriptions_name: detail.body.subscriptions_name,
+        subscriptions_name: body.subscriptions_name,
         permlink: [v.author, v.permlink],
         title: '',
         body: type === 'ownReply' ? this.textareaConetent : v.reply
       })
-
+      if (loading) {
+        loading.close()
+      }
       if (res && res.success === 'ok') {
         this.$message.success('回复成功')
+        console.log(this.currentDetail, this.selectedMenu, decrypt(body))
         if (type === 'ownReply') {
           console.log(new Date().toLocaleString(), body)
           this.currentDetail.commentList.push({
@@ -1442,8 +1790,9 @@ export default {
             reply: this.textareaConetent,
             child: []
           })
+        } else if (type === 'articleReply') {
+          v.isEditReply = false
         } else {
-          console.log(new Date().toLocaleString(), body)
           v.child.push({
             author: res.data.author,
             permlink: res.data.permlink,
@@ -1473,12 +1822,32 @@ export default {
       }
       if (v) {
         v.isEditReply = false
-      } else {
-        detail.isEditReply = false
       }
     },
     postArticle() {
       this.showEditor = true
+      this.$nextTick(() => {
+        this.$refs.myQuillEditor.quill.root.addEventListener(
+          'paste',
+          (evt) => {
+            if (
+              evt.clipboardData &&
+              evt.clipboardData.files &&
+              evt.clipboardData.files.length
+            ) {
+              evt.preventDefault()
+              const arr = []
+              arr.forEach.call(evt.clipboardData.files, (file) => {
+                if (!file.type.match(/^image\/(gif|jpe?g|a?png|bmp)/i)) {
+                  return
+                }
+                this.onUploadHandler({ file: file })
+              })
+            }
+          },
+          false //注意
+        )
+      })
     },
     async submit() {
       const userInfo = this.userInfo
@@ -1495,7 +1864,7 @@ export default {
           imgHtml += `<img src="${item.url}" preview=${i} style="object-fit:cover;background:#f5f6f7;margin-left:5px;margin-bottom:5px;" class="img-container" width="150px" height="150px" alt="" />`
         })
       }
-
+      // console.log(this.content, this.content.length)
       // console.log(imgHtml)
       const loading = Loading.service({
         text: '加载中...',
@@ -1511,28 +1880,66 @@ export default {
         subscriptions_name: this.selectedColumn || '',
         permlink: '',
         title: this.titleText,
-        body: this.content + imgHtml
+        body: this.postContent + imgHtml
       })
 
       if (res && res.success === 'ok') {
-        setTimeout(() => {
-          this.getArticlesByColumn(
-            this.selectedColumn || this.subscriptionsList.my[0] || ''
-          )
-          this.$message.success('发文成功')
-          this.closeEditor()
-        }, 1000)
+        console.log(res.result, this.articleList)
+        this.closeEditor()
+
+        this.$message.success('发文成功')
+        res.result.json_metadata = this.eval(res.result.json_metadata)
+        if (
+          res.result.json_metadata.encrypted &&
+          this.selectedMenu !== 'short-square'
+        ) {
+          res.result.body = this.eval(res.result.body)
+        } else {
+          res.result.body = this.eval(res.result.body)
+        }
+
+        res.result.isEditReply = false
+        res.result.reply = ''
+
+        res.result.isShowDetailDialog = false
+
+        res.result.isPraised = false
+        res.result.isFavorite = false
+        if (this.favorites.length > 0) {
+          this.favorites.forEach((ele) => {
+            if (ele.permlink[1] === res.result.permlink) {
+              res.result.isFavorite = true
+            } else {
+              res.result.isFavorite = false
+            }
+          })
+        }
+
+        console.log(res.result)
+        this.articleList.unshift(res.result)
+
+        // setTimeout(() => {
+        //   if (this.selectedColumn) {
+        //     this.getArticlesByColumn(
+        //       this.selectedColumn || this.subscriptionsList.my[0] || ''
+        //     )
+        //   } else {
+        //     this.getArticlesByColumn('', '', 'all')
+        //   }
+
+        // }, 1000)
       } else {
         this.$message.error('发文失败！ 请重新发文')
         this.closeEditor()
       }
+      this.TiLength = 0
       if (loading) {
         loading.close()
       }
     },
     closeEditor() {
       this.showEditor = false
-      this.content = ''
+      this.postContent = ''
       this.titleText = ''
       this.fileList = []
     },
@@ -1543,7 +1950,7 @@ export default {
     async goDetail(val, ele) {
       if (ele) {
         setTimeout(() => {
-          console.log(this.articleRefs['article' + ele.permlink])
+          // console.log(this.articleRefs['article' + ele.permlink])
           const el = this.articleRefs['article' + ele.permlink]
           // const target = el.offsetTop
           el.scrollIntoView()
@@ -1629,10 +2036,24 @@ export default {
       // } else {
       //   return []
       // }
+    },
+    getDistance(start, stop) {
+      // Math.hypot()计算参数的平方根
+      return Math.hypot(stop.x - start.x, stop.y - start.y)
+    },
+    openOrFoldBtn(val) {
+      val.isArticleActive = !val.isArticleActive
+      val.openOrFoldFlag =
+        val.openOrFoldFlag === 'up_article' ? 'down_article' : 'up_article'
     }
   },
   watch: {
     'currentDetail.commentList': {
+      handler(newVal, oldVal) {},
+      deep: true,
+      immediate: true
+    },
+    postContent: {
       handler(newVal, oldVal) {},
       deep: true,
       immediate: true
@@ -1642,7 +2063,44 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.short-square {
+@media only screen and (max-width: 500px) {
+  .recommend_container {
+    right: 10px;
+    transform: scale(0.6);
+    transform-origin: top left;
+  }
+  .nav_container {
+    margin-left: 10px !important;
+  }
+  .main-content-container .mid_container {
+    margin-left: 15% !important;
+    margin-right: 20px;
+    width: 50% !important;
+  }
+  .main-content-container .mid_container .mid_wrapper {
+    min-width: 400px !important;
+    margin-left: 100px !important;
+    margin: 10px 300px 0 0;
+  }
+  .write_container {
+    margin-left: 110px !important;
+  }
+  // .main-content-container {
+  //   transform: scale(0.5);
+  //   transform-origin: top left;
+  //   width: 200% !important;
+  //   height: 200% !important;
+  // }
+}
+.write_container {
+  margin-left: 100px;
+}
+
+.subscribe_time {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
 }
 .menu-style {
   padding: 0 20px;
@@ -1663,12 +2121,12 @@ export default {
 .activeText {
   color: rgb(79, 189, 212);
 }
-::v-deep .el-submenu__icon-arrow.el-icon-arrow-down {
-  display: none;
-}
-::v-deep .el-submenu.is-opened > .el-submenu__title .el-submenu__icon-arrow {
-  display: none;
-}
+// ::v-deep .el-submenu__icon-arrow.el-icon-arrow-down {
+//   display: none;
+// }
+// ::v-deep .el-submenu.is-opened > .el-submenu__title .el-submenu__icon-arrow {
+//   display: none;
+// }
 .create-footer {
   position: relative;
   .rule {
@@ -1681,7 +2139,11 @@ export default {
   right: 20px;
   top: 10px;
 }
-
+.price_tips {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  color: #c0c0c0;
+}
 ::v-deep .avatar-uploader .el-upload {
   border: 1px dashed #d9d9d9;
   border-radius: 6px;
@@ -1721,15 +2183,39 @@ export default {
   min-width: 100px;
 }
 .recommend_container {
+  margin-left: 940px;
+  position: fixed;
+  top: 90px;
+}
+.recommend_wrapper {
   min-height: 500px;
   background-color: #fff;
   margin-left: 20px;
+  width: 250px;
 }
 .sub_confirm {
   background: #4fbdd4;
 }
 .nav_container {
+  position: fixed;
+  top: 90px;
 }
+.nav_menu::-webkit-scrollbar {
+  display: none;
+}
+
+.nav_menu::-webkit-scrollbar {
+  width: 0 !important;
+}
+/*IE 10+*/
+.nav_menu {
+  -ms-overflow-style: none;
+}
+/*Firefox*/
+.nav_menu {
+  overflow: -moz-scrollbars-none;
+}
+
 .nav_left {
   width: 100%;
   /* display: flex;
@@ -1738,8 +2224,8 @@ export default {
     border-radius: 10px;
     width: 190px;
     background: $bgcolor;
-    min-height: 800px;
-    height: calc(100vh - 80px);
+    height: calc(100vh - 100px);
+    overflow-y: scroll;
   }
   .short_article {
     width: calc(100% - 20px);
@@ -1813,10 +2299,25 @@ export default {
 .reply {
   cursor: pointer;
 }
-.reply_input input {
-  width: 100%;
-  height: 50px;
-  line-height: 50px;
+::v-deep .reply_input {
+  width: calc(100% - 76px);
+  padding-left: 56px;
+  padding-right: 20px;
+}
+.topic-detail::-webkit-scrollbar {
+  display: none;
+}
+
+.topic-detail::-webkit-scrollbar {
+  width: 0 !important;
+}
+/*IE 10+*/
+.topic-detail {
+  -ms-overflow-style: none;
+}
+/*Firefox*/
+.topic-detail {
+  overflow: -moz-scrollbars-none;
 }
 .topic-detail {
   position: fixed;
@@ -1873,10 +2374,16 @@ export default {
   max-width: 1250px;
   margin: auto;
   height: 100%;
-  margin-top: 40px;
+  margin-top: 20px;
 }
 .mid_container {
-  min-width: 300px;
+  width: 100% !important;
+}
+.mid_wrapper {
+  min-width: 750px;
+  margin-left: 100px;
+  margin-left: 200px !important;
+  margin: 10px 300px 0 0;
 }
 .post-container {
   margin-bottom: 5px;
@@ -2003,18 +2510,61 @@ export default {
   color: #c5c6cb;
   margin-top: 5px;
 }
+.openOrFold {
+  position: absolute;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  text-align: center;
+  height: 32px;
+  padding-top: 50px;
+  background-image: linear-gradient(
+    -180deg,
+    rgba(255, 255, 255, 0) 0%,
+    #fff 100%
+  );
+  .open {
+    width: 60px;
+    height: 30px;
+    background: #f0f0f5;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    cursor: pointer;
+    border: none;
+  }
+  .fold {
+    width: 60px;
+    height: 30px;
+    background: #f0f0f5;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border: none;
+    cursor: pointer;
+  }
+}
+.show_content {
+  max-height: auto;
+  overflow-y: auto;
+}
+.hide_content {
+  max-height: 600px;
+  overflow-y: hidden;
+}
 .talk-content-container {
   padding-left: 56px;
   padding-right: 20px;
   margin-bottom: 10px;
   line-height: 21px;
   color: #2f3034;
+  position: relative;
 }
 .talk-content-container .content {
   white-space: pre-wrap;
   word-wrap: break-word;
   overflow: hidden;
-  max-width: 500px;
+  max-width: 800px;
 }
 
 .topic-container .operation-icon-container {
@@ -2250,8 +2800,7 @@ export default {
   background: #fff;
   border-radius: 4px;
   padding: 20px 30px 30px;
-  max-height: 2000px;
-  // overflow: auto;
+  overflow-y: scroll;
 }
 .el-col {
   margin-bottom: 20px;

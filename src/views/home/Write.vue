@@ -150,7 +150,28 @@ export default {
     }
   },
   created() {},
-  mounted() {},
+  mounted() {
+    this.$refs.myQuillEditor.quill.root.addEventListener(
+      'paste',
+      (evt) => {
+        if (
+          evt.clipboardData &&
+          evt.clipboardData.files &&
+          evt.clipboardData.files.length
+        ) {
+          evt.preventDefault()
+          const arr = []
+          arr.forEach.call(evt.clipboardData.files, (file) => {
+            if (!file.type.match(/^image\/(gif|jpe?g|a?png|bmp)/i)) {
+              return
+            }
+            this.onUploadHandler({ file: file })
+          })
+        }
+      },
+      false //注意
+    )
+  },
   computed: {
     userInfo() {
       return JSON.parse(localStorage.getItem('quhu-userInfo'))
@@ -158,11 +179,8 @@ export default {
   },
   methods: {
     async onUploadHandler(e) {
-      // console.log(e)
-      this.loadHandler(e, (v) => {
+      this.loadHandler(e.file, (v) => {
         this.fileList = this.fileList.concat([v])
-        // this.post(v)
-        console.log(v)
       })
     },
     uploadDispatch: function (url, fd, fn) {
@@ -176,10 +194,11 @@ export default {
           fn(response)
         })
     },
-    async loadHandler(e, cb) {
+    async loadHandler(file, cb) {
+      console.log(file)
       let dataUrl = ''
-      if (e.file) {
-        console.log('** image being loaded.. ----->', e.file)
+      if (file) {
+        console.log('** image being loaded.. ----->', file)
         let width = 0
         let height = 0
         const reader = new FileReader()
@@ -200,8 +219,8 @@ export default {
           const bufSha = sha256(buf)
           const sig = Signature.signBufferSha256(bufSha, actObj.postKey).toHex()
           const formData = new FormData()
-          if (e.file) {
-            formData.append('file', e.file)
+          if (file) {
+            formData.append('file', file)
             this.uploadDispatch(
               'https://steemitimages.com/' +
                 actObj.arr[Math.floor(Math.random() * actObj.arr.length)] +
@@ -232,7 +251,7 @@ export default {
             )
           }
         })
-        reader.readAsDataURL(e.file)
+        reader.readAsDataURL(file)
       }
     },
     onEditorReady() {},
@@ -240,6 +259,7 @@ export default {
       this.titleLength = this.titleText.length
     },
     async post() {
+      // console.log(this.fileList)
       const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
       const selectedColumn = this.$route.query.selectedColumn
@@ -248,6 +268,38 @@ export default {
         spinner: 'el-icon-loading ElementLoading',
         background: 'rgba(0, 0, 0, 0.2)'
       })
+      let formatContent = ''
+      const imgArr = this.content.split('src="https://cdn.steemitimages.com')
+      console.log(imgArr)
+      imgArr.forEach((item, i) => {
+        if (i === 0) {
+          formatContent += item
+        } else {
+          //   formatContent +=
+          //     `preview=${i} class="img-container" width="300px" height="${
+          //       (300 / this.fileList[i - 1].width) * this.fileList[i - 1].height
+          //     }px"` +
+          //     ' src="https://cdn.steemitimages.com' +
+          //     item
+          // }
+          console.log(this.fileList[i - 1].width)
+          if (this.fileList[i - 1].width > 600) {
+            formatContent +=
+              `preview=${i} class="img-container" width="600px" height="${
+                (600 / this.fileList[i - 1].width) * this.fileList[i - 1].height
+              }px"` +
+              ' src="https://cdn.steemitimages.com' +
+              item
+          } else {
+            formatContent +=
+              `preview=${i} class="img-container" width="100%" height="100%"` +
+              ' src="https://cdn.steemitimages.com' +
+              item
+          }
+        }
+      })
+      console.log(formatContent)
+
       const res = await post({
         type: 'post',
         id: loginType === 'password' ? userInfo.user : userInfo.eth_account,
@@ -257,12 +309,12 @@ export default {
         subscriptions_name: selectedColumn,
         permlink: '',
         title: this.titleText,
-        body: this.content
+        body: formatContent
       })
       if (res && res.success === 'ok') {
         setTimeout(() => {
           this.$message.success('发文成功')
-          this.$router.push('/home')
+          this.$EventBus.$emit('changeTab', { name: 'home' }, 0)
         }, 1000)
       } else {
         this.$message.error('发文失败！ 请重新发文')

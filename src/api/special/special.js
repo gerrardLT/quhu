@@ -57,6 +57,16 @@ export async function addColumn (data) {
   })
 }
 
+
+// 加入专栏(续订)
+export async function add2Column (data) {
+  return request({
+    url: '/add2',
+    method: 'post',
+    data
+  })
+}
+
 // 退出专栏
 export async function removeColumn (data) {
   return request({
@@ -85,6 +95,14 @@ export async function vote (data) {
   })
 }
 
+//快捷点赞
+export async function vote2 (data) {
+  return request({
+    url: '/vote2',
+    method: 'post',
+    data
+  })
+}
 
 // 查询点赞数
 export async function getVote (data) {

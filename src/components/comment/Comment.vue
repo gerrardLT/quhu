@@ -14,12 +14,20 @@
           }}</strong>
         </div>
         <div class="date">
-          {{ formatDate(comment.created) }}
+          {{ comment.created }}
         </div>
 
         <div class="reply-content">
           <div>
-            <div>{{ comment.body.body }}</div>
+            <div>
+              {{
+                comment.json_metadata &&
+                comment.json_metadata.encrypted &&
+                selectedMenu !== 'short-square'
+                  ? decrypt(comment.body.body, columnK)
+                  : comment.body.body
+              }}
+            </div>
             <!-- <el-popconfirm
                 title="确定要删除该评论吗？"
                 @confirm="deleteComment(index)"
@@ -59,7 +67,7 @@
               <div style="margin: 10px 0">
                 <!-- <el-button @click="pBodyStatus(index)">Emoji表情</el-button> -->
                 <el-button
-                  @click="doSend(comment, commentindex, detail)"
+                  @click="doSend(comment, commentindex)"
                   style="float: right"
                   plain
                   type="primary"
@@ -82,78 +90,16 @@
         :comment="childComment"
         :commentindex="childIndex"
         :submit="doSend"
-        :detail="detail"
+        :columnK="columnK"
+        :selectedMenu="selectedMenu"
       ></Comment>
     </div>
-    <!-- <div
-        style="padding: 10px 0 10px 40px"
-        v-for="(ritem, jndex) in item.children"
-        :key="jndex"
-      >
-        <div style="display: flex">
-          <el-avatar
-            size="large"
-            style="margin: 0 10px"
-            :src="ritem.body.avatar ? ritem.body.avatar : avatar"
-          ></el-avatar>
-
-          <div style="flex: auto">
-            <div style="display: inline-block">
-              <strong style="font-size: 16px; margin-right: 10px">{{
-                ritem.body.author
-              }}</strong>
-            </div>
-            <div class="date">{{ ritem.created.replace('T', '  ') }}</div>
-
-            <div class="reply-content">
-
-              <div>
-                <div>{{ ritem.body.body }}</div>
-
-                <div
-                  class="reply-font"
-                  v-if="!ritem.isEditReply"
-                  @click="doReply(ritem)"
-                >
-                  <i class="el-icon-chat-square"></i>
-                  回复
-                </div>
-                <div class="reply-font" v-else @click="cancel(ritem)">
-                  <i class="el-icon-chat-square"></i>
-                  取消回复
-                </div>
-              </div>
-
-              <div v-if="ritem.isEditReply">
-                <el-input
-                  type="textarea"
-                  :autosize="{ minRows: minRows, maxRows: maxRows }"
-                  :placeholder="placeholder"
-                  v-model="ritem.reply"
-                ></el-input>
-
-                <div>
-                  <div style="margin: 10px 0">
-
-                    <el-button
-                      @click="doSend('initComment', ritem, jndex)"
-                      style="float: right"
-                      plain
-                      type="primary"
-                      >发送</el-button
-                    >
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div> -->
   </div>
 </template>
 
 <script>
 import moment from 'moment'
+import { decrypt } from '@/utils/ascill'
 export default {
   name: 'Comment',
   props: {
@@ -165,16 +111,20 @@ export default {
       type: Object,
       required: true
     },
-    detail: {
-      type: Object,
-      required: true
-    },
     submit: {
       type: Function,
       required: true
     },
     commentindex: {
       type: Number,
+      required: true
+    },
+    columnK: {
+      type: Number,
+      required: true
+    },
+    selectedMenu: {
+      type: String,
       required: true
     }
   },
@@ -190,10 +140,12 @@ export default {
   },
   components: {},
   mounted() {
+    console.log(this.comment)
     this.momentObj = moment()
     // this.roleType = this.$store.state.user.roleType
   },
   methods: {
+    decrypt,
     formatDate(value) {
       return moment().utcOffset(value + '+08:00')
     },
@@ -210,7 +162,7 @@ export default {
     // 参数：评论内容,被评论用户id,父级评论id
     doSend(item, i) {
       // this.$emit('submit', item, i, this.detail, this.textareaMap[key])
-      this.submit(item, i, this.detail)
+      this.submit(item, i)
       if (item) {
         this.$set(item, 'isEditReply', false)
         // this.$set(item, 'reply', '')

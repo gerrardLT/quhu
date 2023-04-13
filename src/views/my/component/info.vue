@@ -38,7 +38,8 @@
         <span v-show="!userInfo.user_name" @click="showNickInput"
           >请输入昵称</span
         >
-        <svg
+
+        <!-- <svg
           :style="{
             width: '20px',
             height: '20px',
@@ -48,7 +49,15 @@
           @click="changeSex"
         >
           <use :xlink:href="sexTypes[userInfo.sex]" rel="external nofollow" />
-        </svg>
+        </svg> -->
+      </div>
+      <div class="steem_id">
+        <span>用户ID：{{ steemId }}</span
+        ><i
+          style="margin-left: 10px"
+          class="el-icon-copy-document"
+          @click="copy(steemId, $event)"
+        ></i>
       </div>
       <div
         class="introduce"
@@ -126,6 +135,7 @@ const defaultAvatar = require(`../../../assets/defaultAvatarUrl.png`)
 import { baseData } from '@/api/user/user'
 import { getToken } from '@/utils/auth'
 import { cloneDeep } from 'lodash'
+import clipboard from '@/utils/clipboard'
 export default {
   name: 'Introduce',
   async created() {
@@ -159,6 +169,9 @@ export default {
     },
     favorites() {
       return cloneDeep(this.userInfo.article).splice(0, 6)
+    },
+    steemId() {
+      return this.$store.state.userInfo.steem_id
     }
   },
   data() {
@@ -166,7 +179,7 @@ export default {
       showNick: false,
       user_name: '',
       sexVisible: false,
-      sex: '',
+      sex: 'unknown',
       inputVisible: false,
       inputValue: '',
       profile: '',
@@ -182,7 +195,11 @@ export default {
     }
   },
   methods: {
+    copy(key, e) {
+      clipboard(key, e)
+    },
     changeSex() {
+      console.log(this.sex)
       if (this.sex === 'unknown') {
         this.sexVisible = true
       }
@@ -208,10 +225,12 @@ export default {
         } else {
           this.$message.error('修改失败')
         }
+        this.user_name = ''
       }
     },
     async showNickInput() {
       this.showNick = true
+      this.user_name = this.userInfo.user_name
     },
     async confirmSex() {
       console.log(this.sex)
@@ -476,6 +495,9 @@ export default {
   vertical-align: middle;
   border-radius: 50%;
   object-fit: cover;
+}
+.steem_id {
+  font-size: 12px;
 }
 .box-card {
   margin-top: 10px;

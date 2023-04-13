@@ -107,6 +107,14 @@ export default {
 </script>
 
 <style scoped lang="scss">
+@media only screen and (max-width: 500px) {
+  .user_page {
+    transform: scale(0.5);
+    transform-origin: top left;
+    width: 200% !important;
+    height: 200% !important;
+  }
+}
 .pointer {
   cursor: pointer;
 }
@@ -129,11 +137,11 @@ export default {
   top: calc(50% - 8px);
 }
 ::v-deep .nav_left {
-  max-height: 1200px;
-  height: 100vh;
+  height: 950px;
   border-radius: 8px;
   border: 1px solid #bbbbbb;
   min-width: 150px;
+  margin-top: 20px;
   .nav_item {
     display: block;
     padding: 0 20px;
