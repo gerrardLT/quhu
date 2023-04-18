@@ -14,7 +14,7 @@
           }}</strong>
         </div>
         <div class="date">
-          {{ comment.created }}
+          {{ transfromTimeZoom(comment.created) }}
         </div>
 
         <div class="reply-content">
@@ -146,9 +146,14 @@ export default {
   },
   methods: {
     decrypt,
-    formatDate(value) {
-      return moment().utcOffset(value + '+08:00')
+    transfromTimeZoom(v) {
+      const dateStr = v
+      const date = new Date(dateStr)
+      const timeDiff = 8 * 60 * 60 * 1000 // 时差为8小时，转换为毫秒
+      const dateInGMT8 = new Date(date.getTime() + timeDiff)
+      return dateInGMT8.toLocaleString()
     },
+
     doReply(item) {
       this.$set(item, 'isEditReply', true)
     },

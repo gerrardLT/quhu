@@ -22,6 +22,16 @@
       @ready="onEditorReady()"
     >
     </quill-editor>
+    <div
+      style="
+        color: #c0c0c0;
+        font-size: 14px;
+        text-align: right;
+        margin-top: 10px;
+      "
+    >
+      专栏发文后48H内可编辑和删除
+    </div>
     <div class="footer">
       <el-button @click="post" type="primary" class="btn">发布</el-button>
     </div>
@@ -39,13 +49,14 @@
 </template>
 
 <script>
-import { post } from '@/api/special/special'
+import { post, getArticleDetail } from '@/api/special/special'
 import { getToken } from '@/utils/auth'
 import { sha256 } from '@/utils/ecc/src/hash'
 import Signature from '@/utils/ecc/src/signature'
 import { actObj } from '@/utils/act'
 import axios from 'axios'
 import { Loading } from 'element-ui'
+import { decrypt } from '@/utils/ascill'
 export default {
   name: 'Write',
   data() {
@@ -149,7 +160,25 @@ export default {
       }
     }
   },
-  created() {},
+  async created() {
+    const { author, permlink, columnK } = this.$route.query
+    if (author && permlink && columnK) {
+      const userInfo = this.userInfo
+      const loginType = localStorage.getItem('login-type')
+      const res = await getArticleDetail({
+        id: loginType === 'password' ? userInfo.user : userInfo.eth_account,
+        jsonrpc: '2.0',
+        method: 'bridge.get_discussion',
+        params: { author, permlink }
+      })
+      if (res && res.result) {
+        const obj = res.result[author + '/' + permlink]
+        console.log(obj)
+        this.content = decrypt(this.eval(obj.body).body, columnK)
+        this.titleText = obj.title
+      }
+    }
+  },
   mounted() {
     this.$refs.myQuillEditor.quill.root.addEventListener(
       'paste',
@@ -178,9 +207,14 @@ export default {
     }
   },
   methods: {
+    eval(fn) {
+      const Fn = Function
+      return new Fn('return ' + fn)()
+    },
     async onUploadHandler(e) {
       this.loadHandler(e.file, (v) => {
         this.fileList = this.fileList.concat([v])
+        console.log(this.fileList)
       })
     },
     uploadDispatch: function (url, fd, fn) {
@@ -195,10 +229,10 @@ export default {
         })
     },
     async loadHandler(file, cb) {
-      console.log(file)
+      // console.log(file)
       let dataUrl = ''
       if (file) {
-        console.log('** image being loaded.. ----->', file)
+        // console.log('** image being loaded.. ----->', file)
         let width = 0
         let height = 0
         const reader = new FileReader()
@@ -259,7 +293,7 @@ export default {
       this.titleLength = this.titleText.length
     },
     async post() {
-      // console.log(this.fileList)
+      const { author, permlink, columnK } = this.$route.query
       const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
       const selectedColumn = this.$route.query.selectedColumn
@@ -269,51 +303,62 @@ export default {
         background: 'rgba(0, 0, 0, 0.2)'
       })
       let formatContent = ''
-      const imgArr = this.content.split('src="https://cdn.steemitimages.com')
-      console.log(imgArr)
-      imgArr.forEach((item, i) => {
-        if (i === 0) {
-          formatContent += item
-        } else {
-          //   formatContent +=
-          //     `preview=${i} class="img-container" width="300px" height="${
-          //       (300 / this.fileList[i - 1].width) * this.fileList[i - 1].height
-          //     }px"` +
-          //     ' src="https://cdn.steemitimages.com' +
-          //     item
-          // }
-          console.log(this.fileList[i - 1].width)
-          if (this.fileList[i - 1].width > 600) {
-            formatContent +=
-              `preview=${i} class="img-container" width="600px" height="${
-                (600 / this.fileList[i - 1].width) * this.fileList[i - 1].height
-              }px"` +
-              ' src="https://cdn.steemitimages.com' +
-              item
+      if (columnK) {
+        formatContent = this.content
+      } else {
+        const imgArr = this.content.split('src="https://cdn.steemitimages.com')
+        // console.log(imgArr)
+        imgArr.forEach((item, i) => {
+          if (i === 0) {
+            formatContent += item
           } else {
-            formatContent +=
-              `preview=${i} class="img-container" width="100%" height="100%"` +
-              ' src="https://cdn.steemitimages.com' +
-              item
+            //   formatContent +=
+            //     `preview=${i} class="img-container" width="300px" height="${
+            //       (300 / this.fileList[i - 1].width) * this.fileList[i - 1].height
+            //     }px"` +
+            //     ' src="https://cdn.steemitimages.com' +
+            //     item
+            // }
+            console.log(this.fileList[i - 1])
+
+            if (this.fileList[i - 1].width > 600) {
+              formatContent +=
+                `preview=${i} class="img-container" width="600px" height="${
+                  (600 / this.fileList[i - 1].width) *
+                  this.fileList[i - 1].height
+                }px"` +
+                ' src="https://cdn.steemitimages.com' +
+                item
+            } else {
+              formatContent +=
+                `preview=${i} class="img-container" width="100%" height="100%"` +
+                ' src="https://cdn.steemitimages.com' +
+                item
+            }
           }
-        }
-      })
+        })
+      }
+
       console.log(formatContent)
 
       const res = await post({
-        type: 'post',
+        type: columnK ? 'edit' : 'post',
         id: loginType === 'password' ? userInfo.user : userInfo.eth_account,
         token: getToken(),
         user_name: userInfo.user_name,
         steem_id: userInfo.steem_id,
         subscriptions_name: selectedColumn,
-        permlink: '',
+        permlink: columnK ? [author, permlink] : '',
         title: this.titleText,
         body: formatContent
       })
       if (res && res.success === 'ok') {
         setTimeout(() => {
-          this.$message.success('发文成功')
+          if (columnK) {
+            this.$message.success('编辑成功')
+          } else {
+            this.$message.success('发文成功')
+          }
           this.$EventBus.$emit('changeTab', { name: 'home' }, 0)
         }, 1000)
       } else {

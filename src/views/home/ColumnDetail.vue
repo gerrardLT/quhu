@@ -1,8 +1,20 @@
 <template>
   <div>
     <div class="columnDetail_container">
-      <el-page-header @back="goBack" class="back" title="返回首页">
-      </el-page-header>
+      <div class="tool_bar">
+        <el-page-header @back="goBack" class="back" title="返回首页">
+        </el-page-header>
+
+        <div class="share" v-if="isMyColumn">
+          <Dropdown :options="options" v-model="inviteType"> </Dropdown>
+          <i
+            class="el-icon-share"
+            :title="`点击复制${inviteType}链接`"
+            @click="copyInviteCode($event)"
+          ></i>
+        </div>
+      </div>
+
       <el-row
         type="flex"
         class="subscriptions"
@@ -283,7 +295,8 @@ import {
   subscriptions,
   addColumn,
   removeColumn,
-  add2Column
+  add2Column,
+  invite
 } from '@/api/special/special'
 import { getUser } from '@/api/user/user'
 import { getToken } from '@/utils/auth'
@@ -291,9 +304,15 @@ import { transformTime } from '@/utils/tool'
 import { Loading } from 'element-ui'
 const defaultImg = require(`../../assets/quhu-logo.jpg`)
 import { cloneDeep } from 'lodash'
+import clipboard from '@/utils/clipboard'
+import Dropdown from '@/components/dropdown/Dropdown.vue'
+
 export default {
   name: 'ColumnDetail',
-  created() {
+  components: {
+    Dropdown
+  },
+  async created() {
     this.getDetail()
     this.userInfo.article.forEach((item) => {
       if (item.name === this.$route.query.subName) {
@@ -302,9 +321,16 @@ export default {
     })
     console.log(11)
   },
-  mounted() {},
+  mounted() {
+    const { inviteCode } = this.$route.query
+    if (inviteCode) {
+      this.apply(inviteCode)
+    }
+  },
   data() {
     return {
+      inviteType: '分享',
+      inviteCode: '',
       subscribeType: '',
       confirmVisible: false,
       actionUrl: '',
@@ -321,6 +347,7 @@ export default {
         allow: 'self',
         month: 12
       },
+      options: ['分享', '邀请'],
       currentInfo: {},
       removePopVisible: false,
       isJoined: false,
@@ -345,6 +372,15 @@ export default {
   },
   methods: {
     transformTime,
+    copyInviteCode(e) {
+      const link =
+        this.inviteType === '分享'
+          ? window.location.href
+          : window.location.href + '&invitedCode=' + this.inviteCode
+      clipboard(link, e)
+      this.$message.success('复制成功！')
+    },
+
     subscribe() {
       this.subscribeType = 'again'
       this.confirmVisible = true
@@ -526,12 +562,31 @@ export default {
     },
     async getDetail() {
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+      if (!userInfo) {
+        this.$router.push({
+          path: '/login',
+          query: this.$route.query
+        })
+      }
+      const loginType = localStorage.getItem('login-type')
       const subscriptions_name = this.$route.query.subName
       const params = {
         type: 'info',
         subscriptions_name
       }
+
       const res = await subscriptions(params)
+      if (this.isMyColumn) {
+        const inviteCodeRes = await invite({
+          id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
+          token: getToken(),
+          subscriptions_name
+        })
+        if (inviteCodeRes && inviteCodeRes.success === 'ok') {
+          this.inviteCode = inviteCodeRes.data.invitedcode
+          console.log(this.inviteCode)
+        }
+      }
 
       if (res && res.success === 'ok') {
         this.detail_info = res.data
@@ -564,7 +619,7 @@ export default {
         this.detail_info.image = defaultImg
       }
     },
-    async apply() {
+    async apply(inviteCode) {
       const { subscriptions_name, month } = this.detail_info
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
       const loginType = localStorage.getItem('login-type')
@@ -575,6 +630,9 @@ export default {
         steem_id: userInfo.steem_id,
         subscriptions_name,
         month
+      }
+      if (inviteCode) {
+        params.invitedcode = inviteCode
       }
       const loading = Loading.service({
         text: '加载中...',
@@ -590,7 +648,6 @@ export default {
 
           this.$message.success('订阅成功')
         } else {
-          // this.$message.error('订阅失败！')
         }
       } else {
         const res = await addColumn(params)
@@ -599,7 +656,6 @@ export default {
           this.$message.success('加入专栏成功')
           this.$router.go(-1)
         } else {
-          // this.$message.error('加入失败，请刷新重试！')
         }
       }
       this.confirmVisible = false
@@ -619,6 +675,22 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.tool_bar {
+  display: flex;
+  justify-content: space-between;
+  .share {
+    height: 20px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+}
+::v-deep .type_select .el-input__inner {
+  border: none;
+  width: 50px;
+  padding: 0;
+}
+::v-deep .type_select .el-input__suffix {
+}
 .back {
   margin-bottom: 20px;
 }

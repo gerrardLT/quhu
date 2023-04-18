@@ -70,12 +70,21 @@ const store = new Vuex.Store({
       if (res) {
         state.userInfo = Object.assign({}, res.data)
         localStorage.setItem('quhu-userInfo', JSON.stringify(state.userInfo))
-        router.push({
+        console.log(router.currentRoute.query)
+        if(router.currentRoute.query.inviteCode){
+          router.push({
+            path: '/columnDetail',
+            query: router.currentRoute.query
+          })
+        }else {
+          router.push({
             path: '/home',
             query: {
               user: encodeURIComponent(user),
             }
           })
+        }
+
       }
     },
     async updateUser ({

@@ -237,6 +237,17 @@ export default {
       const token = getToken()
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
       const loginType = localStorage.getItem('login-type')
+      const pwdReg =
+        /(?!^(\d+|[a-zA-Z]+|[~!@#$%^&*()_.]+)$)^[\w~!@#$%^&*()_.]{8,16}$/
+      if (
+        !pwdReg.test(this.safeInfoForm.newPassword) ||
+        !pwdReg.test(this.safeInfoForm.passwordAgain)
+      ) {
+        this.$message.error(
+          '密码应为字母，数字，特殊符号(~!@#$%^&*()_.)，两种及以上组合，8-16位字符串，如：xxxxx@abc'
+        )
+        return
+      }
 
       if (this.safeInfoForm.newPassword === this.safeInfoForm.passwordAgain) {
         if (loginType === 'password') {

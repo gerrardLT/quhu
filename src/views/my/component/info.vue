@@ -52,11 +52,11 @@
         </svg> -->
       </div>
       <div class="steem_id">
-        <span>用户ID：{{ steemId }}</span
+        <span>用户ID：{{ userInfo.steem_id }}</span
         ><i
           style="margin-left: 10px"
           class="el-icon-copy-document"
-          @click="copy(steemId, $event)"
+          @click="copy(userInfo.steem_id, $event)"
         ></i>
       </div>
       <div

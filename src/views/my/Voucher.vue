@@ -10,7 +10,13 @@
   <div class="wallet">
     <div class="operation">
       <el-button type="danger" around @click="showAddress">充值</el-button>
-      <el-button type="primary" around @click="spend">提现</el-button>
+      <el-button type="primary" around @click="withdrawalVisible = true"
+        >提现</el-button
+      >
+      <el-button type="warning" around @click="ask">提现查询</el-button>
+    </div>
+    <div class="check">
+      <span @click="dialogFormVisible = true">充值还未到账？点我查询</span>
     </div>
     <div v-show="isShowAddress" class="address-container">
       <span>转入地址（bsc链）：{{ address }}</span>
@@ -60,33 +66,139 @@
       >
       </el-pagination>
     </div>
+    <el-dialog title="充值自助查询" :visible.sync="dialogFormVisible">
+      <el-form :model="checkForm">
+        <el-form-item label="hash值" label-width="120">
+          <el-input
+            v-model="checkForm.hash"
+            autocomplete="off"
+            placeholder="请输入hash"
+          ></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="handleCheck">点击查询</el-button>
+      </div>
+    </el-dialog>
+    <el-dialog title="提现" :visible.sync="withdrawalVisible" width="30%">
+      <div class="withdrawal_dialog">
+        <el-input
+          v-model="withdrawalAmount"
+          autocomplete="off"
+          placeholder="请输入提现数量"
+        ></el-input>
+        <el-select
+          class="price_select"
+          v-model="withdrawalCoin"
+          clearable
+          placeholder="请选择提现币种"
+          @change="$forceUpdate()"
+        >
+          <el-option
+            v-for="item in coinList"
+            :key="item.id"
+            :label="item.name"
+            :value="item.name"
+          >
+          </el-option>
+        </el-select>
+      </div>
+
+      <el-input
+        v-model="withdrawalAddress"
+        autocomplete="off"
+        placeholder="请输入提现地址（bsc链）"
+      ></el-input>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="withdrawalVisible = false">取 消</el-button>
+        <el-button type="primary" @click="spend">确 定</el-button>
+      </span>
+    </el-dialog>
+    <el-dialog title="提现查询" :visible.sync="searchVisible" width="80%">
+      <div class="record-page">
+        <el-table
+          :data="searchData"
+          stripe
+          style="width: 100%"
+          height="300"
+          v-loading="searchLoading"
+        >
+          <el-table-column prop="timestamp" label="日期" width="100">
+          </el-table-column>
+          <el-table-column prop="orderid" label="订单号" width="100">
+          </el-table-column>
+          <el-table-column prop="steem_id" label="用户id" width="100">
+          </el-table-column>
+          <el-table-column prop="token" label="币种" width="100">
+          </el-table-column>
+          <el-table-column prop="nums" label="数量" width="100">
+          </el-table-column>
+          <el-table-column prop="pay" label="支付状态" width="100">
+          </el-table-column>
+          <el-table-column prop="types" label="审核状态" width="100">
+          </el-table-column>
+          <el-table-column prop="address" label="提现地址"> </el-table-column>
+        </el-table>
+        <el-pagination
+          @current-change="handleCurrentChangeSearch"
+          :current-page.sync="currentSearchPage"
+          :page-size="20"
+          :page-count="searchPageInfo.max_page"
+          layout="total, prev, pager, next, jumper"
+          :total="searchPageInfo.total"
+        >
+        </el-pagination>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import clipboard from '@/utils/clipboard'
-import { transactions } from '@/api/user/user'
+import { transactions, check, withdrawal, getwithdrawal } from '@/api/user/user'
 import { getToken } from '@/utils/auth'
 import { transformTime } from '@/utils/tool'
 
 export default {
   data() {
     return {
+      checkForm: {
+        hash: ''
+      },
+      withdrawalAmount: 0,
+      withdrawalCoin: 'ofc',
+      withdrawalAddress: '',
+      dialogFormVisible: false,
+      searchVisible: false,
+      withdrawalVisible: false,
       currentPage: 1,
+      currentSearchPage: 1,
       pagesize: 10,
       search: '',
       address: '',
       isShowAddress: false,
       tableLoading: false,
+      searchLoading: false,
       tableData: [
         {
           timestamp: '',
           orderid: '',
           type: '',
           token: '',
+          amount: '',
+          status: ''
+        }
+      ],
+      searchData: [
+        {
+          timestamp: '',
+          orderid: '',
+          userid: '',
+          token: '',
           amount: ''
         }
       ],
+      searchPageInfo: {},
       pageInfo: {}
     }
   },
@@ -116,6 +228,61 @@ export default {
   },
   mounted() {},
   methods: {
+    async ask() {
+      this.getSearchData(1)
+      this.searchVisible = true
+    },
+    async getSearchData(page) {
+      this.searchLoading = true
+      const params = {
+        id:
+          this.loginType === 'eth'
+            ? this.userInfo.eth_account
+            : this.userInfo.user,
+        token: getToken(),
+        page
+      }
+      const res = await getwithdrawal(params)
+      if (res && res.success === 'ok') {
+        this.searchPageInfo = {
+          max_page: res.max_page,
+          page: res.page,
+          total: res.total
+        }
+        res.data.forEach((element) => {
+          element.timestamp = transformTime(element.timestamp)
+        })
+        this.searchData = res.data
+      }
+      this.searchLoading = false
+    },
+    async handleCheck() {
+      if (!this.checkForm.hash.trim()) {
+        this.$message.error('请输入hash值！')
+        return
+      }
+      const userInfo = this.userInfo
+      const loginType = this.loginType
+      const params = {
+        id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
+        token: getToken(),
+        hashs: this.checkForm.hash
+      }
+
+      const res = await check(params)
+      if (res && res.success === 'ok') {
+        if (res.type === false) {
+          this.$message.error('失败：记录已存在')
+        } else {
+          this.$message.success('成功：已记录')
+        }
+      }
+      this.dialogFormVisible = false
+      this.checkForm.hash = ''
+    },
+    handleCurrentChangeSearch(v) {
+      this.getSearchData(v)
+    },
     handleCurrentChange(v) {
       this.getTableData(v)
     },
@@ -129,7 +296,7 @@ export default {
         token: getToken(),
         page
       })
-      if (res && res.success) {
+      if (res && res.success === 'ok') {
         this.pageInfo = {
           max_page: res.max_page,
           page: res.page,
@@ -137,7 +304,6 @@ export default {
         }
 
         res.data.forEach((element) => {
-          // console.log(element.timestamp)
           element.timestamp = transformTime(element.timestamp)
         })
         this.tableData = res.data
@@ -154,8 +320,33 @@ export default {
     copy(key, e) {
       clipboard(key, e)
     },
-    spend() {
-      this.$message.success('敬请期待！')
+    async spend() {
+      const reg = /^[+]{0,1}(\d+)$/
+
+      if (!reg.test(Number(this.withdrawalAmount))) {
+        this.$message.error('请输入正确数量！')
+        return
+      }
+      if (!this.withdrawalAddress.trim()) {
+        this.$message.error('请输入提现地址！')
+        return
+      }
+      const params = {
+        id:
+          this.loginType === 'eth'
+            ? this.userInfo.eth_account
+            : this.userInfo.user,
+        token: getToken(),
+        coins: this.withdrawalCoin,
+        amount: Number(this.withdrawalAmount),
+        address: this.withdrawalAddress
+      }
+      const res = await withdrawal(params)
+      if (res && res.success === 'ok') {
+        this.$message.success('提现成功！')
+      } else {
+        this.$message.error('提现失败！')
+      }
     }
   }
 }
@@ -165,6 +356,20 @@ export default {
 .wallet {
   padding: 50px;
   position: relative;
+}
+.check {
+  font-size: 12px;
+  color: #087790;
+  display: flex;
+  justify-content: flex-end;
+  span {
+    cursor: pointer;
+  }
+}
+.withdrawal_dialog {
+  display: flex;
+  margin-bottom: 10px;
+  justify-content: space-between;
 }
 .coin-list {
   display: flex;

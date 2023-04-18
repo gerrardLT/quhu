@@ -87,6 +87,11 @@ import { searchColumn } from '@/api/special/special'
 export default {
   name: 'Tabs',
   components: {},
+  created() {
+    this.$EventBus.$on('changeTab', (v, index, query) => {
+      this.tabClick(v, index, query)
+    })
+  },
   mounted() {
     const self = this
     const path = this.$route.path.replace('/', '')
@@ -112,9 +117,6 @@ export default {
     }
     this.toggleStyle(this.nameList.indexOf(path))
     // this.$eventBus.$off('changeTab')
-    this.$EventBus.$on('changeTab', (v, index, query) => {
-      this.tabClick(v, index, query)
-    })
   },
   // beforeRouteEnter(to, from, next) {
   //   console.log(to, from)

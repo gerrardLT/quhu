@@ -159,3 +159,12 @@ export async function removeCollect (data) {
     data
   })
 }
+
+// 邀请进圈
+export async function invite (data) {
+  return request({
+    url: '/invitedcode',
+    method: 'post',
+    data
+  })
+}

@@ -244,16 +244,10 @@
             >
               <div class="topic-container">
                 <div style="padding: 10px">
-                  <div class="header-container">
-                    <div class="author">
-                      <img class="avatar" :src="item.body.avatar" alt="" />
-                      <div class="info">
-                        <div class="role owner">{{ item.body.author }}</div>
-                        <div class="date">
-                          {{ item.created }}
-                        </div>
-                      </div>
-                    </div>
+                  <div
+                    v-if="selectedMenu !== 'short-square'"
+                    class="short-square"
+                  >
                     <el-dropdown
                       trigger="click"
                       size="medium"
@@ -305,53 +299,195 @@
                           "
                           >移除收藏</el-dropdown-item
                         >
+                        <el-dropdown-item
+                          v-show="
+                            editLimt(item.created) &&
+                            userInfo.buy_article.my.indexOf(
+                              item.body.subscriptions_name
+                            ) !== -1
+                          "
+                          @click.native="editArticle(item)"
+                          >编辑</el-dropdown-item
+                        >
                       </el-dropdown-menu>
                     </el-dropdown>
-                  </div>
-                  <Collapse>
-                    <div
-                      :class="[
-                        item.isArticleActive ? 'hide_content' : 'show_content',
-                        'talk-content-container'
-                      ]"
-                    >
-                      <div
-                        class="content"
-                        :ref="
-                          (e) => {
-                            setContentRef(item, e)
-                          }
-                        "
-                      >
-                        <div>{{ item.title }}</div>
-                        <br />
-                        <div
-                          v-html="
-                            item.json_metadata.encrypted &&
-                            selectedMenu !== 'short-square'
-                              ? decrypt(item.body.body, columnK)
-                              : item.body.body
-                          "
-                        ></div>
-                      </div>
-
-                      <div class="openOrFold" v-if="item.isArticleActive">
-                        <button @click="openOrFoldBtn(item)" class="fold">
-                          <svg
-                            :style="{
-                              width: '15px',
-                              height: '15px'
-                            }"
-                          >
-                            <use
-                              :xlink:href="'#icon-' + item.openOrFoldFlag"
-                              rel="external nofollow"
-                            />
-                          </svg>
-                        </button>
+                    <div class="square-title">
+                      {{ item.title }}
+                    </div>
+                    <div class="header-container">
+                      <div class="author">
+                        <img class="avatar" :src="item.body.avatar" alt="" />
+                        <div class="info">
+                          <div class="role owner">{{ item.body.author }}</div>
+                          <div class="date">
+                            {{ transfromTimeZoom(item.created) }}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </Collapse>
+                    <Collapse>
+                      <div
+                        :class="[
+                          item.isArticleActive
+                            ? 'hide_content'
+                            : 'show_content',
+                          'talk-content-container'
+                        ]"
+                      >
+                        <div
+                          class="content"
+                          :ref="
+                            (e) => {
+                              setContentRef(item, e)
+                            }
+                          "
+                        >
+                          <div
+                            v-html="
+                              item.json_metadata.encrypted &&
+                              selectedMenu !== 'short-square'
+                                ? decrypt(item.body.body, columnK)
+                                : item.body.body
+                            "
+                          ></div>
+                        </div>
+
+                        <div class="openOrFold" v-if="item.isArticleActive">
+                          <button @click="openOrFoldBtn(item)" class="fold">
+                            <svg
+                              :style="{
+                                width: '15px',
+                                height: '15px'
+                              }"
+                            >
+                              <use
+                                :xlink:href="'#icon-' + item.openOrFoldFlag"
+                                rel="external nofollow"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </Collapse>
+                  </div>
+                  <div v-else>
+                    <div class="header-container">
+                      <div class="author">
+                        <img class="avatar" :src="item.body.avatar" alt="" />
+                        <div class="info">
+                          <div class="role owner">{{ item.body.author }}</div>
+                          <div class="date">
+                            {{ transfromTimeZoom(item.created) }}
+                          </div>
+                        </div>
+                      </div>
+                      <el-dropdown
+                        trigger="click"
+                        size="medium"
+                        placement="bottom"
+                      >
+                        <span class="el-dropdown-link">
+                          <i class="el-icon-arrow-down el-icon--right"></i>
+                        </span>
+                        <el-dropdown-menu slot="dropdown">
+                          <el-dropdown-item
+                            v-show="
+                              item.body.status !== 'top' &&
+                              userInfo.buy_article.my.indexOf(
+                                item.body.subscriptions_name
+                              ) !== -1
+                            "
+                            @click.native="articleSet(item, index, '+')"
+                            >置顶</el-dropdown-item
+                          >
+                          <el-dropdown-item
+                            v-show="
+                              item.body.status === 'top' &&
+                              userInfo.buy_article.my.indexOf(
+                                item.body.subscriptions_name
+                              ) !== -1
+                            "
+                            @click.native="articleSet(item, index, '-')"
+                            >取消置顶</el-dropdown-item
+                          >
+                          <!-- <el-dropdown-item>置底</el-dropdown-item> -->
+                          <el-dropdown-item
+                            @click.native="articleSet(item, index, 'delete')"
+                            v-show="
+                              userInfo.buy_article.my.indexOf(
+                                item.body.subscriptions_name
+                              ) !== -1
+                            "
+                            >删除</el-dropdown-item
+                          >
+                          <el-dropdown-item
+                            @click.native="articleSet(item, index, 'collect')"
+                            v-show="!item.isFavorite"
+                            >收藏</el-dropdown-item
+                          >
+                          <el-dropdown-item
+                            v-show="item.isFavorite"
+                            @click.native="
+                              articleSet(item, index, 'removeCollect')
+                            "
+                            >移除收藏</el-dropdown-item
+                          >
+                          <!-- <el-dropdown-item @click.native="editArticle(item)"
+                            >编辑</el-dropdown-item
+                          > -->
+                        </el-dropdown-menu>
+                      </el-dropdown>
+                    </div>
+                    <Collapse>
+                      <div
+                        :class="[
+                          item.isArticleActive
+                            ? 'hide_content'
+                            : 'show_content',
+                          'talk-content-container'
+                        ]"
+                      >
+                        <div
+                          class="content"
+                          :ref="
+                            (e) => {
+                              setContentRef(item, e)
+                            }
+                          "
+                        >
+                          <div>
+                            {{ item.title }}
+                          </div>
+                          <br />
+                          <div
+                            v-html="
+                              item.json_metadata.encrypted &&
+                              selectedMenu !== 'short-square'
+                                ? decrypt(item.body.body, columnK)
+                                : item.body.body
+                            "
+                          ></div>
+                        </div>
+
+                        <div class="openOrFold" v-if="item.isArticleActive">
+                          <button @click="openOrFoldBtn(item)" class="fold">
+                            <svg
+                              :style="{
+                                width: '15px',
+                                height: '15px'
+                              }"
+                            >
+                              <use
+                                :xlink:href="'#icon-' + item.openOrFoldFlag"
+                                rel="external nofollow"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </Collapse>
+                  </div>
+
                   <div class="operation-icon-container">
                     <div class="operation-icon">
                       <div
@@ -421,7 +557,7 @@
                             {{ currentDetail.body.author }}
                           </div>
                           <div class="date">
-                            {{ currentDetail.created }}
+                            {{ transfromTimeZoom(currentDetail.created) }}
                           </div>
                         </div>
                       </div>
@@ -616,6 +752,9 @@
                     <div class="text-range">{{ TiLength }}/300</div>
                     <div @click="submit()" class="submit-btn">发布</div>
                   </div>
+                </div>
+                <div style="color: #c0c0c0; font-size: 14px; text-align: right">
+                  专栏发文后48H内可编辑和删除
                 </div>
               </div>
             </div>
@@ -960,7 +1099,7 @@ export default {
       activeMenuId: '',
       favorites: [],
       currentInfo: {},
-      columnK: '',
+      columnK: 0,
       selectedMenu: '',
       subscribeTimeList: [
         { label: '1个月', value: 1 },
@@ -986,9 +1125,6 @@ export default {
     userInfo() {
       return JSON.parse(localStorage.getItem('quhu-userInfo'))
     }
-    // activeMenuId() {
-    //   return sessionStorage.getItem('selectedMenu')
-    // }
   },
   async created() {
     this.updateColumn()
@@ -1008,18 +1144,55 @@ export default {
   },
   methods: {
     decrypt,
+    editLimt(time) {
+      const utcTimeStr = time
+
+      // 将0时区时间转换成东8区时间
+      const utcTime = new Date(utcTimeStr)
+      const beijingTime = new Date(utcTime.getTime() + 8 * 60 * 60 * 1000)
+
+      // 计算当前时间和转换后的时间的时间差（单位：毫秒）
+      const now = Date.now()
+      const diff = now - beijingTime.getTime()
+      // console.log(beijingTime.getTime(), now, diff)
+      // 计算两天的毫秒数
+      const twoDays = 2 * 24 * 60 * 60 * 1000
+      // 判断当前时间是否超过两天
+      if (diff < twoDays) {
+        return true
+      } else {
+        return false
+      }
+    },
+    transfromTimeZoom(v) {
+      const dateStr = v
+      const date = new Date(dateStr)
+      const timeDiff = 8 * 60 * 60 * 1000 // 时差为8小时，转换为毫秒
+      const dateInGMT8 = new Date(date.getTime() + timeDiff)
+      return dateInGMT8.toLocaleString()
+    },
     setContentStatus() {
       this.$nextTick(() => {
-        this.articleList.forEach((item) => {
-          if (
-            this.contentRefList['content' + item.permlink] &&
-            this.contentRefList['content' + item.permlink].offsetHeight > 600
-          ) {
-            item.isArticleActive = true
-          } else {
-            item.isArticleActive = false
+        let timer = null
+        timer = setInterval(() => {
+          if (document.readyState === 'complete') {
+            if (this.articleList.length) {
+              this.articleList.forEach((item) => {
+                if (
+                  this.contentRefList['content' + item.permlink] &&
+                  this.contentRefList['content' + item.permlink].offsetHeight >
+                    600
+                ) {
+                  item.isArticleActive = true
+                } else {
+                  item.isArticleActive = false
+                }
+              })
+            }
+
+            window.clearInterval(timer)
           }
-        })
+        }, 100)
       })
     },
     loadMoreArticle() {
@@ -1218,6 +1391,7 @@ export default {
       //     this.selectedColumn || this.subscriptionsList.my[0] || ''
       //   )
     },
+
     async getHotColumns() {
       const res = await hotColumn({})
       if (res && res.success === 'ok') {
@@ -1290,7 +1464,20 @@ export default {
       })
       // console.log(this.fileList)
     },
-
+    editArticle(article) {
+      console.log(this.columnK)
+      setTimeout(() => {
+        this.$router.push({
+          path: '/write',
+          query: {
+            author: article.author,
+            permlink: article.permlink,
+            columnK: this.columnK,
+            selectedColumn: this.selectedColumn
+          }
+        })
+      }, 500)
+    },
     handleRemove() {
       this.removePopVisible = true
     },
@@ -1370,7 +1557,7 @@ export default {
       }
     },
     async onUploadSubImgHandler(e) {
-      this.loadHandler(e, (v) => {
+      this.loadHandler(e.file, (v) => {
         this.subscriptionsInfo.image = v.url
       })
     },
@@ -1771,7 +1958,7 @@ export default {
         this.$message.success('回复成功')
         console.log(this.currentDetail, this.selectedMenu, decrypt(body))
         if (type === 'ownReply') {
-          console.log(new Date().toLocaleString(), body)
+          // console.log(new Date().toLocaleString(), body)
           this.currentDetail.commentList.push({
             author: res.data.author,
             permlink: res.data.permlink,
@@ -1779,10 +1966,7 @@ export default {
               body: this.textareaConetent,
               avatar: this.userAvatar,
               author: this.userInfo.user_name,
-              created: new Date()
-                .toLocaleString()
-                .replace(' ', 'T')
-                .replace('/', '-')
+              created: res.result.created
             }),
             parent_author,
             parent_permlink,
@@ -1800,10 +1984,7 @@ export default {
               body: v.reply,
               avatar: this.userAvatar,
               author: this.userInfo.user_name,
-              created: new Date()
-                .toLocaleString()
-                .replace(' ', 'T')
-                .replace('/', '-')
+              created: res.result.created
             }),
             parent_author: parent_author,
             parent_permlink: parent_permlink,
@@ -1951,9 +2132,9 @@ export default {
       if (ele) {
         setTimeout(() => {
           // console.log(this.articleRefs['article' + ele.permlink])
-          const el = this.articleRefs['article' + ele.permlink]
+          // const el = this.articleRefs['article' + ele.permlink]
           // const target = el.offsetTop
-          el.scrollIntoView()
+          // el.scrollIntoView()
         }, 500)
       }
 
@@ -2057,6 +2238,11 @@ export default {
       handler(newVal, oldVal) {},
       deep: true,
       immediate: true
+    },
+    articleList: {
+      handler(newVal, oldVal) {},
+      deep: true,
+      immediate: true
     }
   }
 }
@@ -2121,12 +2307,31 @@ export default {
 .activeText {
   color: rgb(79, 189, 212);
 }
-// ::v-deep .el-submenu__icon-arrow.el-icon-arrow-down {
-//   display: none;
-// }
-// ::v-deep .el-submenu.is-opened > .el-submenu__title .el-submenu__icon-arrow {
-//   display: none;
-// }
+.square-title {
+  font-size: 20px;
+  font-weight: bold;
+  // text-align: center;
+  padding: 10px 10px;
+}
+.short-square {
+  padding-left: 20px;
+  position: relative;
+  .talk-content-container {
+    padding: 10px;
+  }
+  .author {
+    img {
+    }
+    .info {
+      .owner {
+        font-size: 14px;
+      }
+      .date {
+        margin: 0;
+      }
+    }
+  }
+}
 .create-footer {
   position: relative;
   .rule {
@@ -2137,7 +2342,7 @@ export default {
 ::v-deep .el-dropdown {
   position: absolute;
   right: 20px;
-  top: 10px;
+  top: 5px;
 }
 .price_tips {
   margin-top: 10px;

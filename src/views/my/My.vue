@@ -141,7 +141,6 @@ export default {
   border-radius: 8px;
   border: 1px solid #bbbbbb;
   min-width: 150px;
-  margin-top: 20px;
   .nav_item {
     display: block;
     padding: 0 20px;

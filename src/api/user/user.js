@@ -83,3 +83,30 @@ export async function transactions (data) {
     data
   })
 }
+// hash检测
+export async function check (data) {
+  return request({
+    url: '/check',
+    method: 'post',
+    data
+  })
+}
+
+// 提现
+export async function withdrawal (data) {
+  return request({
+    url: '/withdrawal',
+    method: 'post',
+    data
+  })
+}
+
+
+// 提现查询
+export async function getwithdrawal (data) {
+  return request({
+    url: '/getwithdrawal',
+    method: 'post',
+    data
+  })
+}

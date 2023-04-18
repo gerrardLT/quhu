@@ -76,6 +76,13 @@ module.exports = {
     config.resolve.alias
       .set('@', resolve('src'))
 
+
+      config
+    .plugin('html')
+    .tap(args => {
+        args[0].title = 'onlyfun'
+        return args
+    })
     //引入图标
     config.module.rule("svg").exclude.add(resolve("./src/assets/svg"));
     config.module.rule("icon").test(/\.svg$/)
