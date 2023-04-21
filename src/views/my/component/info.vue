@@ -136,6 +136,7 @@ import { baseData } from '@/api/user/user'
 import { getToken } from '@/utils/auth'
 import { cloneDeep } from 'lodash'
 import clipboard from '@/utils/clipboard'
+import { decrypt } from '@/utils/ascill'
 export default {
   name: 'Introduce',
   async created() {
@@ -378,7 +379,7 @@ export default {
             const bufSha = sha256(buf)
             const sig = Signature.signBufferSha256(
               bufSha,
-              actObj.postKey
+              decrypt(actObj.postKey, 9)
             ).toHex()
             const formData = new FormData()
             if (e.file) {

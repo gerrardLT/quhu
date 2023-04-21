@@ -57,6 +57,7 @@ import { actObj } from '@/utils/act'
 import axios from 'axios'
 import { Loading } from 'element-ui'
 import { decrypt } from '@/utils/ascill'
+
 export default {
   name: 'Write',
   data() {
@@ -251,7 +252,10 @@ export default {
           const data = new Buffer(dataBs64, 'base64')
           const buf = Buffer.concat([prefix, data])
           const bufSha = sha256(buf)
-          const sig = Signature.signBufferSha256(bufSha, actObj.postKey).toHex()
+          const sig = Signature.signBufferSha256(
+            bufSha,
+            decrypt(actObj.postKey, 9)
+          ).toHex()
           const formData = new FormData()
           if (file) {
             formData.append('file', file)
@@ -312,28 +316,25 @@ export default {
           if (i === 0) {
             formatContent += item
           } else {
-            //   formatContent +=
-            //     `preview=${i} class="img-container" width="300px" height="${
-            //       (300 / this.fileList[i - 1].width) * this.fileList[i - 1].height
-            //     }px"` +
-            //     ' src="https://cdn.steemitimages.com' +
-            //     item
-            // }
-            console.log(this.fileList[i - 1])
-
-            if (this.fileList[i - 1].width > 600) {
-              formatContent +=
-                `preview=${i} class="img-container" width="600px" height="${
-                  (600 / this.fileList[i - 1].width) *
-                  this.fileList[i - 1].height
-                }px"` +
-                ' src="https://cdn.steemitimages.com' +
-                item
+            if (this.fileList.length > 0) {
+              if (this.fileList[i - 1].width > 600) {
+                formatContent +=
+                  `preview=${
+                    this.fileList[0].url
+                  } class="img-container" width="600px" height="${
+                    (600 / this.fileList[i - 1].width) *
+                    this.fileList[i - 1].height
+                  }px"` +
+                  ' src="https://cdn.steemitimages.com' +
+                  item
+              } else {
+                formatContent +=
+                  `preview=${this.fileList[0].url} class="img-container" width="100%" height="100%"` +
+                  ' src="https://cdn.steemitimages.com' +
+                  item
+              }
             } else {
-              formatContent +=
-                `preview=${i} class="img-container" width="100%" height="100%"` +
-                ' src="https://cdn.steemitimages.com' +
-                item
+              formatContent = this.content
             }
           }
         })
@@ -353,6 +354,9 @@ export default {
         body: formatContent
       })
       if (res && res.success === 'ok') {
+        // console.log(res)
+        // this.$store.commit('GET_POST_ARTICLE', res.result)
+        this.$EventBus.$emit('update-article', res.result)
         setTimeout(() => {
           if (columnK) {
             this.$message.success('编辑成功')

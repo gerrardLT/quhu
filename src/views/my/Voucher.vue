@@ -109,9 +109,25 @@
         autocomplete="off"
         placeholder="请输入提现地址（bsc链）"
       ></el-input>
-      <span slot="footer" class="dialog-footer">
+      <span slot="footer" class="withdrawal-dialog-footer">
+        <div class="show-withdrawal">
+          <div>到账数量</div>
+          <div>
+            {{
+              withdrawalAmount === '0' || withdrawalAmount === ''
+                ? 0 + withdrawalCoin
+                : withdrawalAmount - withdrawalCoinNumber + withdrawalCoin
+            }}
+          </div>
+          <div>网络手续费{{ withdrawalCoinNumber + withdrawalCoin }}</div>
+        </div>
         <el-button @click="withdrawalVisible = false">取 消</el-button>
-        <el-button type="primary" @click="spend">确 定</el-button>
+        <el-button
+          :disabled="withdrawalAmount === '0' || withdrawalAmount === ''"
+          type="primary"
+          @click="spend"
+          >提现</el-button
+        >
       </span>
     </el-dialog>
     <el-dialog title="提现查询" :visible.sync="searchVisible" width="80%">
@@ -120,7 +136,7 @@
           :data="searchData"
           stripe
           style="width: 100%"
-          height="300"
+          height="600"
           v-loading="searchLoading"
         >
           <el-table-column prop="timestamp" label="日期" width="100">
@@ -165,7 +181,7 @@ export default {
       checkForm: {
         hash: ''
       },
-      withdrawalAmount: 0,
+      withdrawalAmount: '',
       withdrawalCoin: 'ofc',
       withdrawalAddress: '',
       dialogFormVisible: false,
@@ -203,6 +219,25 @@ export default {
     }
   },
   computed: {
+    withdrawalCoinNumber() {
+      let coin = 0
+      switch (this.withdrawalCoin) {
+        case 'ofc':
+          coin = 100
+          break
+
+        case 'poys':
+          coin = 50
+          break
+        case 'bnb':
+          coin = 0.005
+          break
+        case 'busd':
+          coin = 1
+          break
+      }
+      return coin
+    },
     coinList() {
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo')) || {}
       const arr = []
@@ -344,8 +379,9 @@ export default {
       const res = await withdrawal(params)
       if (res && res.success === 'ok') {
         this.$message.success('提现成功！')
-      } else {
-        this.$message.error('提现失败！')
+        this.withdrawalCoin = 'ofc'
+        this.withdrawalAmount = ''
+        this.withdrawalAddress = ''
       }
     }
   }
@@ -356,6 +392,14 @@ export default {
 .wallet {
   padding: 50px;
   position: relative;
+}
+.show-withdrawal {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  color: #c0c0c0;
+  text-align: left;
+  font-size: 12px;
 }
 .check {
   font-size: 12px;

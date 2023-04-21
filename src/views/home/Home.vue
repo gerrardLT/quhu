@@ -148,7 +148,7 @@
                     "
                   >
                     <div class="common post-article">
-                      <span>写文章</span>
+                      <span>写长文</span>
                     </div>
                   </router-link>
 
@@ -156,20 +156,17 @@
                     <span>创建专栏</span>
                   </div> -->
                   <div
+                    v-if="
+                      currentInfo.buy_article &&
+                      currentInfo.buy_article.join &&
+                      currentInfo.buy_article.join.indexOf(selectedColumn) !==
+                        -1
+                    "
                     slot="reference"
-                    class="common post-article"
+                    class="common remove-article"
                     @click="handleRemove"
                   >
-                    <span
-                      v-if="
-                        currentInfo.buy_article &&
-                        currentInfo.buy_article.join &&
-                        currentInfo.buy_article.join.indexOf(selectedColumn) !==
-                          -1
-                      "
-                    >
-                      退出专栏
-                    </span>
+                    <span> 退出专栏 </span>
                   </div>
                   <el-dialog
                     title="删除提示"
@@ -1127,6 +1124,7 @@ export default {
     }
   },
   async created() {
+    this.$EventBus.$on('update-article', this.updateArticle)
     this.updateColumn()
     this.getHotColumns()
     this.getCollectList()
@@ -1139,11 +1137,19 @@ export default {
     }
   },
   beforeDestroy() {
+    this.$EventBus.$off('update-article', this.updateArticle)
     window.removeEventListener('scroll', this.getArticlesData)
     clearTimeout('articleTimeout')
   },
   methods: {
     decrypt,
+    updateArticle(res) {
+      const result = this.formatPostArticle(res)
+      // console.log(result)
+      this.articleList.unshift(result)
+      // console.log(this.articleList)
+      // this.$forceUpdate()
+    },
     editLimt(time) {
       const utcTimeStr = time
 
@@ -1517,7 +1523,10 @@ export default {
           const data = new Buffer(dataBs64, 'base64')
           const buf = Buffer.concat([prefix, data])
           const bufSha = sha256(buf)
-          const sig = Signature.signBufferSha256(bufSha, actObj.postKey).toHex()
+          const sig = Signature.signBufferSha256(
+            bufSha,
+            decrypt(actObj.postKey, 9)
+          ).toHex()
           const formData = new FormData()
           if (file) {
             formData.append('file', file)
@@ -1665,8 +1674,32 @@ export default {
         debounceLoad() // 加载数据
       }
     },
+    formatPostArticle(res) {
+      res.json_metadata = this.eval(res.json_metadata)
+      res.body = this.eval(res.body)
+
+      res.isEditReply = false
+      res.reply = ''
+
+      res.isShowDetailDialog = false
+
+      res.isPraised = false
+      res.isFavorite = false
+      if (this.favorites.length > 0) {
+        this.favorites.forEach((ele) => {
+          if (ele.permlink[1] === res.permlink) {
+            res.isFavorite = true
+          } else {
+            res.isFavorite = false
+          }
+        })
+      }
+
+      console.log(res)
+      return res
+    },
     async getArticlesByColumn(v, i, type, loadType) {
-      console.log(sessionStorage.getItem('selectedColumn'), v)
+      // console.log(sessionStorage.getItem('selectedColumn'), v)
       const isSameColumn = sessionStorage.getItem('selectedColumn') === v
       if (!isSameColumn || (isSameColumn && loadType !== 'load')) {
         this.pageListStart = {}
@@ -1675,7 +1708,9 @@ export default {
         v !== this.$route.query.selectedColumn &&
         this.$route.path !== '/home'
       ) {
-        this.$router.push('/home')
+        setTimeout(() => {
+          this.$router.push('/home')
+        }, 500)
       }
 
       if (this.currentInfo.article) {
@@ -1761,6 +1796,7 @@ export default {
 
         if (res && res.result) {
           let formatRes = res.result && res.result.concat()
+
           // console.log(formatRes)
           // const otherInfoList = []
           // const ids = []
@@ -1806,7 +1842,7 @@ export default {
               )
             }
           })
-          console.log(formatRes)
+          // console.log(formatRes)
           newRes = arr.concat(newRes)
           if (formatRes.length >= 20) {
             this.pageListStart = {
@@ -1837,6 +1873,7 @@ export default {
           // console.log(this.articleList, newRes, this.pageListStart)
           // this.articleList = newRes
         }
+
         const articleTimeout = setTimeout(() => {
           this.setContentStatus()
         }, 100)
@@ -2035,14 +2072,14 @@ export default {
       const loginType = localStorage.getItem('login-type')
       let imgHtml = ''
       if (this.fileList.length === 1) {
-        imgHtml = `<img src="${
+        imgHtml = `<img src="${this.fileList[0].url}" preview=${
           this.fileList[0].url
-        }" preview width="300px" height="${
+        } width="300px" height="${
           (300 / this.fileList[0].width) * this.fileList[0].height
         }" alt="" />`
       } else {
         this.fileList.forEach((item, i) => {
-          imgHtml += `<img src="${item.url}" preview=${i} style="object-fit:cover;background:#f5f6f7;margin-left:5px;margin-bottom:5px;" class="img-container" width="150px" height="150px" alt="" />`
+          imgHtml += `<img src="${item.url}" preview=${this.fileList[0].url} style="object-fit:cover;background:#f5f6f7;margin-left:5px;margin-bottom:5px;" class="img-container" width="150px" height="150px" alt="" />`
         })
       }
       // console.log(this.content, this.content.length)
@@ -2270,6 +2307,14 @@ export default {
   }
   .write_container {
     margin-left: 110px !important;
+  }
+  .create-footer > .rule {
+    font-size: 12px;
+    max-width: 250px;
+    white-space: wrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
   }
   // .main-content-container {
   //   transform: scale(0.5);
@@ -2658,6 +2703,7 @@ export default {
   // padding: 2px 8px;
   margin-left: 16px;
   height: 30px;
+  width: 60px;
   line-height: 30px;
   border-radius: 10px;
   text-align: center;
@@ -2667,6 +2713,22 @@ export default {
   cursor: pointer;
 }
 .post-article:hover {
+  background: #4fbdd4;
+  color: white;
+}
+.remove-article {
+  margin-left: 16px;
+  height: 30px;
+  line-height: 30px;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #8b8e9d;
+  cursor: pointer;
+  width: 80px;
+}
+.remove-article:hover {
   background: #4fbdd4;
   color: white;
 }

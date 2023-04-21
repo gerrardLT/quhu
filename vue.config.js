@@ -14,6 +14,7 @@ const CompressionWebpackPlugin = require('compression-webpack-plugin')
 const webpack = require('webpack')
 const productionGzipExtensions = ['js', 'css']
 const resolve = (dir) => path.join(__dirname, '.', dir)
+// const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   productionSourceMap: false,
@@ -75,14 +76,6 @@ module.exports = {
   chainWebpack: (config) => {
     config.resolve.alias
       .set('@', resolve('src'))
-
-
-      config
-    .plugin('html')
-    .tap(args => {
-        args[0].title = 'onlyfun'
-        return args
-    })
     //引入图标
     config.module.rule("svg").exclude.add(resolve("./src/assets/svg"));
     config.module.rule("icon").test(/\.svg$/)
@@ -93,6 +86,12 @@ module.exports = {
         symbolId: 'icon-[name]'
       });
 
+      config
+    .plugin('html')
+    .tap(args => {
+        args[0].title = 'onlyfun'
+        return args
+    })
     config.plugin('define').tap(args => [{
       ...args,
       "window.isDefine": JSON.stringify(true),
@@ -170,6 +169,11 @@ module.exports = {
           minRatio: 0.8
         })
       );
+      // config.plugins.push(
+      //   new HtmlWebpackPlugin({
+      //     title: 'onlyfun'
+      //   })
+      // );
 
       Object.assign(config, {
         optimization

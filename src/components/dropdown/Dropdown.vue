@@ -26,6 +26,10 @@ export default {
     },
     value: {
       required: false
+    },
+    drop: {
+      type: Function,
+      required: true
     }
   },
   data() {
@@ -47,6 +51,7 @@ export default {
       this.selectedValue = option
       this.isOpen = false
       this.$emit('input', option)
+      this.drop()
     }
   },
   mounted() {
@@ -68,6 +73,7 @@ export default {
   padding: 5px 10px;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 16px;
 }
 
 .dropdown-menu {
@@ -82,7 +88,7 @@ export default {
   padding: 0;
   margin: 0;
   list-style: none;
-  width: 100%;
+  width: calc(100% - 10px);
 }
 
 .dropdown-menu li {

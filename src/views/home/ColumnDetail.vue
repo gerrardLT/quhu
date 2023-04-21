@@ -6,9 +6,10 @@
         </el-page-header>
 
         <div class="share" v-if="isMyColumn">
-          <Dropdown :options="options" v-model="inviteType"> </Dropdown>
+          <Dropdown :options="options" v-model="inviteType" :drop="dropDown">
+          </Dropdown>
           <i
-            class="el-icon-share"
+            class="el-icon-share share-icon"
             :title="`点击复制${inviteType}链接`"
             @click="copyInviteCode($event)"
           ></i>
@@ -169,6 +170,17 @@
             <el-radio v-model="detail_info.allow" label="all">所有人</el-radio>
           </div>
         </div>
+        <div class="public common_set">
+          <el-tag>是否公开专栏</el-tag>
+          <div class="radio">
+            <el-radio v-model="detail_info.publicStatus" label="public"
+              >公开</el-radio
+            >
+            <el-radio v-model="detail_info.publicStatus" label="hide"
+              >隐藏</el-radio
+            >
+          </div>
+        </div>
         <div class="save_container">
           <el-button class="save_btn" type="primary" @click="saveSet" round>
             保存
@@ -265,20 +277,14 @@
           width="30%"
           center
           round
+          :close-on-click-modal="false"
         >
-          <span
-            >{{
-              '确认花费' +
-              (detail_info.price === '0'
-                ? '0'
-                : keepThreeNum((detail_info.price / 12) * detail_info.month)) +
-              detail_info.currency +
-              (subscribeType === 'again' ? '续订该专栏吗？' : '加入该专栏吗？')
-            }}
-          </span>
+          <span>{{ tips }} </span>
           <span slot="footer" class="dialog-footer">
             <el-button @click="confirmVisible = false">取 消</el-button>
-            <el-button type="primary" @click="apply">确 定</el-button>
+            <el-button type="primary" @click="apply(inviteCode)"
+              >确 定</el-button
+            >
           </span>
         </el-dialog>
       </el-row>
@@ -306,7 +312,7 @@ const defaultImg = require(`../../assets/quhu-logo.jpg`)
 import { cloneDeep } from 'lodash'
 import clipboard from '@/utils/clipboard'
 import Dropdown from '@/components/dropdown/Dropdown.vue'
-
+import { decrypt } from '@/utils/ascill'
 export default {
   name: 'ColumnDetail',
   components: {
@@ -324,7 +330,7 @@ export default {
   mounted() {
     const { inviteCode } = this.$route.query
     if (inviteCode) {
-      this.apply(inviteCode)
+      this.confirmVisible = true
     }
   },
   data() {
@@ -368,15 +374,59 @@ export default {
     },
     userInfo() {
       return JSON.parse(localStorage.getItem('quhu-userInfo'))
+    },
+    tips() {
+      let tip = ''
+      const { inviteCode } = this.$route.query
+      if (inviteCode) {
+        tip = '是否应邀加入该专栏？'
+      } else {
+        tip =
+          '确认花费' +
+          (this.detail_info.price === '0'
+            ? '0'
+            : this.keepThreeNum(
+                (this.detail_info.price / 12) * this.detail_info.month
+              )) +
+          this.detail_info.currency +
+          (this.subscribeType === 'again' ? '续订该专栏吗？' : '加入该专栏吗？')
+      }
+      return tip
     }
   },
   methods: {
     transformTime,
+    async dropDown() {
+      const userInfo = this.userInfo
+      const loginType = localStorage.getItem('login-type')
+      const subscriptions_name = this.$route.query.subName
+      if (this.isMyColumn) {
+        if (this.inviteType === '邀请') {
+          const loading = Loading.service({
+            text: '加载中...',
+            spinner: 'el-icon-loading ElementLoading',
+            background: 'rgba(0, 0, 0, 0.2)'
+          })
+          const inviteCodeRes = await invite({
+            id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
+            token: getToken(),
+            subscriptions_name
+          })
+          if (inviteCodeRes && inviteCodeRes.success === 'ok') {
+            this.inviteCode = inviteCodeRes.data.invitedcode
+            console.log(this.inviteCode)
+          }
+          if (loading) {
+            loading.close()
+          }
+        }
+      }
+    },
     copyInviteCode(e) {
       const link =
         this.inviteType === '分享'
           ? window.location.href
-          : window.location.href + '&invitedCode=' + this.inviteCode
+          : window.location.href + '&inviteCode=' + this.inviteCode
       clipboard(link, e)
       this.$message.success('复制成功！')
     },
@@ -458,7 +508,7 @@ export default {
             const bufSha = sha256(buf)
             const sig = Signature.signBufferSha256(
               bufSha,
-              actObj.postKey
+              decrypt(actObj.postKey, 9)
             ).toHex()
             const formData = new FormData()
             if (e.file) {
@@ -488,7 +538,8 @@ export default {
         image,
         price,
         currency,
-        allow
+        allow,
+        publicStatus
       } = this.detail_info
 
       const userInfo = this.userInfo
@@ -506,6 +557,12 @@ export default {
       if (allow === 'all') {
         params.allow = 'all'
       }
+
+      if (publicStatus === 'public') {
+        params.public = true
+      } else {
+        params.public = false
+      }
       // console.log(params)
       const loading = Loading.service({
         text: '加载中...',
@@ -515,9 +572,9 @@ export default {
       const res = await subscriptions(params)
 
       if (res && res.success === 'ok') {
-        this.$message.success('修改成功')
+        this.$message.success('设置成功')
       } else {
-        this.$message.error('修改失败！请重新修改')
+        this.$message.error('设置失败！请重新设置')
       }
       if (loading) {
         loading.close()
@@ -576,17 +633,6 @@ export default {
       }
 
       const res = await subscriptions(params)
-      if (this.isMyColumn) {
-        const inviteCodeRes = await invite({
-          id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
-          token: getToken(),
-          subscriptions_name
-        })
-        if (inviteCodeRes && inviteCodeRes.success === 'ok') {
-          this.inviteCode = inviteCodeRes.data.invitedcode
-          console.log(this.inviteCode)
-        }
-      }
 
       if (res && res.success === 'ok') {
         this.detail_info = res.data
@@ -619,7 +665,8 @@ export default {
         this.detail_info.image = defaultImg
       }
     },
-    async apply(inviteCode) {
+    async apply(v) {
+      const { inviteCode } = this.$route.query
       const { subscriptions_name, month } = this.detail_info
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
       const loginType = localStorage.getItem('login-type')
@@ -631,6 +678,7 @@ export default {
         subscriptions_name,
         month
       }
+      console.log(v, inviteCode)
       if (inviteCode) {
         params.invitedcode = inviteCode
       }
@@ -647,7 +695,6 @@ export default {
           const currentInfo = await this.getUser()
 
           this.$message.success('订阅成功')
-        } else {
         }
       } else {
         const res = await addColumn(params)
@@ -655,7 +702,6 @@ export default {
         if (res && res.success === 'ok') {
           this.$message.success('加入专栏成功')
           this.$router.go(-1)
-        } else {
         }
       }
       this.confirmVisible = false
@@ -681,7 +727,12 @@ export default {
   .share {
     height: 20px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 16px;
+    .share-icon {
+      width: 16px;
+      height: 16px;
+      font-size: 16px;
+    }
   }
 }
 ::v-deep .type_select .el-input__inner {
@@ -773,7 +824,14 @@ export default {
     }
     .authority {
       .radio {
-        width: 220px;
+        width: 150px;
+        display: flex;
+        justify-content: space-between;
+      }
+    }
+    .public {
+      .radio {
+        width: 150px;
         display: flex;
         justify-content: space-between;
       }
