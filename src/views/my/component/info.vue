@@ -115,7 +115,13 @@
         >
       </div>
     </div>
-    <el-dialog title="性别选择" :visible.sync="sexVisible" width="30%" center>
+    <el-dialog
+      title="性别选择"
+      :visible.sync="sexVisible"
+      :close-on-click-modal="false"
+      width="30%"
+      center
+    >
       <el-radio v-model="sex" label="man">男</el-radio>
       <el-radio v-model="sex" label="woman">女</el-radio>
       <span slot="footer" class="dialog-footer">

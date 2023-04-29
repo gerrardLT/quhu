@@ -32,6 +32,7 @@ import ImageResize from 'quill-image-resize-module'
 import preview from 'vue-photo-preview'
 import 'vue-photo-preview/dist/skin.css'
 import 'animate.css';
+import "swiper/swiper.min.css"
 
 // 实现quill-editor编辑器拖拽上传图片
 Vue.use(VueQuillEditor)

@@ -103,7 +103,7 @@
               </svg>
               <span style="fontsize: 14px">创建专栏</span>
             </div>
-            <div
+            <!-- <div
               :class="{ activeText: activeMenuIndex === 2, 'menu-style': true }"
               @click="privateManage"
             >
@@ -118,7 +118,7 @@
                 <use :xlink:href="'#icon-setting'" rel="external nofollow" />
               </svg>
               <span style="fontsize: 14px">专栏隐私管理</span>
-            </div>
+            </div> -->
           </el-menu>
         </div>
       </el-col>
@@ -171,6 +171,7 @@
                   <el-dialog
                     title="删除提示"
                     :visible.sync="removePopVisible"
+                    :close-on-click-modal="false"
                     width="30%"
                     center
                   >
@@ -191,6 +192,7 @@
           <el-dialog
             title="提示"
             :visible.sync="applyDialogVisible"
+            :close-on-click-modal="false"
             width="30%"
           >
             <span
@@ -745,8 +747,18 @@
                 <div  class="video" hidden=""></div><button  class="tag"></button>
                 <div  class="scheduled"></div> -->
                   </div>
+                  <div class="middle">
+                    <el-select
+                      v-model="articlePostType"
+                      @change="$forceUpdate()"
+                    >
+                      <el-option label="公开" value="公开" />
+                      <el-option label="仅自己可见" value="仅自己可见" />
+                    </el-select>
+                  </div>
                   <div class="right">
                     <div class="text-range">{{ TiLength }}/300</div>
+
                     <div @click="submit()" class="submit-btn">发布</div>
                   </div>
                 </div>
@@ -826,6 +838,7 @@
     <el-dialog
       title="创建专栏"
       :visible.sync="dialogVisible"
+      :close-on-click-modal="false"
       width="60%"
       :before-close="handleSubscriptionsClose"
     >
@@ -958,6 +971,8 @@ export default {
   },
   data() {
     return {
+      articlePermlinkList: [],
+      articlePostType: '公开',
       articleStyleObj: {},
       applyDialogVisible: false,
       radio: '',
@@ -1265,16 +1280,20 @@ export default {
     },
     async getCollectList() {
       const loginType = localStorage.getItem('login-type')
-      const favorites = await getfavorites({
-        id:
-          loginType === 'password'
-            ? this.userInfo.user
-            : this.userInfo.eth_account,
-        token: getToken()
-      })
-      if (favorites && favorites.success === 'ok') {
-        this.favorites = favorites.data
-      }
+      //       const articleOtherInfo = await getVote({
+      //   permlink: val.permlink,
+      //   steem_id: userInfo.steem_id
+      // })
+      // const favorites = await getfavorites({
+      //   id:
+      //     loginType === 'password'
+      //       ? this.userInfo.user
+      //       : this.userInfo.eth_account,
+      //   token: getToken()
+      // })
+      // if (favorites && favorites.success === 'ok') {
+      //   this.favorites = favorites.data
+      // }
     },
     privateManage() {
       this.activeMenuIndex = 2
@@ -1802,9 +1821,17 @@ export default {
           // const ids = []
           let arr = []
           let newRes = formatRes.filter((ele, index) => {
-            return this.eval(ele.body).status !== 'delete'
+            if (this.subscriptionsList.my.indexOf(this.selectedColumn) !== -1) {
+              return this.eval(ele.body).status !== 'delete'
+            } else {
+              return (
+                this.eval(ele.body).status !== 'delete' &&
+                this.eval(ele.body).status !== 'private'
+              )
+            }
           })
           newRes.forEach((element, index) => {
+            this.articlePermlinkList.push(element.permlink)
             element.body = this.eval(element.body)
             element.isEditReply = false
             element.reply = ''
@@ -2089,6 +2116,7 @@ export default {
         spinner: 'el-icon-loading ElementLoading',
         background: 'rgba(0, 0, 0, 0.2)'
       })
+      console.log(this.articlePostType)
       const res = await post({
         type: 'post',
         id: loginType === 'password' ? userInfo.user : userInfo.eth_account,
@@ -2098,6 +2126,7 @@ export default {
         subscriptions_name: this.selectedColumn || '',
         permlink: '',
         title: this.titleText,
+        public: this.articlePostType === '公开' ? 'yes' : 'no',
         body: this.postContent + imgHtml
       })
 
@@ -2978,7 +3007,9 @@ export default {
 .upload-container {
   position: relative;
 }
-
+.upload-container .operation-icon {
+  height: 80px;
+}
 .create-topic-container .create-topic-panel .operation-icon {
   margin-top: 20px;
   display: flex;
@@ -3032,14 +3063,29 @@ export default {
 }
 
 .create-topic-container .create-topic-panel .operation-icon .right {
-  display: flex;
+  // display: flex;
   position: absolute;
   right: 0;
+  top: 0;
 }
 .upload-container .image-list-container {
   margin-top: 10px;
   margin-bottom: 4px;
   width: 318px;
+}
+
+.middle {
+  position: absolute;
+  right: 50px;
+  top: 30px;
+}
+::v-deep .middle .el-input input {
+  height: 30px;
+  width: 90px;
+  border: none;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .create-topic-container .create-topic-panel .operation-icon .right .text-range {
   margin-right: 16px;
@@ -3048,6 +3094,7 @@ export default {
   height: 24px;
   line-height: 24px;
   text-align: center;
+  margin-bottom: 10px;
 }
 .create-topic-container .create-topic-panel .operation-icon .right .submit-btn {
   min-width: 50px;

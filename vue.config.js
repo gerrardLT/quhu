@@ -25,15 +25,16 @@ module.exports = {
     proxy: {
       '/abc': {
         // target: 'http://45.77.114.109:668',
-        target: 'https://api.onlyfun.city',
+        // target: 'https://api.onlyfun.city',
+        target: 'http://re.steem.vip:668',
         changeOrigin: true,
         pathRewrite: {
           '/abc': ''
         }
       },
       '/steem': {
-        target: 'https://node.onlyfun.city',
         // target: 'https://node.onlyfun.city',
+        target: 'https://api.justyy.com',
         changeOrigin: true,
         pathRewrite: {
           '/steem': ''
@@ -104,6 +105,15 @@ module.exports = {
       // 'window.Quill': 'quill/dist/quill.js',
       // 'Quill': 'quill/dist/quill.js'
     }])
+  //   config.set('externals', {
+  //     three: 'three',
+  //     'vue-router': 'VueRouter',
+  //     axios: 'axios',
+  //     lodash: '_',
+  //     moment: 'moment',
+  //     nprogress: 'NProgress',
+  //     'element-ui': 'ELEMENT'
+  // })
     // 生产环境配置
     if (process.env.NODE_ENV === 'production') {
       config.output.filename('./js/[name].[chunkhash:8].js');
@@ -169,6 +179,7 @@ module.exports = {
           minRatio: 0.8
         })
       );
+      
       // config.plugins.push(
       //   new HtmlWebpackPlugin({
       //     title: 'onlyfun'

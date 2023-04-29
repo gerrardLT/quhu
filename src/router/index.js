@@ -13,6 +13,7 @@ import Home from '../views/home/Home.vue'
 import My from '../views/my/My.vue'
 import Article from '../views/article/Article.vue'
 import Auction from '../views/auction/Auction.vue'
+import Nft from '../views/nft/Nft.vue'
 import ColumnDetail from '../views/home/ColumnDetail.vue'
 import Write from '../views/home/Write.vue'
 import Activation from '../views/my/Activation.vue'
@@ -49,6 +50,11 @@ const routes = [
   {
     path: '/article',
     component: Article,
+    meta: { isTabPage: true }
+  },
+  {
+    path: '/nft',
+    component: Nft,
     meta: { isTabPage: true }
   },
   {

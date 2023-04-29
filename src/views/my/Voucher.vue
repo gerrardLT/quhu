@@ -9,6 +9,7 @@
 <template>
   <div class="wallet">
     <div class="operation">
+      <el-button type="success" around @click="showTrade">兑换</el-button>
       <el-button type="danger" around @click="showAddress">充值</el-button>
       <el-button type="primary" around @click="withdrawalVisible = true"
         >提现</el-button
@@ -29,10 +30,10 @@
         <div class="balance-title">锁仓额</div>
       </div>
       <div class="coin">
-        <div class="coin-item" v-for="item in coinList" :key="item.id">
+        <div class="coin-item" v-for="item in balanceList" :key="item.id">
           <div class="coin-name">{{ item.name }}</div>
-          <div class="balance">{{ item.balance }}</div>
-          <div class="balance">{{ item.lock_balance }}</div>
+          <div class="balance">{{ item.balance.toFixed(3) }}</div>
+          <div class="balance">{{ item.lock_balance.toFixed(3) }}</div>
         </div>
       </div>
     </div>
@@ -66,7 +67,11 @@
       >
       </el-pagination>
     </div>
-    <el-dialog title="充值自助查询" :visible.sync="dialogFormVisible">
+    <el-dialog
+      :close-on-click-modal="false"
+      title="充值自助查询"
+      :visible.sync="dialogFormVisible"
+    >
       <el-form :model="checkForm">
         <el-form-item label="hash值" label-width="120">
           <el-input
@@ -80,7 +85,12 @@
         <el-button type="primary" @click="handleCheck">点击查询</el-button>
       </div>
     </el-dialog>
-    <el-dialog title="提现" :visible.sync="withdrawalVisible" width="30%">
+    <el-dialog
+      title="提现"
+      :close-on-click-modal="false"
+      :visible.sync="withdrawalVisible"
+      width="30%"
+    >
       <div class="withdrawal_dialog">
         <el-input
           v-model="withdrawalAmount"
@@ -95,7 +105,7 @@
           @change="$forceUpdate()"
         >
           <el-option
-            v-for="item in coinList"
+            v-for="item in balanceList"
             :key="item.id"
             :label="item.name"
             :value="item.name"
@@ -130,7 +140,12 @@
         >
       </span>
     </el-dialog>
-    <el-dialog title="提现查询" :visible.sync="searchVisible" width="80%">
+    <el-dialog
+      title="提现查询"
+      :close-on-click-modal="false"
+      :visible.sync="searchVisible"
+      width="80%"
+    >
       <div class="record-page">
         <el-table
           :data="searchData"
@@ -139,19 +154,19 @@
           height="600"
           v-loading="searchLoading"
         >
-          <el-table-column prop="timestamp" label="日期" width="100">
+          <el-table-column prop="timestamp" label="日期" width="160">
           </el-table-column>
-          <el-table-column prop="orderid" label="订单号" width="100">
+          <el-table-column prop="orderid" label="订单号" width="150">
           </el-table-column>
           <el-table-column prop="steem_id" label="用户id" width="100">
           </el-table-column>
-          <el-table-column prop="token" label="币种" width="100">
+          <el-table-column prop="token" label="币种" width="60">
           </el-table-column>
           <el-table-column prop="nums" label="数量" width="100">
           </el-table-column>
-          <el-table-column prop="pay" label="支付状态" width="100">
+          <el-table-column prop="pay" label="支付状态" width="240">
           </el-table-column>
-          <el-table-column prop="types" label="审核状态" width="100">
+          <el-table-column prop="types" label="审核状态" width="80">
           </el-table-column>
           <el-table-column prop="address" label="提现地址"> </el-table-column>
         </el-table>
@@ -166,14 +181,135 @@
         </el-pagination>
       </div>
     </el-dialog>
+
+    <el-dialog
+      :visible.sync="coinTradeVisible"
+      :close-on-click-modal="false"
+      title="兑换"
+      width="50%"
+      custom-class="trade_dialog"
+      v-loading="tradeLoading"
+      element-loading-text="拼命加载中"
+      element-loading-spinner="el-icon-loading"
+      element-loading-background="rgba(0, 0, 0, 0.8)"
+    >
+      <el-form
+        :model="tradeForm"
+        ref="tradeForm"
+        :rules="rules"
+        label-width="120px"
+      >
+        <div class="from_container">
+          <div class="from">
+            <span>From</span>
+            <el-form-item prop="exchangeCurrency">
+              <el-select
+                v-model="tradeForm.exchangeCurrency"
+                class="exchangeCurrency"
+                popper-class="exchangeCurrency_select_down"
+                @change="changeFrom"
+              >
+                <el-option label="poys" value="poys" />
+                <el-option label="busd" value="busd" />
+              </el-select>
+            </el-form-item>
+          </div>
+
+          <div class="from_input">
+            <div class="amount_container">
+              <!-- <el-form-item prop="exchangeAmount">
+                <el-input
+                  class="amount_input"
+                  style="marginleft: 0"
+                  v-model="tradeForm.exchangeAmount"
+                  placeholder="请输入兑换数量"
+                />
+              </el-form-item> -->
+              <el-input
+                class="amount_input"
+                v-model="tradeForm.exchangeAmount"
+                @input="amountChange"
+              ></el-input>
+              <div>
+                <span
+                  >余额：
+                  {{ userInfo.token_num[tradeForm.exchangeCurrency] }}</span
+                >
+              </div>
+            </div>
+            <div class="max" @click="maxAmount">MAX</div>
+          </div>
+        </div>
+        <div class="arrow_down">
+          <svg
+            :style="{
+              fill: '#087790',
+              width: '15px',
+              height: '15px',
+              marginRight: '5px'
+            }"
+          >
+            <use
+              :xlink:href="'#icon-arrow-doubledown'"
+              rel="external nofollow"
+            />
+          </svg>
+        </div>
+
+        <div class="to_container">
+          <div class="to">
+            <span>To</span>
+            <el-form-item prop="convertCurrency">
+              <el-select
+                v-model="tradeForm.convertCurrency"
+                class="convertCurrency"
+                popper-class="convertCurrency_select_down"
+              >
+                <el-option
+                  v-for="item in convertCurrencyArr"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                >
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </div>
+
+          <div class="to_input">
+            <div class="amount_container">
+              <div class="amount_input">{{ tradeForm.convertAmount }}</div>
+              <!-- <el-input
+                class="amount_input"
+                v-model="tradeForm.convertAmount"
+                :disabled="true"
+              ></el-input> -->
+            </div>
+          </div>
+        </div>
+        <div class="operation_btns">
+          <el-button type="primary" :disabled="validateAmount" @click="exchange"
+            >兑换</el-button
+          >
+        </div>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import clipboard from '@/utils/clipboard'
-import { transactions, check, withdrawal, getwithdrawal } from '@/api/user/user'
+import {
+  transactions,
+  check,
+  withdrawal,
+  getwithdrawal,
+  swap,
+  balance
+} from '@/api/user/user'
 import { getToken } from '@/utils/auth'
 import { transformTime } from '@/utils/tool'
+import { Loading } from 'element-ui'
 
 export default {
   data() {
@@ -181,6 +317,36 @@ export default {
       checkForm: {
         hash: ''
       },
+      convertCurrencyArr: [
+        {
+          value: 'ofc',
+          label: 'ofc'
+        },
+        {
+          value: 'busd',
+          label: 'busd'
+        }
+      ],
+      radio: 1,
+      tradeForm: {
+        exchangeAmount: 0,
+        exchangeCurrency: 'poys',
+        convertCurrency: 'busd',
+        convertAmount: 0
+      },
+      rules: {
+        exchangeCurrency: [
+          { required: true, message: '请选择兑换币种', trigger: 'change' }
+        ],
+        convertCurrency: [
+          { required: true, message: '请选择可兑换币种', trigger: 'change' }
+        ]
+      },
+      currencyBalances: {
+        poys: 10000,
+        busd: 20000
+      },
+      coinTradeVisible: false,
       withdrawalAmount: '',
       withdrawalCoin: 'ofc',
       withdrawalAddress: '',
@@ -193,8 +359,10 @@ export default {
       search: '',
       address: '',
       isShowAddress: false,
+      tradeLoading: false,
       tableLoading: false,
       searchLoading: false,
+      validateAmount: true,
       tableData: [
         {
           timestamp: '',
@@ -215,7 +383,8 @@ export default {
         }
       ],
       searchPageInfo: {},
-      pageInfo: {}
+      pageInfo: {},
+      balanceList: []
     }
   },
   computed: {
@@ -223,7 +392,7 @@ export default {
       let coin = 0
       switch (this.withdrawalCoin) {
         case 'ofc':
-          coin = 100
+          coin = 1000
           break
 
         case 'poys':
@@ -238,19 +407,6 @@ export default {
       }
       return coin
     },
-    coinList() {
-      const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo')) || {}
-      const arr = []
-      Object.keys(userInfo.lock_token).forEach((key, i) => {
-        arr.push({
-          name: key,
-          balance: userInfo.token_num[key],
-          lock_balance: userInfo.lock_token[key],
-          id: i
-        })
-      })
-      return arr || []
-    },
     userInfo() {
       return JSON.parse(localStorage.getItem('quhu-userInfo')) || {}
     },
@@ -260,9 +416,115 @@ export default {
   },
   async created() {
     this.getTableData(1)
+    this.getBalance()
   },
   mounted() {},
   methods: {
+    async getBalance() {
+      const res = await balance({
+        id:
+          this.loginType === 'eth'
+            ? this.userInfo.eth_account
+            : this.userInfo.user,
+        token: getToken()
+      })
+      if (res && res.success === 'ok') {
+        const arr = []
+        Object.keys(res.data.lock_token).forEach((key, i) => {
+          arr.push({
+            name: key,
+            balance: res.data.token_num[key],
+            lock_balance: res.data.lock_token[key],
+            id: i
+          })
+        })
+        this.balanceList = arr
+      }
+    },
+    async exchange() {
+      console.log(this.tradeForm.exchangeAmount)
+
+      this.tradeLoading = true
+      const res = await swap({
+        id:
+          this.loginType === 'eth'
+            ? this.userInfo.eth_account
+            : this.userInfo.user,
+        token: getToken(),
+        coins: `${this.tradeForm.exchangeCurrency}=>${this.tradeForm.convertCurrency}`,
+        amount: this.tradeForm.exchangeAmount
+      })
+      if (res && res.success === 'ok') {
+        this.$message.success('兑换成功！')
+      }
+
+      this.tradeLoading = false
+    },
+    maxAmount() {
+      this.tradeForm.exchangeAmount =
+        this.userInfo.token_num[this.tradeForm.exchangeCurrency]
+      switch (this.tradeForm.exchangeCurrency) {
+        case 'poys':
+          if (this.tradeForm.convertCurrency === 'busd') {
+            this.tradeForm.convertAmount = this.tradeForm.exchangeAmount * 0.02
+          } else if (this.tradeForm.convertCurrency === 'ofc') {
+            this.tradeForm.convertAmount = this.tradeForm.exchangeAmount * 10
+          }
+          break
+
+        default:
+          break
+      }
+    },
+    amountChange() {
+      const reg = /^[1-9]\d*$/
+      if (reg.test(this.tradeForm.exchangeAmount)) {
+        this.validateAmount = false
+      } else {
+        this.validateAmount = true
+      }
+      switch (this.tradeForm.exchangeCurrency) {
+        case 'poys':
+          if (this.tradeForm.convertCurrency === 'busd') {
+            this.tradeForm.convertAmount = this.tradeForm.exchangeAmount * 0.02
+          } else if (this.tradeForm.convertCurrency === 'ofc') {
+            this.tradeForm.convertAmount = this.tradeForm.exchangeAmount * 10
+          }
+          break
+        case 'busd':
+          this.tradeForm.convertAmount = this.tradeForm.exchangeAmount * 100
+          break
+        default:
+          break
+      }
+    },
+    changeFrom(v) {
+      this.tradeForm.convertAmount = 0
+      this.tradeForm.exchangeAmount = 0
+      if (v === 'poys') {
+        this.convertCurrencyArr = [
+          {
+            value: 'ofc',
+            label: 'ofc'
+          },
+          {
+            value: 'busd',
+            label: 'busd'
+          }
+        ]
+      } else if (v === 'busd') {
+        this.tradeForm.convertCurrency = 'ofc'
+        this.convertCurrencyArr = [
+          {
+            value: 'ofc',
+            label: 'ofc'
+          }
+        ]
+      }
+    },
+    showTrade() {
+      this.coinTradeVisible = true
+    },
     async ask() {
       this.getSearchData(1)
       this.searchVisible = true
@@ -409,6 +671,113 @@ export default {
   span {
     cursor: pointer;
   }
+}
+::v-deep .trade_dialog {
+  background-color: #e4e4e4 !important;
+  // display: flex;
+  // justify-content: center;
+}
+::v-deep .trade_dialog > .el-dialog__body {
+  display: flex;
+  justify-content: center;
+}
+.from_container {
+  min-width: 400px;
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 10px;
+  margin-bottom: 20px;
+  font-size: 12px;
+  .from {
+    display: flex;
+    justify-content: space-between;
+    // align-items: center;
+    height: 40px;
+    line-height: 40px;
+    border-bottom: 1px dashed #e4e4e4;
+  }
+  .from_input {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    .max {
+      font-weight: bold;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      cursor: pointer;
+      color: #087790;
+    }
+
+    .amount_container {
+      .amount_input {
+        margin-bottom: 10px;
+      }
+    }
+  }
+}
+::v-deep .amount_input > input {
+  border: none;
+  padding: 0;
+}
+// ::v-deep .el-select-dropdown.el-popper.exchangeCurrency_select_down {
+//   min-width: 80px !important;
+// }
+// ::v-deep .exchangeCurrency .el-input {
+//   font-size: 16px;
+//   font-weight: bold;
+// }
+
+::v-deep .exchangeCurrency input {
+  width: 90px;
+  border: none;
+  font-size: 16px;
+  font-weight: bold;
+}
+::v-deep .convertCurrency input {
+  width: 90px;
+  border: none;
+  font-size: 16px;
+  font-weight: bold;
+}
+.arrow_down {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.to_container {
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 10px;
+  margin-bottom: 40px;
+  font-size: 12px;
+  .to {
+    display: flex;
+    justify-content: space-between;
+    height: 40px;
+    line-height: 40px;
+    border-bottom: 1px dashed #e4e4e4;
+    // align-items: center;
+  }
+  .to_input {
+    display: flex;
+    justify-content: space-between;
+    .amount_container {
+      height: 30px;
+      line-height: 30px;
+      .amount_input {
+        margin-bottom: 10px;
+      }
+    }
+  }
+}
+
+.operation_btns {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
 }
 .withdrawal_dialog {
   display: flex;

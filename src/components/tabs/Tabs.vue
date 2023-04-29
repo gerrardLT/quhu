@@ -130,20 +130,20 @@ export default {
           text: '首页',
           name: 'home'
         },
-        // {
-        //   id: 1,
-        //   icon: 'if-ui-edit',
-        //   text: '热门',
-        //   name: 'article'
-        // },
         {
           id: 1,
+          icon: 'if-ui-art',
+          text: 'NFT',
+          name: 'nft'
+        },
+        {
+          id: 2,
           icon: 'if-court-hammer',
           text: '竞拍',
           name: 'auction'
         },
         {
-          id: 2,
+          id: 3,
           icon: 'if-ui-user',
           text: '我的',
           name: 'introduce'

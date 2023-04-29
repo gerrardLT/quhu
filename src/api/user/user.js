@@ -110,3 +110,23 @@ export async function getwithdrawal (data) {
     data
   })
 }
+
+
+// 币种兑换
+export async function swap (data) {
+  return request({
+    url: '/swap',
+    method: 'post',
+    data
+  })
+}
+
+// 余额
+export async function balance (data) {
+  return request({
+    url: '/balance',
+    method: 'post',
+    data
+  })
+}
+

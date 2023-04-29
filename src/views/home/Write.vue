@@ -33,6 +33,10 @@
       专栏发文后48H内可编辑和删除
     </div>
     <div class="footer">
+      <el-select v-model="articlePostType" @change="$forceUpdate()">
+        <el-option label="公开" value="公开" />
+        <el-option label="仅自己可见" value="仅自己可见" />
+      </el-select>
       <el-button @click="post" type="primary" class="btn">发布</el-button>
     </div>
     <el-upload
@@ -62,6 +66,7 @@ export default {
   name: 'Write',
   data() {
     return {
+      articlePostType: '公开',
       fileUpload: {},
       fileList: [],
       actionUrl: 'https://steemitimages.com/',
@@ -351,6 +356,7 @@ export default {
         subscriptions_name: selectedColumn,
         permlink: columnK ? [author, permlink] : '',
         title: this.titleText,
+        public: this.articlePostType === '公开' ? 'yes' : 'no',
         body: formatContent
       })
       if (res && res.success === 'ok') {
@@ -424,5 +430,15 @@ export default {
     border-radius: 10px;
     font-size: 16px;
   }
+}
+::v-deep .footer .el-input input {
+  height: 50px;
+  width: 100px;
+  border: none;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin-right: 10px;
+  background-color: #f5f5f5;
 }
 </style>

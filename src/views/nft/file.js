@@ -1,0 +1,22 @@
+export const fileArr = ['./js/vendor/modernizr-3.5.0.min.js',
+'./js/vendor/jquery-3.6.0.min.js',
+'./js/popper.min.js',
+'./js/bootstrap.min.js',
+'./js/slick.min.js',
+'./js/ajax-form.js',
+'./js/paroller.js',
+'./js/wow.min.js',
+'./js/js_isotope.pkgd.min.js',
+'./js/imagesloaded.min.js',
+'./js/parallax.min.js',
+'./js/jquery.waypoints.min.js',
+'./js/jquery.counterup.min.js',
+'./js/jquery.scrollUp.min.js',
+'./js/jquery.meanmenu.min.js',
+'./js/parallax-scroll.js',
+'./js/js/jquery.magnific-popup.min.js',
+'./js/element-in-view.js',
+'./js/swiper.min.js',
+'./js/main.js'
+
+]

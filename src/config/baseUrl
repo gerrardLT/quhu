@@ -18,7 +18,11 @@ if (process.env.NODE_ENV === 'development') {
   baseUrl.api = url_api_dev
   baseUrl.steem = url_steem_dev
 } else if (process.env.NODE_ENV === 'production') {
+ 
   baseUrl.api = 'https://api.onlyfun.city'
   baseUrl.steem = 'https://node.onlyfun.city'
+  //   baseUrl.api = 'http://re.steem.vip:668'
+  // baseUrl.steem = 'https://api.justyy.com'
+
 }
 export default baseUrl

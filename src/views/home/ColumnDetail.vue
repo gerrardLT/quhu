@@ -259,6 +259,7 @@
         <el-dialog
           title="退出提示"
           :visible.sync="removePopVisible"
+          :close-on-click-modal="false"
           width="30%"
           center
           round
