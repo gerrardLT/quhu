@@ -11,7 +11,7 @@ let base = ''
 if (process.env.NODE_ENV === 'development') {
   base = '/steem'
 } else {
-  base = 'https://node.onlyfun.city'
+  base = '/api/'
 }
 
 export function subscriptions (data) {

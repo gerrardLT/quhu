@@ -20,6 +20,24 @@
         <el-divider direction="vertical"></el-divider>
         <span class="item">{{ balanceAmount.bnb }} bnb</span>
       </div>
+      <div class="connect">
+        <el-button
+          type="info"
+          round
+          @click="connectWallet"
+          @mouseover.native="handleMouseOver"
+          class="connect_btn"
+          >{{ account || '连接钱包' }}</el-button
+        >
+        <div
+          class="logMenu"
+          v-show="showMenu"
+          @mouseover="handleMouseOver"
+          @mouseout="handleMouseOut"
+        >
+          <span @click="logOut">log out</span>
+        </div>
+      </div>
       <!-- <div class="cart" @click="openCart">
         <svg
           :style="{
@@ -225,14 +243,19 @@
         </div>
       </section>
     </main>
+    <div class="inventory_container" v-if="currentPath === '/inventory'">
+      <router-view></router-view>
+    </div>
     <iframe
       ref="myIframe"
       class="iframe"
-      src="https://app.onlyfun.city/test/"
+      :src="baseUrl.iframeUrl"
       frameborder="0"
       width="100%"
       height="100%"
+      v-else
     ></iframe>
+
     <el-dialog
       title="mint"
       :visible.sync="dialogMintVisible"
@@ -283,27 +306,23 @@
       ref="elImage"
       style="width: 100px; height: 100px; display: none"
       :src="imgUrl"
+      fit="contain"
       :preview-src-list="srcList"
     >
     </el-image>
-    <!-- <div class="offcanvas-overly"></div>
-    <el-drawer
-      title="我的物品"
-      :visible.sync="drawer"
-      :direction="direction"
-      :before-close="handleClose"
-    >
-      <span>我来啦!</span>
-    </el-drawer> -->
+    <div class="description" v-if="showDes">
+      <div>name：&nbsp;{{ description.name }}</div>
+      <div>rarity:&nbsp;{{ description.rarity || 'Destruction' }}</div>
+    </div>
   </div>
 </template>
 
 <script>
-import ThreeAnimation from './animation.vue'
 import { getToken } from '@/utils/auth'
 import { mint, get_nft } from '@/api/nft/nft'
 import { balance } from '@/api/user/user'
 import { Loading } from 'element-ui'
+import baseUrl from '@/config/baseUrl'
 // import '@/views/nft/css/style.css'
 export default {
   name: 'Nft',
@@ -313,6 +332,7 @@ export default {
   },
   data() {
     return {
+      baseUrl: baseUrl,
       text: '',
       nftData: {},
       dialogMintVisible: false,
@@ -360,7 +380,14 @@ export default {
       interval: '',
       balanceAmount: {},
       drawer: false,
-      direction: 'rtl'
+      direction: 'rtl',
+      description: {
+        rarity: '',
+        id: '',
+        name: ''
+      },
+      showDes: false,
+      showMenu: false
     }
   },
   computed: {
@@ -369,6 +396,9 @@ export default {
     },
     loginType() {
       return localStorage.getItem('login-type')
+    },
+    currentPath() {
+      return this.$route.path
     }
   },
 
@@ -376,21 +406,92 @@ export default {
     this.getBalance()
   },
   mounted() {
+    if (sessionStorage.getItem('walletAccount')) {
+      this.account = sessionStorage.getItem('walletAccount')
+    }
+    window.ethereum.on('accountsChanged', this.handleAccountsChanged)
     const iframe = this.$refs.myIframe
-    iframe.addEventListener('load', () => {
-      iframe.contentWindow.postMessage('ready', '*')
-    })
-    window.addEventListener('message', (event) => {
-      // console.log(event)
-      if (event.data === 'mint') {
-        this.openMint()
-      }
-    })
+    if (iframe) {
+      iframe.addEventListener('load', () => {
+        iframe.contentWindow.postMessage('ready', '*')
+      })
+      window.addEventListener('message', (event) => {
+        // console.log(event)
+        if (event.data === 'mint') {
+          this.openMint()
+        }
+        if (event.data === 'collect') {
+          this.openCart()
+        }
+      })
+    }
+
     // this.$nextTick(() => {
     //   this.$refs.elImage.clickHandler()
     // })
   },
   methods: {
+    handleMouseOver() {
+      this.showMenu = false
+    },
+    handleMouseOut() {
+      this.showMenu = false
+    },
+    handleAccountsChanged(accounts) {
+      console.log(accounts)
+      if (accounts.length === 0) {
+        // MetaMask is locked or the user has not connected any accounts.
+        console.log('Please connect to MetaMask.')
+        this.account = ''
+        sessionStorage.removeItem('walletAccount')
+      } else if (accounts[0] !== this.account) {
+        // Reload your interface with accounts[0].
+        this.account = accounts[0]
+        sessionStorage.setItem('walletAccount', accounts[0])
+      }
+    },
+    async logOut() {
+      const web3 = new this.Web3(window.ethereum)
+
+      if (window.ethereum) {
+        // 调用ethereum.send()方法让用户从MetaMask中退出
+        ethereum.send(
+          {
+            method: 'wallet_requestPermissions',
+            params: [
+              {
+                eth_accounts: null
+              }
+            ]
+          },
+          (v) => {
+            console.log(v)
+          }
+        )
+      } else {
+        console.error('请安装MetaMask并启用以太坊提供程序')
+      }
+    },
+    async connectWallet() {
+      const self = this
+      const web3 = new self.Web3(window.ethereum)
+      if (window.ethereum) {
+        try {
+          // 请求用户授权
+          const res = await window.ethereum.enable()
+          self.account = res[0]
+          sessionStorage.setItem('walletAccount', res[0])
+          console.log(res)
+        } catch (error) {
+          // 用户拒绝授权，或者发生其他错误
+          console.error(error)
+        }
+      } else {
+        // MetaMask未安装，或者未在浏览器中启用以太坊提供程序
+        console.error('请安装MetaMask并启用以太坊提供程序')
+        this.$message.error('请安装MetaMask!')
+      }
+    },
     async openMint() {
       this.dialogMintVisible = true
     },
@@ -514,17 +615,33 @@ export default {
         clearInterval(this.interval)
         this.imgUrl = res.data[0].image
         this.srcList = [this.imgUrl]
+        this.description.name = res.data[0].name
+        this.description.id = res.data[0].nft_id
+        res.data[0].attributes.forEach((element) => {
+          if (element.trait_type === 'rarity') {
+            this.description.rarity = element.value
+          }
+        })
+
         this.$nextTick(() => {
           this.$refs.elImage.clickHandler()
+          this.showDes = true
         })
+        const imageInterval = setInterval(() => {
+          if (!document.querySelector('.el-image-viewer__canvas')) {
+            this.showDes = false
+            clearInterval(imageInterval)
+          }
+        }, 1000)
         this.getBalance()
       }
     },
     openCart() {
-      this.drawer = true
-    },
-    handleClose() {
-      this.drawer = false
+      if (sessionStorage.getItem('walletAccount')) {
+        this.$router.push('/inventory').catch((err) => err)
+      } else {
+        this.connectWallet()
+      }
     },
     async getBalance() {
       const res = await balance({
@@ -549,11 +666,35 @@ export default {
   height: 90%;
   border-radius: 20px;
 }
+.description {
+  position: fixed;
+  position: fixed;
+  top: 8%;
+  z-index: 9999;
+  right: 58%;
+  color: #fff;
+  div {
+    margin-top: 10px;
+    font-size: 20px;
+  }
+}
+// ::v-deep .el-image-viewer__canvas {
+//   width: 80% !important;
+// }
 .nft_container {
   position: relative;
   width: 100%;
   height: 100%;
   padding-top: 20px;
+}
+::v-deep .el-button--info {
+  max-width: 150px;
+  background-color: #1f1f2c;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+::v-deep .el-button--info:hover {
+  background-color: #087790;
 }
 .top {
   height: 50px;
@@ -561,6 +702,36 @@ export default {
   align-items: center;
   justify-content: flex-end;
   margin-top: 20px;
+  .connect {
+    margin-left: 20px;
+    margin-right: 20px;
+    position: relative;
+    .connect_btn {
+    }
+    .logMenu {
+      width: calc(100% - 20px);
+      background-color: #1f1f2c;
+      color: #fff;
+      border-radius: 10px;
+      position: absolute;
+      margin-top: 5px;
+      text-align: center;
+      height: 30px;
+      padding: 10px;
+      span {
+        display: inline-block;
+        cursor: pointer;
+        width: 90%;
+        height: 30px;
+        line-height: 30px;
+      }
+      span:hover {
+        background-color: #087790;
+        border-radius: 10px;
+        color: #000;
+      }
+    }
+  }
   .balance {
     height: 100%;
     line-height: 50px;

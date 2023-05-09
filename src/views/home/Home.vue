@@ -2852,7 +2852,7 @@ export default {
   padding-left: 56px;
   padding-right: 20px;
   margin-bottom: 10px;
-  line-height: 21px;
+  // line-height: 21px;
   color: #2f3034;
   position: relative;
 }

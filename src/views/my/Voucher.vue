@@ -628,6 +628,11 @@ export default {
         this.$message.error('请输入提现地址！')
         return
       }
+      const loading = Loading.service({
+        text: '加载中...',
+        spinner: 'el-icon-loading ElementLoading',
+        background: 'rgba(0, 0, 0, 0.2)'
+      })
       const params = {
         id:
           this.loginType === 'eth'
@@ -641,9 +646,13 @@ export default {
       const res = await withdrawal(params)
       if (res && res.success === 'ok') {
         this.$message.success('提现成功！')
+        this.withdrawalVisible = false
         this.withdrawalCoin = 'ofc'
         this.withdrawalAmount = ''
         this.withdrawalAddress = ''
+      }
+      if (loading) {
+        loading.close()
       }
     }
   }

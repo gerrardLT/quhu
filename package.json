@@ -41,7 +41,7 @@
     "secure-random": "^1.1.2",
     "svg-sprite-loader": "^6.0.11",
     "swiper": "^9.2.4",
-    "three": "0.124.0",
+    "three": "^0.136.0",
     "uglifyjs-webpack-plugin": "^2.2.0",
     "vue": "^2.6.11",
     "vue-photo-preview": "^1.1.3",

@@ -8,6 +8,11 @@
 -->
 <template>
   <div class="invite_container">
+    <div class="link">
+      邀请链接：{{
+        'https://app.onlyfun.city/login?invitedId=' + userInfo.invitedId
+      }}
+    </div>
     <el-button type="danger" round @click="copy($event)"
       >复制邀请链接</el-button
     >
@@ -22,11 +27,15 @@ export default {
   },
   created() {},
   mounted() {},
+  computed: {
+    userInfo() {
+      return JSON.parse(localStorage.getItem('quhu-userInfo')) || {}
+    }
+  },
   methods: {
     copy(e) {
-      const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
       clipboard(
-        'https://app.onlyfun.city/login?invitedId=' + userInfo.invitedId,
+        'https://app.onlyfun.city/login?invitedId=' + this.userInfo.invitedId,
         e
       )
       // clipboard(
@@ -44,5 +53,9 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
+}
+.link {
+  margin-bottom: 20px;
 }
 </style>

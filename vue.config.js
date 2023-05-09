@@ -25,8 +25,8 @@ module.exports = {
     proxy: {
       '/abc': {
         // target: 'http://45.77.114.109:668',
-        // target: 'https://api.onlyfun.city',
-        target: 'http://re.steem.vip:668',
+        target: 'https://api.onlyfun.city',
+        // target: 'https://re.steem.vip/api',
         changeOrigin: true,
         pathRewrite: {
           '/abc': ''

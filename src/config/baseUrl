@@ -17,11 +17,13 @@ if (process.env.NODE_ENV === 'development') {
   // 开发环境
   baseUrl.api = url_api_dev
   baseUrl.steem = url_steem_dev
+  baseUrl.iframeUrl = 'https://app.onlyfun.city/test/'
 } else if (process.env.NODE_ENV === 'production') {
  
-  baseUrl.api = 'https://api.onlyfun.city'
-  baseUrl.steem = 'https://node.onlyfun.city'
-  //   baseUrl.api = 'http://re.steem.vip:668'
+  baseUrl.api = '/api'
+  baseUrl.steem = '/api/'
+  baseUrl.iframeUrl = '/test/'
+  //   baseUrl.api = 'https://re.steem.vip/api'
   // baseUrl.steem = 'https://api.justyy.com'
 
 }

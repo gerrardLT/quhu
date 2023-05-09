@@ -14,6 +14,8 @@ import My from '../views/my/My.vue'
 import Article from '../views/article/Article.vue'
 import Auction from '../views/auction/Auction.vue'
 import Nft from '../views/nft/Nft.vue'
+import Inventory from '../views/nft/Inventory.vue'
+import Animation from '../views/nft/animation.vue'
 import ColumnDetail from '../views/home/ColumnDetail.vue'
 import Write from '../views/home/Write.vue'
 import Activation from '../views/my/Activation.vue'
@@ -53,9 +55,18 @@ const routes = [
     meta: { isTabPage: true }
   },
   {
+    path: '/animation',
+    component: Animation,
+    meta: { isTabPage: true }
+  },
+  {
     path: '/nft',
     component: Nft,
-    meta: { isTabPage: true }
+    meta: { isTabPage: true },
+    children: [ 
+      {name: 'inventory', path: '/inventory', component: Inventory,
+      meta: { isTabPage: true }}
+    ]
   },
   {
     path: '/auction',
