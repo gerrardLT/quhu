@@ -1,11 +1,11 @@
 <template>
   <div class="login_container">
-    <img
-      class="logo_container animate__animated animate__backInRight animate__slow"
-      src="../assets/quhu-transparant.png"
-      alt=""
-    />
     <div class="login_box">
+      <img
+        class="logo_container animate__animated animate__backInRight animate__slow"
+        src="../assets/quhu-transparant.png"
+        alt=""
+      />
       <!-- 登录表单区域 -->
       <el-form
         ref="loginFormRef"
@@ -47,9 +47,9 @@
           }}</el-button>
           <div class="login_area">
             <div class="wallet_login" @click="walletLogin">钱包登录</div>
-          </div>
-          <div class="register_btn" @click="toggle">
-            {{ userType === 'login' ? '注册账号' : '账号登录' }}
+            <div class="register_btn" @click="toggle">
+              {{ userType === 'login' ? '注册账号' : '账号登录' }}
+            </div>
           </div>
         </el-form-item>
       </el-form>
@@ -67,6 +67,13 @@ export default {
   mounted() {
     this.invitedId = this.$route.query.invitedId
     this.userType = 'login'
+    if (this.invitedId) {
+      this.userType = 'register'
+    }
+    // this.initWebSocket()
+  },
+  destroyed() {
+    this.ws.close() //离开路由之后断开websocket连接
   },
   data() {
     return {
@@ -90,14 +97,47 @@ export default {
             trigger: 'blur'
           }
         ]
-      }
+      },
+      ws: null
     }
   },
   computed: {},
+
   methods: {
     ...mapActions({
       getUser: 'getUserInfo'
     }),
+    initWebSocket() {
+      if (window.WebSocket) {
+        const self = this
+        let ws = new WebSocket('ws://app.onlyfun.city:668/ws') // 建立连接
+        this.ws = ws
+        // 服务器连接成功
+        ws.onopen = function () {
+          console.log('连接成功')
+          ws.send('hello') // 给后台发消息
+          self.heartbeat() // 开启心跳
+        }
+        // 服务器连接关闭
+        ws.onclose = function () {
+          console.log('连接关闭')
+        }
+        // 服务器连接出错
+        ws.onerror = function () {
+          console.log('连接出错')
+        }
+        // 解析信息
+        ws.onmessage = function (e) {
+          console.log(e, '接收数据')
+        }
+      }
+    },
+    // 心跳
+    heartbeat() {
+      setInterval(() => {
+        this.ws.send('心跳')
+      }, 45000)
+    },
     // 点击重置按钮，重置登录表单
     resetLoginForm() {
       this.$refs.loginFormRef.resetFields()
@@ -282,50 +322,76 @@ export default {
 <style scoped lang="scss">
 @media only screen and (max-width: 500px) {
   .logo_container {
-    right: 16% !important;
-    top: 20% !important;
+    width: 200px !important;
+    height: 100px !important;
+    top: 20px;
   }
   .login_box {
+    height: 500px !important;
     width: auto !important;
+    right: 50px !important;
+    top: 150px;
+  }
+  .login_form {
+    bottom: -20px !important;
   }
   .login_container {
     transform: scale(0.5);
     transform-origin: top left;
     width: 100%;
-    height: 200% !important;
+  }
+  ::v-deep .el-input--prefix .el-input__inner {
+    width: 200px;
+  }
+  .btns .btn {
+    width: 200px !important;
+  }
+  .login_area .register_btn {
+    position: absolute;
+    left: 130px;
+  }
+}
+@media only screen and (max-height: 700px) {
+  .login_box {
+    top: 100px !important;
   }
 }
 .login_container {
-  background-image: url('../assets/fengwo.jpg');
+  background-image: url('../assets/fox-login.png');
   // background-image: url('../assets/quhu-bglogo.jpg');
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
   height: 100%;
-  // background-color: #101010;
   color: #fff;
   position: relative;
+  box-shadow: 0 0 30px 10px rgba(0, 0, 0, 0.3);
 }
 .logo_container {
   width: 400px;
   height: 200px;
   position: absolute;
-  right: 380px;
-  top: 15%;
   box-shadow: #c0c0c0;
 }
 .login_box {
   position: relative;
   // color: #c0c0c0;
   width: 80%;
+  display: flex;
+  justify-content: center;
   max-width: 500px;
   min-width: 250px;
-  height: 300px;
+  height: 600px;
   // background-color: #fff;
   border-radius: 3px;
   position: absolute;
-  right: 300px;
+  right: 200px;
   bottom: 20%;
+  backdrop-filter: blur(20px);
+  // color: #fff;
+  box-shadow: 0 0 30px 10px rgba(0, 0, 0, 0.3);
+  opacity: 0.8;
+  border-radius: 30px;
   // transform: translate(-50%, -50%);
 }
 
@@ -354,8 +420,9 @@ img {
   position: absolute;
   bottom: 0;
   width: 100%;
-  padding: 10px 20px;
+  padding: 10px;
   box-sizing: border-box;
+  padding-left: 10%;
 }
 .invite {
   display: flex;
@@ -434,9 +501,6 @@ img {
   cursor: pointer;
 }
 .register_btn {
-  position: absolute;
-  left: 0px;
-  bottom: -100px;
   cursor: pointer;
   color: $mainColor;
   font-size: 16px;
@@ -445,10 +509,8 @@ img {
 .login_area {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  position: absolute;
-  right: 0;
-  bottom: -100px;
+  justify-content: space-between;
+  margin-top: 20px;
 }
 
 .login_area .wallet_login {

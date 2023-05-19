@@ -77,11 +77,20 @@
           <el-empty v-else description="暂无数据"></el-empty>
         </el-card>
       </el-col>
-      <el-col :span="6" class="report">
+      <el-col :span="6" class="report" v-loading="reportLoading">
         <div class="report_title">站内通知</div>
-        <div class="report_content">
-          <img src="../../assets/emptySpace.png" alt="" />
+        <div v-if="reportList.length > 0" class="report_content">
+          <div v-for="(v, i) in reportList" :key="i" class="report_item">
+            <div class="report_right">
+              <div class="title" :title="v.title">{{ v.title }}</div>
+              <div style="color: #c0c0c0">
+                {{ transformTime(Number(v.timestamp)) }}
+              </div>
+              <div class="content" :title="v.message">{{ v.message }}</div>
+            </div>
+          </div>
         </div>
+        <el-empty v-else description="暂无数据"></el-empty>
       </el-col>
     </el-row>
   </div>
@@ -90,7 +99,7 @@
 <script>
 import { cloneDeep } from 'lodash'
 import Info from './component/info.vue'
-import { trail, getUser } from '@/api/user/user'
+import { trail, getUser, notifications } from '@/api/user/user'
 import { getToken } from '@/utils/auth'
 import { getfavorites } from '@/api/special/special'
 
@@ -102,6 +111,8 @@ export default {
   async created() {
     this.trailLoading = true
     this.favoriteLoading = true
+    this.reportLoading = true
+
     const res = await trail({
       id:
         this.loginType === 'eth'
@@ -124,6 +135,18 @@ export default {
       this.favorites = favorites.data
     }
     this.favoriteLoading = false
+    const reports = await notifications({
+      id:
+        this.loginType === 'eth'
+          ? this.userInfo.eth_account
+          : this.userInfo.user,
+      token: getToken()
+    })
+    if (reports && reports.success === 'ok') {
+      this.reportList = reports.data
+      console.log(this.reportList)
+    }
+    this.reportLoading = false
   },
   mounted() {
     // console.log(this.$store.state.userInfo)
@@ -151,10 +174,12 @@ export default {
     return {
       trailList: [],
       favorites: [],
+      reportList: [],
       currentInfo: {},
       specialLoading: false,
       favoriteLoading: false,
-      trailLoading: false
+      trailLoading: false,
+      reportLoading: false
     }
   },
   methods: {
@@ -383,6 +408,21 @@ export default {
     }
   }
 }
+.report::-webkit-scrollbar {
+  display: none;
+}
+
+.report::-webkit-scrollbar {
+  width: 0 !important;
+}
+/*IE 10+*/
+.report {
+  -ms-overflow-style: none;
+}
+/*Firefox*/
+.report {
+  overflow: -moz-scrollbars-none;
+}
 .report {
   margin-top: 10px;
   width: calc(25% - 20px);
@@ -391,11 +431,39 @@ export default {
   padding: 10px 20px;
   font-size: 14px;
   height: 400px;
+  overflow: auto;
   .report_content {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     height: calc(100% - 19px);
+    padding-top: 10px;
+    .report_item {
+      height: 50px;
+      display: flex;
+      cursor: pointer;
+      margin-top: 20px;
+      .report_right {
+        font-size: 12px;
+
+        // padding-left: 20px;
+        height: 40px;
+        width: calc(100% - 40px);
+        .title {
+          width: 100%;
+          height: 20px;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+        .content {
+          width: 100%;
+          height: 20px;
+          margin-top: 5px;
+          color: #c0c0c0;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+      }
+    }
   }
 }
 .trail_item {
@@ -437,6 +505,7 @@ export default {
     }
   }
 }
+
 .pointer {
   cursor: pointer;
 }

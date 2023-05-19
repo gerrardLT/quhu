@@ -48,6 +48,14 @@ module.exports = {
           '/dep': ''
         }
       },
+      '/socket': {
+        target: 'ws://app.onlyfun.city:668/ws',
+        ws: true,
+        changeOrigin: true,
+        pathRewrite: {
+           '^/socket': '/'
+        }
+      }
     },
     port: 8888,
     host: '0.0.0.0',

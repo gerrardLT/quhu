@@ -47,6 +47,7 @@ export default {
       return this.$route.meta.isTabPage
     }
   },
+  methods: {},
   watch: {
     isTabP: {
       handler(newVal, oldVal) {

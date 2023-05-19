@@ -130,3 +130,12 @@ export async function balance (data) {
   })
 }
 
+// 消息
+export async function notifications (data) {
+  return request({
+    url: '/notifications',
+    method: 'post',
+    data
+  })
+}
+

@@ -173,12 +173,10 @@
         <div class="public common_set">
           <el-tag>是否公开专栏</el-tag>
           <div class="radio">
-            <el-radio v-model="detail_info.publicStatus" label="public"
+            <el-radio v-model="detail_info.public" label="public"
               >公开</el-radio
             >
-            <el-radio v-model="detail_info.publicStatus" label="hide"
-              >隐藏</el-radio
-            >
+            <el-radio v-model="detail_info.public" label="hide">隐藏</el-radio>
           </div>
         </div>
         <div class="save_container">
@@ -326,7 +324,6 @@ export default {
         this.expires = item.expiry
       }
     })
-    console.log(11)
   },
   mounted() {
     const { inviteCode } = this.$route.query
@@ -352,7 +349,8 @@ export default {
         time_stamp: '',
         currency: '',
         allow: 'self',
-        month: 12
+        month: 12,
+        public: true
       },
       options: ['分享', '邀请'],
       currentInfo: {},
@@ -539,8 +537,7 @@ export default {
         image,
         price,
         currency,
-        allow,
-        publicStatus
+        allow
       } = this.detail_info
 
       const userInfo = this.userInfo
@@ -559,7 +556,7 @@ export default {
         params.allow = 'all'
       }
 
-      if (publicStatus === 'public') {
+      if (this.detail_info.public === 'public') {
         params.public = true
       } else {
         params.public = false
@@ -639,6 +636,12 @@ export default {
         this.detail_info = res.data
         if (this.detail_info.allow !== 'all') {
           this.detail_info.allow = 'self'
+        }
+
+        if (this.detail_info.public === true) {
+          this.detail_info.public = 'public'
+        } else {
+          this.detail_info.public = 'hide'
         }
 
         if (this.detail_info.price.indexOf('op') !== -1) {
@@ -826,6 +829,7 @@ export default {
     .authority {
       .radio {
         width: 150px;
+        height: 30px;
         display: flex;
         justify-content: space-between;
       }
@@ -833,6 +837,7 @@ export default {
     .public {
       .radio {
         width: 150px;
+        height: 30px;
         display: flex;
         justify-content: space-between;
       }

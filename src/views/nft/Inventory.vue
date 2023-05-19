@@ -1,7 +1,7 @@
 <template>
   <div class="casting_container">
     <div class="casting">
-      <el-page-header @back="goBack" class="back" title="返回">
+      <el-page-header @back="goBack" class="goahead" title="返回">
       </el-page-header>
       <div class="topic">
         物品栏<span style="font-size: 14px"
@@ -107,6 +107,7 @@
       :card-img="cardImg"
     >
     </Animation>
+    <!-- <Treasure v-if="showTreasure"> </Treasure> -->
     <el-dialog title="" :visible.sync="castVisible" width="30%">
       <span>{{ cardTips }}</span>
       <span slot="footer" class="dialog-footer">
@@ -119,6 +120,7 @@
 
 <script>
 import Animation from './animation.vue'
+import Treasure from './treasure.vue'
 import { getToken } from '@/utils/auth'
 import {
   get_card,
@@ -131,14 +133,17 @@ import {
 const defaultImg = require('../../assets/fox.jpg')
 import { ABI } from '@/utils/abi'
 const NFT = require('@/utils/nft.json')
-console.log(NFT)
+import { Loading } from 'element-ui'
+
 export default {
   name: 'Inventory',
   components: {
     Animation
+    // Treasure
   },
   data() {
     return {
+      showTreasure: true,
       cardLoading: false,
       point: 0,
       cardTips: '',
@@ -402,14 +407,13 @@ export default {
       this.checkedTreasure = item
 
       if (item.name.indexOf('debris') !== -1) {
-        this.castVisible = true
         if (item.num > 10) {
           this.cardTips = '确认花费10个宝箱碎片合成一个宝箱吗？'
         } else {
           this.$message.warning('需要10个宝箱碎片方可合成！')
           return
         }
-
+        this.castVisible = true
         // if (item.point) {
         //   this.cardTips = '确认花费300个纪念币进行合成？'
         // }
@@ -430,6 +434,11 @@ export default {
     },
     async handleCast(sign, address, nonce) {
       console.log(this.checkedTreasure)
+      const loading = Loading.service({
+        text: '加载中...',
+        spinner: 'el-icon-loading ElementLoading',
+        background: 'rgba(0, 0, 0, 0.2)'
+      })
       if (this.checkedTreasure.name.indexOf('debris') !== -1) {
         //碎片及纪念值
 
@@ -447,6 +456,7 @@ export default {
               ? 'super_fox'
               : 'debris_' + this.checkedTreasure.type
         })
+
         if (res && res.success === 'ok') {
           this.$message.success(
             '恭喜你获得' + this.checkedTreasure.type + '宝箱一个！'
@@ -455,6 +465,7 @@ export default {
           this.getCard()
         }
       } else {
+        this.showTreasure = true
         const res = await open({
           id:
             this.loginType === 'eth'
@@ -477,6 +488,9 @@ export default {
           this.checkedTreasure.num -= 1
           this.getCard()
         }
+      }
+      if (loading) {
+        loading.close()
       }
     },
     castNft(type) {
@@ -621,11 +635,11 @@ export default {
       this.$EventBus.$emit('changeTab', { name: 'nft' }, 1)
     },
     async getCard() {
-      //   this.cardLoading = true
-      //   const res = await get_card({})
-      //   this.cards = res.data.card_16
-      //   this.advanced_cards = res.data.card_18
-      //   let result = await this.getNft(this.cards.concat(this.advanced_cards))
+      this.cardLoading = true
+      //   let result = await this.getNft([
+      //     220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 212, 243,
+      //     234, 235
+      //   ])
       const ids = await this.getNftIds()
 
       let result = await this.getNft(ids)
@@ -724,7 +738,7 @@ export default {
       //           value: 1
       //         }
       //       ],
-      //       nft_id: 333
+      //       nft_id: 250
       //     }
       //   ]
       //   for (let index = 0; index < 10; index++) {
@@ -739,15 +753,6 @@ export default {
       //         { trait_type: 'treasure box', value: 'white' },
       //         { trait_type: 'states', value: 'close' }
       //       ]
-      //     })
-      //     result.push({
-      //       nft_id: 394,
-      //       name: 'debris_white # 0',
-      //       description:
-      //         "The Cyber Fox are a very unique being, representing an independent thinking, anti-traditional and freedom-seeking attitude. They not only have the agility and dexterity of foxes, but also incorporate a lot of high-tech elements, such as mechanized bodies and advanced electronic devices. Cyber Foxes are the world's only hope for redemption from rebellion.",
-      //       image:
-      //         'https://cdn.steemitimages.com/DQmcXydBLfFF4KPG5WySaFHHLo6UvAjT4w4WDkTwoV62crH/open_w.jpg',
-      //       attributes: [{ trait_type: 'debris', value: 'white' }]
       //     })
       //   }
       //   result = result.concat(mock)
@@ -908,7 +913,7 @@ export default {
     // justify-content: center;
     position: relative;
     padding: 20px 10% 0;
-    .back {
+    .goahead {
       padding-left: calc(10% + 20px);
       margin-bottom: 40px;
     }

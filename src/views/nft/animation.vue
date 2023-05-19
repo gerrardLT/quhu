@@ -550,7 +550,7 @@ void main() {
   color: #fff;
   cursor: pointer;
   position: fixed;
-  left: calc(50% - 10px);
+  left: calc(50% - 20px);
   top: calc(50% + 180px);
   height: 40px;
 }

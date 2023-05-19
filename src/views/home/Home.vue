@@ -315,7 +315,49 @@
                     </div>
                     <div class="header-container">
                       <div class="author">
-                        <img class="avatar" :src="item.body.avatar" alt="" />
+                        <el-popover placement="top" width="200" trigger="click">
+                          <div class="author-column-intro">
+                            <img
+                              class="author-column-img"
+                              :src="item.body.avatar"
+                              alt=""
+                            />
+                            <div class="author-column-name">
+                              {{ item.body.author }}
+                            </div>
+                            <div class="author-column-id">
+                              用户ID：{{ userInfo.steem_id }}
+                            </div>
+                            <div class="author-column-special">
+                              <span v-if="searchUserColumn.length > 0"
+                                >他的专栏：</span
+                              >
+
+                              <span v-if="searchUserColumn.length > 0">
+                                <span
+                                  class="author-column-special-text"
+                                  v-for="(txt, k) in searchUserColumn"
+                                  :key="txt"
+                                  @click="handleSelect({ value: txt })"
+                                >
+                                  {{ k === 0 ? txt : '、' + txt }}</span
+                                >
+                              </span>
+
+                              <span style="color: #5d5d5d" v-else
+                                >他还没有专栏或专栏已隐藏</span
+                              >
+                            </div>
+                          </div>
+                          <img
+                            slot="reference"
+                            class="avatar"
+                            :src="item.body.avatar"
+                            alt=""
+                            @click="getUserColumn(item.json_metadata.steem_id)"
+                          />
+                        </el-popover>
+                        <!-- <img class="avatar" :src="item.body.avatar" alt="" /> -->
                         <div class="info">
                           <div class="role owner">{{ item.body.author }}</div>
                           <div class="date">
@@ -372,7 +414,48 @@
                   <div v-else>
                     <div class="header-container">
                       <div class="author">
-                        <img class="avatar" :src="item.body.avatar" alt="" />
+                        <el-popover placement="top" width="200" trigger="click">
+                          <div class="author-column-intro">
+                            <img
+                              class="author-column-img"
+                              :src="item.body.avatar"
+                              alt=""
+                            />
+                            <div class="author-column-name">
+                              {{ item.body.author }}
+                            </div>
+                            <div class="author-column-id">
+                              用户ID：{{ userInfo.steem_id }}
+                            </div>
+                            <div class="author-column-special">
+                              <span v-if="searchUserColumn.length > 0"
+                                >他的专栏：</span
+                              >
+
+                              <span v-if="searchUserColumn.length > 0">
+                                <span
+                                  class="author-column-special-text"
+                                  v-for="(txt, k) in searchUserColumn"
+                                  :key="txt"
+                                  @click="handleSelect({ value: txt })"
+                                >
+                                  {{ k === 0 ? txt : '、' + txt }}</span
+                                >
+                              </span>
+
+                              <span style="color: #5d5d5d" v-else
+                                >他还没有专栏或专栏已隐藏</span
+                              >
+                            </div>
+                          </div>
+                          <img
+                            slot="reference"
+                            class="avatar"
+                            :src="item.body.avatar"
+                            alt=""
+                            @click="getUserColumn(item.json_metadata.steem_id)"
+                          />
+                        </el-popover>
                         <div class="info">
                           <div class="role owner">{{ item.body.author }}</div>
                           <div class="date">
@@ -454,10 +537,9 @@
                             }
                           "
                         >
-                          <div>
+                          <div v-if="item.title">
                             {{ item.title }}
                           </div>
-                          <br />
                           <div
                             v-html="
                               item.json_metadata.encrypted &&
@@ -971,6 +1053,7 @@ export default {
   },
   data() {
     return {
+      searchUserColumn: [],
       articlePermlinkList: [],
       articlePostType: '公开',
       articleStyleObj: {},
@@ -1158,6 +1241,18 @@ export default {
   },
   methods: {
     decrypt,
+    async getUserColumn(name) {
+      this.searchUserColumn = []
+      const res = await searchColumn({
+        subscriptions_name: name
+      })
+
+      if (res && res.success === 'ok') {
+        const len = res.data.length
+        this.searchUserColumn = res.data.splice(1, len - 1)
+        console.log(this.searchUserColumn)
+      }
+    },
     updateArticle(res) {
       const result = this.formatPostArticle(res)
       // console.log(result)
@@ -2070,6 +2165,25 @@ export default {
       }
     },
     postArticle() {
+      console.log(this.selectedColumn)
+      const userInfo = this.userInfo
+      let flag = true
+      userInfo.article.forEach((item) => {
+        if (this.selectedColumn === item.name) {
+          if (
+            item.allow[0] === this.userInfo.steem_id ||
+            item.allow === 'all'
+          ) {
+            flag = true
+          } else {
+            flag = false
+          }
+        }
+      })
+      if (!flag) {
+        this.$message.warning('您未拥有该专栏编辑权限！')
+        return
+      }
       this.showEditor = true
       this.$nextTick(() => {
         this.$refs.myQuillEditor.quill.root.addEventListener(
@@ -2625,7 +2739,39 @@ export default {
   height: 10px;
   cursor: pointer;
 }
-
+.author-column-intro {
+  width: 200px;
+  // max-height: 100px;
+  // height: 100px;
+  position: relative;
+  padding-top: 35px;
+}
+.author-column-img {
+  position: absolute;
+  top: -25px;
+  left: calc(50% - 25px);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+}
+.author-column-name {
+  text-align: center;
+  margin-bottom: 10px;
+}
+.author-column-id {
+  text-align: center;
+  margin-bottom: 10px;
+}
+.author-column-special {
+  text-align: center;
+  overflow: hidden;
+  // white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.author-column-special-text {
+  color: #4fbdd4;
+  cursor: pointer;
+}
 .operation-icon {
   display: flex;
   align-items: center;
