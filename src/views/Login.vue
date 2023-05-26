@@ -70,10 +70,6 @@ export default {
     if (this.invitedId) {
       this.userType = 'register'
     }
-    // this.initWebSocket()
-  },
-  destroyed() {
-    this.ws.close() //离开路由之后断开websocket连接
   },
   data() {
     return {
@@ -97,8 +93,7 @@ export default {
             trigger: 'blur'
           }
         ]
-      },
-      ws: null
+      }
     }
   },
   computed: {},
@@ -107,37 +102,6 @@ export default {
     ...mapActions({
       getUser: 'getUserInfo'
     }),
-    initWebSocket() {
-      if (window.WebSocket) {
-        const self = this
-        let ws = new WebSocket('ws://app.onlyfun.city:668/ws') // 建立连接
-        this.ws = ws
-        // 服务器连接成功
-        ws.onopen = function () {
-          console.log('连接成功')
-          ws.send('hello') // 给后台发消息
-          self.heartbeat() // 开启心跳
-        }
-        // 服务器连接关闭
-        ws.onclose = function () {
-          console.log('连接关闭')
-        }
-        // 服务器连接出错
-        ws.onerror = function () {
-          console.log('连接出错')
-        }
-        // 解析信息
-        ws.onmessage = function (e) {
-          console.log(e, '接收数据')
-        }
-      }
-    },
-    // 心跳
-    heartbeat() {
-      setInterval(() => {
-        this.ws.send('心跳')
-      }, 45000)
-    },
     // 点击重置按钮，重置登录表单
     resetLoginForm() {
       this.$refs.loginFormRef.resetFields()
@@ -182,59 +146,6 @@ export default {
                   }
                 }
               )
-
-              // const abi = [
-              //   {
-              //     inputs: [
-              //       {
-              //         internalType: 'uint256',
-              //         name: '_number',
-              //         type: 'uint256'
-              //       }
-              //     ],
-              //     name: 'translate',
-              //     outputs: [],
-              //     stateMutability: 'nonpayable',
-              //     type: 'function'
-              //   },
-              //   {
-              //     inputs: [],
-              //     name: 'require',
-              //     outputs: [
-              //       {
-              //         internalType: 'uint256',
-              //         name: '',
-              //         type: 'uint256'
-              //       }
-              //     ],
-              //     stateMutability: 'view',
-              //     type: 'function'
-              //   }
-              // ]
-              // const myContract = new web3.eth.Contract(
-              //   abi,
-              //   '0x80956B0051dAe6faccE420C18272B29BeE626429',
-              //   {
-              //     from: accounts[0], // 默认交易发送地址
-              //     gasPrice: '20000000000' // 以 wei 为单位的默认 gas 价格，当前价格为 20 gwei
-              //   }
-              // )
-              // console.log(accounts)
-              // myContract.methods
-              //   .translate(123)
-              //   .send({ from: accounts[0] })
-              //   .on('transactionHash', function (hash) {
-              //     console.log(hash)
-              //   })
-              //   .on('confirmation', function (confirmationNumber, receipt) {})
-              //   .on('receipt', function (receipt) {
-              //     // receipt 相关例子
-              //     console.log(receipt)
-              //   })
-              //   .on('error', function (error, receipt) {
-              //     // 如果交易被网络拒绝并带有交易收据，则第二个参数将是交易收据。
-              //     console.log(error, receipt)
-              //   })
             })
         }
       } else {

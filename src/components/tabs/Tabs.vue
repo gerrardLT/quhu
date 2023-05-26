@@ -149,7 +149,7 @@ export default {
           name: 'introduce'
         }
       ],
-      nameList: ['home', 'auction', 'introduce'],
+      nameList: ['home', 'nft', 'auction', 'introduce'],
       activeName: 'home',
       color: '',
       searchValue: ''

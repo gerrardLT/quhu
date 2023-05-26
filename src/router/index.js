@@ -13,6 +13,8 @@ import Home from '../views/home/Home.vue'
 import My from '../views/my/My.vue'
 import Article from '../views/article/Article.vue'
 import Auction from '../views/auction/Auction.vue'
+import MyAuction from '../views/auction/MyAuction.vue'
+import AuctionDetail from '../views/auction/Detail.vue'
 import Nft from '../views/nft/Nft.vue'
 import Inventory from '../views/nft/Inventory.vue'
 import Animation from '../views/nft/animation.vue'
@@ -71,7 +73,13 @@ const routes = [
   {
     path: '/auction',
     component: Auction,
-    meta: { isTabPage: true }
+    meta: { isTabPage: true },
+    children: [ 
+      {name: 'myauction', path: '/myauction', component: MyAuction,
+      meta: { isTabPage: true }},
+      {name: 'auctiondetail', path: '/auctiondetail', component: AuctionDetail,
+      meta: { isTabPage: true }}
+    ]
   },
   {
     name:'my',
@@ -95,42 +103,6 @@ const routes = [
       meta: { isTabPage: true }}
     ]
   },
-  // {
-  //   path: '/activation',
-  //   component: Activation
-  // },
-  // {
-  //   path: '/setting',
-  //   component: Setting
-  // },
-  // {
-  //   path: '/voucher',
-  //   component: Voucher
-  // },
-  // {
-  //   path: '/invite',
-  //   component: Invite
-  // },
-  // {
-  //   path: '/interact',
-  //   component: Interact
-  // },
-  // {
-  //   path: '/history',
-  //   component: History
-  // },
-  // {
-  //   path: '/collect',
-  //   component: Collect
-  // },
-  // {
-  //   path: '/about',
-  //   component: About
-  // },
-  // {
-  //   path: '/changePwd',
-  //   component: ChangePwd
-  // },
   {
     path: '/MySpecial',
     component: MySpecial
