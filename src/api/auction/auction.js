@@ -50,7 +50,15 @@ export function auction_post (data) {
       data
     })
   }
-
+// 获取已完成的拍卖
+export async function getLaunchdBids (data) {
+  return request({
+    baseURL: base,
+    // url: '/bridge.get_ranked_posts',
+    method: 'post',
+    data
+  })
+}
   //拍卖详情
   export function get_auction_detail (data) {
     return request({

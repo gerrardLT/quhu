@@ -14,7 +14,8 @@
                 fill: '#087790',
                 width: '15px',
                 height: '15px',
-                marginRight: '5px'
+                marginRight: '5px',
+                verticalAlign: 'middle'
               }"
             >
               <use
@@ -30,10 +31,15 @@
 
       <el-col :span="21" class="right_container">
         <div v-if="isMainPage">
-          <Slider></Slider>
+          <Slider v-show="false"></Slider>
           <List></List>
         </div>
-
+        <el-page-header
+          v-if="!isMainPage"
+          @back="goBack"
+          style="margin-bottom: 20px"
+        >
+        </el-page-header>
         <router-view></router-view>
       </el-col>
     </div>
@@ -54,21 +60,23 @@ export default {
       isActive: 0,
       activationList: [
         {
-          id: 1,
+          id: 0,
           icon: 'home',
           text: '拍卖商城',
           url: '/auction'
         },
         {
-          id: 2,
+          id: 1,
           icon: 'my',
           text: '我的拍卖',
           url: '/myauction'
+        },
+        {
+          id: 2,
+          icon: 'publish',
+          text: '我要发布',
+          url: 'publish'
         }
-        // {
-        //   image: require('../../assets/activation-my.png'),
-        //   text: '我的拍卖'
-        // }
       ]
     }
   },

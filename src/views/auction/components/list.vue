@@ -3,7 +3,7 @@
     <div
       v-for="item in auctionList"
       :key="item.steem_id"
-      class="auction-card animate__animated animate__backInRight animate__slow"
+      class="auction-card animate__animated animate__zoomIn"
       @click="handleClick(item)"
     >
       <div class="auction-img">
@@ -14,11 +14,14 @@
               <!-- <span id="hours1">12</span>H : <span id="minutes1">22</span>M :
               <span id="seconds1">56</span>S -->
               <el-statistic
-                :value="item.end_time"
+                v-if="item.end_time * 1000 > currentDate"
+                :value="item.end_time * 1000"
                 time-indices
                 format="HH:mm:ss"
               >
               </el-statistic>
+              <!-- <Countdown :end-time="item.end_time"></Countdown> -->
+              <div style="color: #303133" v-else>已过期</div>
             </div>
           </div>
         </div>
@@ -38,21 +41,22 @@
         </h3>
         <div class="author-price-area">
           <div class="author">
+            <img :src="item.avatar" alt="" />
             <span class="name">by {{ item.author }} </span>
           </div>
           <div>
-            <span>{{ item.starting_price }}</span
+            <span>{{ item.new_price }}</span
             ><span> {{ item.coins }}</span>
           </div>
         </div>
-        <div class="author-current-price">
+        <!-- <div class="author-current-price">
           <span style="font-size: 14px; font-weight: 600; color: #696969"
             >当前价：</span
           >
           <span class="new-price"
             >{{ item.new_price }} <span> {{ item.coins }}</span></span
           >
-        </div>
+        </div> -->
         <div class="auction-card-bttm">
           <router-link
             class="auction-bid-btn"
@@ -74,89 +78,38 @@
 <script>
 import { transformTime } from '@/utils/tool'
 import { auction_info } from '@/api/auction/auction'
-
+// import Countdown from '../components/countdown.vue'
 export default {
   name: 'list',
+  // components: {
+  //   Countdown
+  // },
+  props: {
+    scaleRadio: {
+      type: Number,
+      default: 1
+    },
+    permlink: {
+      type: Object
+    }
+  },
   data() {
     return {
-      auctionList: [
-        {
-          author: '卖鱼的',
-          steem_id: 'q4742fbc1',
-          permlink: ['onlyfun-data88', 'onlyfun-sdfg4ni8bo'],
-          title: '拍卖测试3',
-          start_time: 1684290326,
-          end_time: 1684859882000,
-          starting_price: 1000,
-          new_price: 1000.0,
-          coins: 'poys',
-          increase: 100,
-          image: require('../../../assets/nft/debris_gold.jpg'),
-          type: 'bid_onlyfun'
-        },
-        {
-          author: '卖鱼的',
-          steem_id: 'q4742fbc11111',
-          permlink: ['onlyfun-data88', 'onlyfun-sdfg4ni8bo'],
-          title: '拍卖测试3',
-          start_time: 1684290326,
-          end_time: 1684860000000,
-          starting_price: 1000,
-          new_price: 1000.0,
-          coins: 'poys',
-          increase: 100,
-          image: require('../../../assets/nft/debris_gold.jpg'),
-          type: 'bid_onlyfun'
-        },
-        {
-          author: '卖鱼的',
-          steem_id: 'q4742fbc1222',
-          permlink: ['onlyfun-data88', 'onlyfun-sdfg4ni8bo'],
-          title: '拍卖测试3',
-          start_time: 1684290326,
-          end_time: 1684802382184,
-          starting_price: 1000,
-          new_price: 1000.0,
-          coins: 'poys',
-          increase: 100,
-          image: require('../../../assets/nft/debris_gold.jpg'),
-          type: 'bid_onlyfun'
-        },
-        {
-          author: '卖鱼的',
-          steem_id: 'q4742fbc1222222',
-          permlink: ['onlyfun-data88', 'onlyfun-sdfg4ni8bo'],
-          title: '拍卖测试3',
-          start_time: 1684290326,
-          end_time: 1684802382184,
-          starting_price: 1000,
-          new_price: 1000.0,
-          coins: 'poys',
-          increase: 100,
-          image: require('../../../assets/nft/debris_gold.jpg'),
-          type: 'bid_onlyfun'
-        },
-        {
-          author: '卖鱼的',
-          steem_id: 'q4742fbc1222222222',
-          permlink: ['onlyfun-data88', 'onlyfun-sdfg4ni8bo'],
-          title: '拍卖测试3',
-          start_time: 1684290326,
-          end_time: Date.now() + 1000 * 60 * 60 * 8,
-          starting_price: 1000,
-          new_price: 1000.0,
-          coins: 'poys',
-          increase: 100,
-          image: require('../../../assets/nft/debris_gold.jpg'),
-          type: 'bid_onlyfun'
-        }
-      ]
+      auctionList: [],
+      currentDate: Date.now()
     }
   },
   created() {
     this.getAuctionList()
   },
-  mounted() {},
+  mounted() {
+    const self = this
+    if (self.scaleRadio !== 1) {
+      window.onload = window.onresize = function () {
+        document.querySelector('.list_container').style.zoom = self.scaleRadio
+      }
+    }
+  },
   methods: {
     handleClick() {},
     transformTime,
@@ -166,6 +119,13 @@ export default {
       })
       console.log(res)
       if (res && res.success === 'ok') {
+        this.auctionList = res.data
+
+        if (this.permlink && this.permlink.author) {
+          this.auctionList = this.auctionList.filter((item) => {
+            return item.permlink[0] !== this.permlink.author
+          })
+        }
         // this.auctionList = res.data
       }
     }
@@ -174,6 +134,9 @@ export default {
 </script>
 
 <style scoped lang="scss">
+::v-deep .el-statistic .con span {
+  color: #303133;
+}
 .list_container {
   //   min-height: 800px;
   display: flex;
@@ -185,9 +148,7 @@ export default {
     margin: 0 20px 20px 20px;
     padding: 20px;
     background: #fff;
-    min-width: 200px;
-    min-height: 400px;
-    cursor: pointer;
+    min-width: 260px;
   }
 
   .auction-card:hover .auction-img img {
@@ -203,10 +164,12 @@ export default {
   .auction-card .auction-img {
     position: relative;
     overflow: hidden;
+    min-height: 200px;
   }
 
   .auction-card .auction-img img {
     width: 100%;
+    max-height: 200px;
     border-radius: 10px;
     -webkit-transition: all 0.65s ease;
     transition: all 0.65s ease;
@@ -247,6 +210,7 @@ export default {
     color: #1f2230;
     line-height: 1.5;
     margin-top: -7px;
+    cursor: pointer;
   }
 
   .auction-card .auction-content p {
@@ -294,6 +258,7 @@ export default {
       transition: all 0.4s ease;
       text-transform: capitalize;
       font-family: saira, sans-serif;
+      cursor: pointer;
     }
     .auction-bid-btn::before {
       width: 100%;
@@ -303,7 +268,7 @@ export default {
       position: absolute;
       top: 0;
       left: 0;
-      background: #f9395f;
+      background: #087790;
       -webkit-transition: all 0.52s;
       transition: all 0.52s;
       z-index: -1;
@@ -317,7 +282,7 @@ export default {
       position: absolute;
       top: 0;
       left: 0;
-      background: #f9395f;
+      background: #087790;
       -webkit-transition: all 0.52s;
       transition: all 0.52s;
       z-index: -1;
@@ -380,6 +345,7 @@ export default {
     width: 35px;
     border-radius: 50%;
     margin-right: 10px;
+    vertical-align: middle;
   }
 
   .auction-card .author-price-area .author span.name {

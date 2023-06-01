@@ -1,14 +1,16 @@
 <template>
   <div class="detail_container">
     <div class="top">
-      <div class="left_image">
+      <div class="left_image animate__animated animate__fadeInDown">
         <div class="countdown">
           <el-statistic
-            :value="auctionDetail.end_time"
+            v-if="auctionDetail.end_time * 1000 > currentDate"
+            :value="auctionDetail.end_time * 1000"
             time-indices
             format="HH:mm:ss"
           >
           </el-statistic>
+          <div style="color: #fff" v-else>已过期</div>
         </div>
         <el-carousel indicator-position="none">
           <el-carousel-item v-for="(item, i) in auctionDetail.image" :key="i">
@@ -16,7 +18,7 @@
           </el-carousel-item>
         </el-carousel>
       </div>
-      <div class="mid_operation">
+      <div class="mid_operation animate__animated animate__fadeInDown">
         <div class="title">
           {{ auctionDetail.title }}
         </div>
@@ -54,7 +56,7 @@
 
     <div class="middle">
       <div class="mid_left">
-        <div class="tab_list">
+        <div class="tab_list animate__animated animate__fadeInDown">
           <div
             :class="{ tab: true, active: item.id === activeTab }"
             v-for="item in tabList"
@@ -77,31 +79,45 @@
             <span :title="item.type"> {{ item.type }} </span>
           </div>
         </div>
-        <div class="mid_content">
-          <div v-show="activeTab === 0">这是描述</div>
+        <div class="mid_content animate__animated animate__fadeInUp">
+          <div v-show="activeTab === 0">{{ auctionDetail.body.body }}</div>
           <div v-show="activeTab === 1">
             <div class="bid-list-area">
-              <div
-                class="bid-list"
-                v-infinite-scroll="load"
-                style="overflow: auto"
-              >
-                <div v-for="item in bidHistory" :key="item.steem_id">
-                  <img :src="bidHistory.image" alt="" />
+              <div v-infinite-scroll="load" style="overflow: auto">
+                <div
+                  class="bid-list animate__animated animate__fadeInUp"
+                  v-for="item in bidHistory"
+                  :key="item.steem_id"
+                >
+                  <img :src="defaultAvatar" class="history-img" alt="" />
                   <div class="content">
-                    <div>{{ item.steem_id }}</div>
-                    <div>{{ item.price }}</div>
+                    <div class="history-id">{{ item.steem_id }}</div>
+                    <div class="history-price">
+                      {{ item.price }} {{ item.coins }}
+                    </div>
                   </div>
-                  <div class=""></div>
+                  <div class="history-time">
+                    {{ transformTime(Number(item.timestamp)) }}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          <div v-show="activeTab === 2">这是描述</div>
+          <div v-show="activeTab === 2">
+            <List :scaleRadio="0.8" :permlink="$route.query"></List>
+          </div>
         </div>
       </div>
 
-      <div class="mid_right"></div>
+      <div class="mid_right" v-show="false">
+        <div class="hot-banner animate__animated animate__fadeInUp">
+          <div class="banner-content">
+            <span>CARS</span>
+            <h3>标题</h3>
+            <div class="auction-bid-btn">详情</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -112,10 +128,21 @@ import {
   auction_bid,
   auction_bidlist
 } from '@/api/auction/auction'
+import { transformTime } from '@/utils/tool'
+import List from './components/list.vue'
+import { getToken } from '@/utils/auth'
+const defaultAvatar = require(`../../assets/defaultAvatarUrl.png`)
+import { Loading } from 'element-ui'
 export default {
   name: 'AuctionDetail',
+  components: {
+    List
+  },
   data() {
     return {
+      currentDate: Date.now(),
+      historyPage: 1,
+      defaultAvatar,
       realTimeData: {},
       bidAmount: '',
       ws: null,
@@ -152,7 +179,6 @@ export default {
   created() {
     const permlink = this.$route.query
     this.getAuctionDetail(permlink)
-    this.getBidHistory(permlink)
   },
   mounted() {
     this.realTimeData = {
@@ -163,18 +189,22 @@ export default {
       timestamp: 1684635742,
       end_time: 1784390326
     }
+    this.$nextTick(() => {})
     // this.initWebSocket()
   },
   destroyed() {
-    this.ws.close() //离开路由之后断开websocket连接
+    // this.ws.close()
   },
   methods: {
+    transformTime,
     load() {
-      console.log(123)
+      this.getBidHistory(this.historyPage)
+      this.historyPage++
     },
-    async getBidHistory(params) {
+    async getBidHistory(page) {
+      const params = this.$route.query
       const res = await auction_bidlist({
-        page: 1,
+        page,
         permlink: [params.author, params.permlink]
       })
       if (res && res.success === 'ok') {
@@ -183,8 +213,24 @@ export default {
     },
     toggleTab(item) {
       this.activeTab = item.id
+      switch (item.id) {
+        case 0:
+          break
+        case 1:
+          this.getBidHistory(1)
+          break
+        case 2:
+          break
+        default:
+          break
+      }
     },
     async handlePlaceBid() {
+      const loading = Loading.service({
+        text: '加载中...',
+        spinner: 'el-icon-loading ElementLoading',
+        background: 'rgba(0, 0, 0, 0.2)'
+      })
       const reg = /^[1-9]\d*$/
       const params = this.$route.query
       if (!this.bidAmount.trim()) {
@@ -206,6 +252,9 @@ export default {
       })
       if (res && res.success === 'ok') {
         this.$message.success('出价成功！')
+      }
+      if (loading) {
+        loading.close()
       }
     },
     initWebSocket() {
@@ -259,23 +308,9 @@ export default {
         ]
       })
       if (res && res.result) {
-        // this.auctionDetail = this.eval(res.result.json_metadata)
-        this.auctionDetail = {
-          app: 'onlyfun/0.1',
-          tags: ['end_onlyfun', 'my_q4742fbc1'],
-          steem_id: 'q4742fbc1',
-          encrypted: false,
-          start_time: 1684290326,
-          end_time: 1684390326,
-          increase: 100,
-          image: [
-            'https://cdn.steemitimages.com/DQmQRDKpm6qVEdFcpE2TDe9jB4Rz6wMVNFZYFAsWRNpz87C/2023-5-16.jpg',
-            'https://cdn.steemitimages.com/DQmY6Ck47GWHb5p6PP6DmVhMJBMB6gcMYkkd4uUvpkrtJ4F/2023-5-10.jpg'
-          ],
-          coins: 'poys',
-          starting_price: 1000
-        }
+        this.auctionDetail = this.eval(res.result.json_metadata)
         this.auctionDetail.title = res.result.title
+        this.auctionDetail.body = this.eval(res.result.body)
       }
     },
     eval(fn) {
@@ -290,8 +325,27 @@ export default {
 ::v-deep .el-statistic .con {
   color: #fff;
 }
+::-webkit-scrollbar {
+  width: 0.25rem;
+  height: 0.25rem;
+  background-color: #f5f5f5;
+}
+
+/*定义滚动条轨道 内阴影+圆角*/
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 0.375rem #999;
+  border-radius: 0.625rem;
+  background-color: #f5f5f5;
+}
+
+/*定义滑块 内阴影+圆角*/
+::-webkit-scrollbar-thumb {
+  border-radius: 0.625rem;
+  box-shadow: inset 0 0 0.375rem #999;
+  background-color: #333;
+}
 .detail_container {
-  padding: 0 15%;
+  padding: 0 10%;
   .top {
     display: flex;
     justify-content: center;
@@ -309,6 +363,8 @@ export default {
         display: flex;
         align-items: center;
         background-color: #000;
+        text-align: center;
+        justify-content: center;
       }
     }
     .mid_operation {
@@ -460,7 +516,7 @@ export default {
   .middle {
     display: flex;
     .mid_left {
-      width: 60%;
+      width: 75%;
 
       margin-top: 40px;
       .tab_list {
@@ -468,7 +524,7 @@ export default {
         justify-content: flex-start;
         align-items: center;
         .tab {
-          min-width: 60px;
+          min-width: 80px;
           margin-right: 40px;
           text-align: center;
           padding: 15px 30px;
@@ -490,15 +546,133 @@ export default {
         }
       }
       .mid_content {
-        padding: 20px 10px;
-        .bid-list {
-          height: 500px;
-          width: 100%;
+        padding: 20px 0;
+        .bid-list-area {
+          max-height: 500px;
+          min-height: 350px;
+          min-width: 500px;
+          // overflow-y: auto;
+          background: #fff;
+          -webkit-box-shadow: 3px 5px 20px rgba(0, 0, 0, 0.06);
+          box-shadow: 3px 5px 20px rgba(0, 0, 0, 0.06);
+          border-radius: 0 0 5px 5px;
+          padding: 20px 20px;
+          .bid-list {
+            display: flex;
+            border-bottom: 1px solid #eee;
+            padding: 20px 0;
+            position: relative;
+            align-items: center;
+            .history-img {
+              width: 50px;
+              height: 50px;
+              border-radius: 0 0 5px 5px;
+              margin-right: 10px;
+            }
+            .history-id {
+              font-size: 18px;
+              font-weight: 600;
+              color: #1f2230;
+              margin-bottom: 3px;
+              font-family: saira, sans-serif;
+              cursor: pointer;
+            }
+            .history-price {
+              font-size: 16px;
+              font-weight: 500;
+              color: #696969;
+              font-family: inter, sans-serif;
+            }
+            .history-time {
+              position: absolute;
+              right: 10px;
+            }
+          }
         }
       }
     }
     .mid_right {
+      margin-top: 40px;
+      margin-left: 20px;
       width: calc(40% - 10px);
+      .hot-banner {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 400px;
+        background-image: linear-gradient(
+            90deg,
+            rgba(31, 34, 48, 0.75),
+            rgba(31, 34, 48, 0.75)
+          ),
+          url('../../assets/fox-login.png');
+        // background-image: url('../assets/quhu-bglogo.jpg');
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
+        border-radius: 5px;
+        .banner-content {
+          text-align: center;
+        }
+        .auction-bid-btn {
+          font-size: 16px;
+          padding: 5px 40px;
+          background: #1f2230;
+          color: #fff;
+          position: relative;
+          z-index: 1;
+          white-space: nowrap;
+          border-radius: 100px;
+          text-align: center;
+          display: inline-block;
+          text-decoration: none;
+          transition: all 0.4s ease;
+          text-transform: capitalize;
+          font-family: saira, sans-serif;
+          cursor: pointer;
+        }
+        .auction-bid-btn::before {
+          width: 100%;
+          height: 100%;
+          content: '';
+          margin: auto;
+          position: absolute;
+          top: 0;
+          left: 0;
+          background: #087790;
+          -webkit-transition: all 0.52s;
+          transition: all 0.52s;
+          z-index: -1;
+          border-radius: 100px;
+        }
+        .auction-bid-btn::after {
+          width: 100%;
+          height: 100%;
+          content: '';
+          margin: auto;
+          position: absolute;
+          top: 0;
+          left: 0;
+          background: #087790;
+          -webkit-transition: all 0.52s;
+          transition: all 0.52s;
+          z-index: -1;
+          border-radius: 100px;
+        }
+        .auction-bid-btn:hover {
+          color: #fff;
+          text-decoration: none;
+        }
+        .auction-bid-btn:hover::before {
+          -webkit-transform: rotateX(90deg);
+          transform: rotateX(90deg);
+        }
+
+        .auction-bid-btn:hover::after {
+          -webkit-transform: rotateY(90deg);
+          transform: rotateY(90deg);
+        }
+      }
     }
   }
 }

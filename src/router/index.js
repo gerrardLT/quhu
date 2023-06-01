@@ -14,6 +14,7 @@ import My from '../views/my/My.vue'
 import Article from '../views/article/Article.vue'
 import Auction from '../views/auction/Auction.vue'
 import MyAuction from '../views/auction/MyAuction.vue'
+import Publish from '../views/auction/Publish.vue'
 import AuctionDetail from '../views/auction/Detail.vue'
 import Nft from '../views/nft/Nft.vue'
 import Inventory from '../views/nft/Inventory.vue'
@@ -78,6 +79,8 @@ const routes = [
       {name: 'myauction', path: '/myauction', component: MyAuction,
       meta: { isTabPage: true }},
       {name: 'auctiondetail', path: '/auctiondetail', component: AuctionDetail,
+      meta: { isTabPage: true }},
+      {name: 'Publish', path: '/publish', component: Publish,
       meta: { isTabPage: true }}
     ]
   },
