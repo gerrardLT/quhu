@@ -3,12 +3,7 @@
     <div class="top">
       <div class="left_image animate__animated animate__fadeInDown">
         <div class="countdown">
-          <el-statistic
-            v-if="auctionDetail.end_time * 1000 > currentDate"
-            :value="auctionDetail.end_time * 1000"
-            time-indices
-            format="HH:mm:ss"
-          >
+          <el-statistic v-if="auctionDetail.end_time * 1000 > currentDate" :value="auctionDetail.end_time * 1000" time-indices format="HH:mm:ss">
           </el-statistic>
           <div style="color: #fff" v-else>已过期</div>
         </div>
@@ -30,7 +25,7 @@
           <div class="current_price">
             <span class="text">当前价：</span>
             <span class="amount">{{
-              realTimeData.price + ' ' + auctionDetail.coins
+              auctionDetail.new_price  + ' ' + auctionDetail.coins
             }}</span>
           </div>
           <div class="increment">
@@ -40,13 +35,8 @@
           <div class="premium">
             <span class="premium_text">佣金：</span> <span>10%</span>
           </div>
-          <div class="operation">
-            <el-input
-              class="bid_input"
-              placeholder="请输入拍卖金额"
-              v-model="bidAmount"
-              clearable
-            >
+          <div class="operation" v-if="auctionDetail.end_time * 1000 > currentDate">
+            <el-input class="bid_input" placeholder="请输入拍卖金额" v-model="bidAmount" clearable>
             </el-input>
             <div class="bid_btn" @click="handlePlaceBid">出价</div>
           </div>
@@ -57,12 +47,7 @@
     <div class="middle">
       <div class="mid_left">
         <div class="tab_list animate__animated animate__fadeInDown">
-          <div
-            :class="{ tab: true, active: item.id === activeTab }"
-            v-for="item in tabList"
-            :key="item.id"
-            @click="toggleTab(item)"
-          >
+          <div :class="{ tab: true, active: item.id === activeTab }" v-for="item in tabList" :key="item.id" @click="toggleTab(item)">
             <!-- <svg
             :style="{
               fill: '#087790',
@@ -80,16 +65,12 @@
           </div>
         </div>
         <div class="mid_content animate__animated animate__fadeInUp">
-          <div v-show="activeTab === 0">{{ auctionDetail.body.body }}</div>
+          <div v-show="activeTab === 0" v-html="auctionDetail.body && auctionDetail.body.body"></div>
           <div v-show="activeTab === 1">
             <div class="bid-list-area">
-              <div v-infinite-scroll="load" style="overflow: auto">
-                <div
-                  class="bid-list animate__animated animate__fadeInUp"
-                  v-for="item in bidHistory"
-                  :key="item.steem_id"
-                >
-                  <img :src="defaultAvatar" class="history-img" alt="" />
+              <div v-infinite-scroll="load" style="overflow: auto" v-if="bidHistory.length>0">
+                <div class="bid-list animate__animated animate__fadeInUp" v-for="(item,i) in bidHistory" :key="i">
+                  <!-- <img :src="defaultAvatar" class="history-img" alt="" /> -->
                   <div class="content">
                     <div class="history-id">{{ item.steem_id }}</div>
                     <div class="history-price">
@@ -101,9 +82,11 @@
                   </div>
                 </div>
               </div>
+              <el-empty v-else description="暂无数据"></el-empty>
             </div>
           </div>
           <div v-show="activeTab === 2">
+
             <List :scaleRadio="0.8" :permlink="$route.query"></List>
           </div>
         </div>
@@ -140,13 +123,16 @@ export default {
   },
   data() {
     return {
+      lockReconnect: false, // 为true时，是心跳重连的websocket断开连接
       currentDate: Date.now(),
       historyPage: 1,
       defaultAvatar,
       realTimeData: {},
       bidAmount: '',
       ws: null,
-      auctionDetail: {},
+      auctionDetail: {
+        new_price: 0
+      },
       bidHistory: [],
       activeTab: 0,
       tabList: [
@@ -176,24 +162,22 @@ export default {
       return localStorage.getItem('login-type')
     }
   },
-  created() {
+  async created() {
     const permlink = this.$route.query
     this.getAuctionDetail(permlink)
   },
   mounted() {
-    this.realTimeData = {
-      item: 'onlyfun-sdfg4ni8bo',
-      steem_id: 'q4742fbc1',
-      price: 1100.0,
-      coins: 'poys',
-      timestamp: 1684635742,
-      end_time: 1784390326
-    }
-    this.$nextTick(() => {})
-    // this.initWebSocket()
+    this.getBidHistory(this.historyPage, 'init')
+    this.initWebSocket()
   },
   destroyed() {
-    // this.ws.close()
+    this.lockReconnect = false
+    // 组件销毁时，关闭与服务器的连接
+    if (this.ws) {
+      this.ws.close() // 离开路由之后断开websocket连接
+    }
+    clearInterval(this.timeoutObj)
+    // clearTimeout(this.serverTimeoutObj)
   },
   methods: {
     transformTime,
@@ -201,7 +185,7 @@ export default {
       this.getBidHistory(this.historyPage)
       this.historyPage++
     },
-    async getBidHistory(page) {
+    async getBidHistory(page, type) {
       const params = this.$route.query
       const res = await auction_bidlist({
         page,
@@ -209,6 +193,11 @@ export default {
       })
       if (res && res.success === 'ok') {
         this.bidHistory = res.data
+        if (type === 'init') {
+          if (this.bidHistory.length > 0) {
+            this.auctionDetail.new_price = this.bidHistory[0].price
+          }
+        }
       }
     },
     toggleTab(item) {
@@ -252,6 +241,7 @@ export default {
       })
       if (res && res.success === 'ok') {
         this.$message.success('出价成功！')
+        this.bidAmount = ''
       }
       if (loading) {
         loading.close()
@@ -265,8 +255,7 @@ export default {
         // 服务器连接成功
         ws.onopen = function () {
           console.log('连接成功')
-          ws.send('hello') // 给后台发消息
-          self.heartbeat() // 开启心跳
+          self.longstart()
         }
         // 服务器连接关闭
         ws.onclose = function () {
@@ -278,17 +267,32 @@ export default {
         }
         // 解析信息
         ws.onmessage = function (e) {
-          console.log(e, '接收数据')
-          self.realTimeData = {
-            item: 'onlyfun-sdfg4ni8bo',
-            steem_id: 'q4742fbc1',
-            price: 1100.0,
-            coins: 'poys',
-            timestamp: 1684635742,
-            end_time: 1784390326
+          console.log(e, e.data, '接收数据')
+          self.longstart()
+          try {
+            let data = JSON.parse(e.data)
+            if (data && data.price) {
+              self.auctionDetail.new_price = data.price
+            }
+          } catch (err) {
+            return
           }
         }
       }
+    },
+    longstart() {
+      clearInterval(this.timeoutObj)
+      // clearTimeout(this.serverTimeoutObj)
+      this.timeoutObj = setInterval(() => {
+        console.log('重置监测心跳')
+        this.ws.send('heart')
+        // this.serverTimeoutObj = setTimeout(() => {
+        //   this.lockReconnect = true // 心跳重连设置为true
+        //   console.log('后台挂掉，没有心跳了....')
+        //   console.log('打印websocket的地址:' + this.ws)
+        //   this.ws.close()
+        // }, 2000)
+      }, 45000)
     },
     // 心跳
     heartbeat() {
@@ -308,14 +312,32 @@ export default {
         ]
       })
       if (res && res.result) {
-        this.auctionDetail = this.eval(res.result.json_metadata)
-        this.auctionDetail.title = res.result.title
-        this.auctionDetail.body = this.eval(res.result.body)
+        let price = 0
+        if (this.bidHistory.length > 0) {
+          price = this.bidHistory[0].price
+        }
+        const obj = Object.assign(
+          {
+            title: res.result.title,
+            body: this.eval(res.result.body),
+            new_price: price
+          },
+          this.eval(res.result.json_metadata)
+        )
+        this.auctionDetail = obj
+        console.log(this.auctionDetail)
       }
     },
     eval(fn) {
       const Fn = Function
       return new Fn('return ' + fn)()
+    }
+  },
+  watch: {
+    auctionDetail: {
+      handler(newVal, oldVal) {},
+      deep: true,
+      immediate: true
     }
   }
 }

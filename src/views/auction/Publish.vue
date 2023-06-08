@@ -2,11 +2,7 @@
   <div class="publish_container">
     <div class="flex margin-10">
       <span class="prefix">商品标题：</span>
-      <el-input
-        maxlength="20"
-        placeholder="请输入商品标题"
-        v-model="product.title"
-      >
+      <el-input maxlength="20" placeholder="请输入商品标题" v-model="product.title">
       </el-input>
     </div>
     <div class="flex margin-10">
@@ -21,65 +17,29 @@
     </div>
     <div class="flex margin-10">
       <span class="prefix">币种选择：</span>
-      <el-select
-        class="price_select"
-        v-model="product.coins"
-        clearable
-        placeholder="请选择币种"
-      >
-        <el-option
-          v-for="item in payTypes"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
-        >
+      <el-select class="price_select" v-model="product.coins" clearable placeholder="请选择币种">
+        <el-option v-for="item in payTypes" :key="item.value" :label="item.label" :value="item.value">
         </el-option>
       </el-select>
     </div>
     <div class="flex margin-10">
       <span class="prefix">拍卖开始时间：</span>
-      <el-date-picker
-        v-model="product.start.start_date"
-        type="date"
-        :picker-options="pickerOptions"
-        placeholder="选择日期"
-        format="yyyy 年 MM 月 dd 日"
-        value-format="timestamp"
-      >
+      <el-date-picker v-model="product.start.start_date" type="date" :picker-options="pickerOptions" placeholder="选择日期" format="yyyy 年 MM 月 dd 日" value-format="timestamp">
       </el-date-picker>
       <span>&nbsp;-&nbsp;</span>
-      <el-time-picker
-        v-model="product.start.start_time"
-        :picker-options="{
+      <el-time-picker v-model="product.start.start_time" :picker-options="{
           selectableRange: '00:00:00 - 23:59:59'
-        }"
-        placeholder="选择时间"
-        format="HH:mm:ss"
-        value-format="timestamp"
-      >
+        }" placeholder="选择时间" format="HH:mm:ss" value-format="timestamp">
       </el-time-picker>
     </div>
     <div class="flex margin-10">
       <span class="prefix">拍卖结束时间：</span>
-      <el-date-picker
-        v-model="product.end.end_date"
-        :picker-options="pickerOptions"
-        type="date"
-        placeholder="选择日期"
-        format="yyyy 年 MM 月 dd 日"
-        value-format="timestamp"
-      >
+      <el-date-picker v-model="product.end.end_date" :picker-options="pickerOptions" type="date" placeholder="选择日期" format="yyyy 年 MM 月 dd 日" value-format="timestamp">
       </el-date-picker>
       <span>&nbsp;-&nbsp;</span>
-      <el-time-picker
-        v-model="product.end.end_time"
-        :picker-options="{
+      <el-time-picker v-model="product.end.end_time" :picker-options="{
           selectableRange: '00:00:00 - 23:59:59'
-        }"
-        placeholder="选择时间"
-        format="HH:mm:ss"
-        value-format="timestamp"
-      >
+        }" placeholder="选择时间" format="HH:mm:ss" value-format="timestamp">
       </el-time-picker>
     </div>
     <div class="description">
@@ -89,13 +49,7 @@
 
     <div style="margin-top: 20px">
       <div style="margin-bottom: 10px">商品首图：</div>
-      <el-upload
-        class="avatar-uploader"
-        :show-file-list="false"
-        :action="product.actionUrl"
-        :http-request="onUploadHandler"
-        v-loading="uploadLoading"
-      >
+      <el-upload class="avatar-uploader" :show-file-list="false" :action="product.actionUrl" :http-request="onUploadHandler" v-loading="uploadLoading">
         <img v-if="product.image" :src="product.image" class="avatar-img" />
         <i v-else class="el-icon-plus avatar-uploader-icon"></i>
       </el-upload>
@@ -351,7 +305,12 @@ export default {
       const res = await auction_post(params)
       if (res && res.success === 'ok') {
         this.$message.success('发布成功！')
-        this.$router.push('/myAuction')
+        this.$router.push({
+          path: '/myAuction',
+          query: {
+            currentTab: 'launch'
+          }
+        })
       }
       if (loading) {
         loading.close()
@@ -443,7 +402,7 @@ export default {
 
 <style scoped lang="scss">
 .publish_container {
-  margin-left: 40px;
+  margin-left: 30px;
 }
 .flex {
   display: flex;

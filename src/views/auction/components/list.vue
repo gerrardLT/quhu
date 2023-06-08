@@ -1,78 +1,65 @@
 <template>
-  <div class="list_container">
-    <div
-      v-for="item in auctionList"
-      :key="item.steem_id"
-      class="auction-card animate__animated animate__zoomIn"
-      @click="handleClick(item)"
-    >
-      <div class="auction-img">
-        <img alt="image" :src="item.image" />
-        <div class="auction-timer">
-          <div class="countdown" id="timer1">
-            <div>
-              <!-- <span id="hours1">12</span>H : <span id="minutes1">22</span>M :
+  <div>
+    <div class="list_container" v-if="auctionList.length>0">
+      <div v-for="item in auctionList" :key="item.title" class="auction-card animate__animated animate__zoomIn" @click="handleClick(item)">
+        <div class="auction-img">
+          <img alt="image" :src="item.image" />
+          <div class="auction-timer">
+            <div class="countdown" id="timer1">
+              <div>
+                <!-- <span id="hours1">12</span>H : <span id="minutes1">22</span>M :
               <span id="seconds1">56</span>S -->
-              <el-statistic
-                v-if="item.end_time * 1000 > currentDate"
-                :value="item.end_time * 1000"
-                time-indices
-                format="HH:mm:ss"
-              >
-              </el-statistic>
-              <!-- <Countdown :end-time="item.end_time"></Countdown> -->
-              <div style="color: #303133" v-else>已过期</div>
+                <el-statistic v-if="item.end_time * 1000 > currentDate" :value="item.end_time * 1000" time-indices format="HH:mm:ss">
+                </el-statistic>
+                <!-- <Countdown :end-time="item.end_time"></Countdown> -->
+                <div style="color: #303133" v-else>已过期</div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class="auction-content">
-        <h3>
-          <router-link
-            :to="{
+        <div class="auction-content">
+          <h3>
+            <router-link :to="{
               path: '/auctiondetail',
               query: {
                 author: item.permlink[0],
                 permlink: item.permlink[1]
               }
-            }"
-            >{{ item.title }}</router-link
-          >
-        </h3>
-        <div class="author-price-area">
-          <div class="author">
-            <img :src="item.avatar" alt="" />
-            <span class="name">by {{ item.author }} </span>
+            }">{{ item.title }}</router-link>
+          </h3>
+          <div class="author-price-area">
+            <div class="author">
+              <img :src="item.avatar" alt="" />
+              <span class="name">by {{ item.author }} </span>
+            </div>
+
           </div>
-          <div>
-            <span>{{ item.new_price }}</span
-            ><span> {{ item.coins }}</span>
+          <div class="author-current-price">
+            <span style="font-size: 14px; font-weight: 600; color: #696969">起拍价：</span>
+            <div>
+              <span :title="item.starting_price">{{ item.starting_price }}</span><span> {{ item.coins }}</span>
+            </div>
           </div>
-        </div>
-        <!-- <div class="author-current-price">
-          <span style="font-size: 14px; font-weight: 600; color: #696969"
-            >当前价：</span
-          >
-          <span class="new-price"
-            >{{ item.new_price }} <span> {{ item.coins }}</span></span
-          >
-        </div> -->
-        <div class="auction-card-bttm">
-          <router-link
-            class="auction-bid-btn"
-            :to="{
+
+          <div class="author-current-price">
+            <span style="font-size: 14px; font-weight: 600; color: #696969">当前价：</span>
+            <span class="new-price">{{ item.new_price }} <span> {{ item.coins }}</span></span>
+          </div>
+          <div class="auction-card-bttm" v-if="item.end_time * 1000 > currentDate">
+            <router-link class="auction-bid-btn" :to="{
               path: '/auctiondetail',
               query: {
                 author: item.permlink[0],
                 permlink: item.permlink[1]
               }
-            }"
-            >出价</router-link
-          >
+            }">出价</router-link>
+          </div>
         </div>
       </div>
     </div>
+    <el-empty v-else description="暂无数据"></el-empty>
   </div>
+
 </template>
 
 <script>
@@ -109,6 +96,9 @@ export default {
         document.querySelector('.list_container').style.zoom = self.scaleRadio
       }
     }
+  },
+  destroyed() {
+    window.onload = window.onresize = null
   },
   methods: {
     handleClick() {},
@@ -327,6 +317,13 @@ export default {
     -ms-flex-align: center;
     align-items: center;
     margin-top: 15px;
+    span {
+      display: inline-block;
+      max-width: 180px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   }
   .auction-card .author-current-price {
     display: flex;

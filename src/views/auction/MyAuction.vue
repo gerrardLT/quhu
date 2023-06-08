@@ -2,64 +2,35 @@
   <div class="my_auction_container">
     <div class="top_tab">
       <el-tabs v-model="activeName" @tab-click="tabClick">
-        <el-tab-pane
-          class="my_auction_content"
-          label="正在参与"
-          name="participate"
-        >
-          <el-table
-            :data="myParticipateBidList"
-            border
-            style="width: 100%; text-align: center"
-            v-loading="tableLoading"
-          >
+        <el-tab-pane class="my_auction_content" label="正在参与" name="participate">
+          <el-table :data="myParticipateBidList" border style="width: 100%;text-align: center;max-height:500px;overflow-y: auto;" v-loading="tableLoading">
             <el-table-column prop="image" label="商品图" width="80">
               <template slot-scope="scope">
-                <img
-                  style="width: 40px; height: 40px; border-radius: 50%"
-                  :src="scope.row.image"
-                  alt=""
-                />
+                <img style="width: 40px; height: 40px; border-radius: 50%" :src="scope.row.image" alt="" />
               </template>
             </el-table-column>
             <el-table-column prop="title" label="商品名" width="180">
               <template slot-scope="scope">
-                <router-link
-                  class="history_text"
-                  :to="{
+                <router-link class="history_text" :to="{
                     path: '/auctiondetail',
                     query: {
                       author: scope.row.permlink[0],
                       permlink: scope.row.permlink[1]
                     }
-                  }"
-                  >{{ scope.row.title }}</router-link
-                >
+                  }">{{ scope.row.title }}</router-link>
               </template>
             </el-table-column>
             <el-table-column prop="myPrice" label="我的出价历史" width="180">
               <template slot-scope="scope">
                 <el-popover placement="right" width="400" trigger="click">
                   <el-table :data="scope.row.mybid">
-                    <el-table-column
-                      width="200"
-                      property="timestamp"
-                      label="日期"
-                    >
+                    <el-table-column width="200" property="timestamp" label="日期">
                       <template slot-scope="scope">
                         {{ transformTime(Number(scope.row.timestamp)) }}
                       </template>
                     </el-table-column>
-                    <el-table-column
-                      width="100"
-                      property="price"
-                      label="价格"
-                    ></el-table-column>
-                    <el-table-column
-                      width="100"
-                      property="coins"
-                      label="币种"
-                    ></el-table-column>
+                    <el-table-column width="100" property="price" label="价格"></el-table-column>
+                    <el-table-column width="100" property="coins" label="币种"></el-table-column>
                   </el-table>
                   <div class="history_text" slot="reference">查看出价历史</div>
                 </el-popover>
@@ -75,34 +46,16 @@
           </el-table>
         </el-tab-pane>
         <el-tab-pane label="我发起的" name="launch">
-          <el-table
-            :data="myBidList"
-            border
-            style="width: 100%; text-align: center"
-            v-loading="tableLoading"
-          >
+          <el-table :data="myBidList" border style="width: 100%; text-align: center;max-height:500px;overflow-y: auto;" v-loading="tableLoading">
             <el-table-column prop="image" label="商品图" width="80">
               <template slot-scope="scope">
-                <img
-                  style="width: 40px; height: 40px; border-radius: 50%"
-                  :src="scope.row.image"
-                  alt=""
-                />
+                <img style="width: 40px; height: 40px; border-radius: 50%" :src="scope.row.image" alt="" />
               </template>
             </el-table-column>
             <el-table-column prop="title" label="商品名" width="180">
               <template slot-scope="scope">
-                <router-link
-                  class="history_text"
-                  :to="{
-                    path: '/auctiondetail',
-                    query: {
-                      author: scope.row.permlink[0],
-                      permlink: scope.row.permlink[1]
-                    }
-                  }"
-                  >{{ scope.row.title }}</router-link
-                >
+                <div class="history_text" @click="jump(scope.row)">{{ scope.row.title }}</div>
+
               </template>
             </el-table-column>
             <el-table-column prop="start_time" label="开始时间" width="180">
@@ -124,18 +77,13 @@
             <el-table-column prop="status" label="状态">
               <template slot-scope="scope">
                 <span>{{ scope.row.status }}</span>
-                <router-link
-                  :to="{
+                <router-link :to="{
                     path: 'publish',
                     query: {
                       author: scope.row.permlink[0],
                       permlink: scope.row.permlink[1]
                     }
-                  }"
-                  style="color: #087790; cursor: pointer; margin-left: 10px"
-                  v-if="scope.row.status === '审核中'"
-                  >编辑</router-link
-                >
+                  }" style="color: #087790; cursor: pointer; margin-left: 10px" v-if="scope.row.status === '审核中'">编辑</router-link>
               </template>
             </el-table-column>
           </el-table>
@@ -169,12 +117,30 @@ export default {
   },
   created() {},
   mounted() {
-    this.getParticipateList()
+    if (this.$route.query.currentTab === 'launch') {
+      this.$nextTick(() => {
+        this.activeName = 'launch'
+        this.tabClick({ name: this.activeName })
+      })
+    } else {
+      this.getParticipateList()
+    }
   },
 
   methods: {
     transformTime,
-    edit() {},
+    jump(data) {
+      console.log(data)
+      if (data.status !== '审核中') {
+        this.$router.push({
+          path: '/auctiondetail',
+          query: {
+            author: data.permlink[0],
+            permlink: data.permlink[1]
+          }
+        })
+      }
+    },
     transfromTimeZoom(v) {
       const dateStr = v
       const date = new Date(dateStr)
@@ -271,5 +237,8 @@ export default {
   top: 0;
   left: 180px;
   z-index: 9999 !important;
+}
+.my_auction_container {
+  margin-left: 20px;
 }
 </style>

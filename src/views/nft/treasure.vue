@@ -4,8 +4,7 @@
       <div class="bg rotate"></div>
       <div class="open-has">
         <h3 class="title-open">
-          恭喜你，<br />成功领取<span class="user">Bootstrap模板库</span
-          >发的全民飞机大战宝箱
+          恭喜你，<br />成功领取<span class="user"></span>
         </h3>
         <div class="mod-chest">
           <div class="chest-close show">
