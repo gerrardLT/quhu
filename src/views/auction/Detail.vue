@@ -33,7 +33,7 @@
             <span>{{ auctionDetail.increase }}</span>
           </div>
           <div class="premium">
-            <span class="premium_text">佣金：</span> <span>10%</span>
+            <span class="premium_text">佣金：</span> <span>50%</span>
           </div>
           <div class="operation" v-if="auctionDetail.end_time * 1000 > currentDate">
             <el-input class="bid_input" placeholder="请输入拍卖金额" v-model="bidAmount" clearable>
@@ -215,11 +215,6 @@ export default {
       }
     },
     async handlePlaceBid() {
-      const loading = Loading.service({
-        text: '加载中...',
-        spinner: 'el-icon-loading ElementLoading',
-        background: 'rgba(0, 0, 0, 0.2)'
-      })
       const reg = /^[1-9]\d*$/
       const params = this.$route.query
       if (!this.bidAmount.trim()) {
@@ -230,6 +225,11 @@ export default {
         this.$message.warning('请输入数字')
         return
       }
+      const loading = Loading.service({
+        text: '加载中...',
+        spinner: 'el-icon-loading ElementLoading',
+        background: 'rgba(0, 0, 0, 0.2)'
+      })
       const res = await auction_bid({
         id:
           this.loginType === 'eth'
@@ -250,7 +250,7 @@ export default {
     initWebSocket() {
       if (window.WebSocket) {
         const self = this
-        let ws = new WebSocket('ws://app.onlyfun.city:668/ws') // 建立连接
+        let ws = new WebSocket('wss://app.onlyfun.city/ws') // 建立连接
         this.ws = ws
         // 服务器连接成功
         ws.onopen = function () {
@@ -292,12 +292,6 @@ export default {
         //   console.log('打印websocket的地址:' + this.ws)
         //   this.ws.close()
         // }, 2000)
-      }, 45000)
-    },
-    // 心跳
-    heartbeat() {
-      setInterval(() => {
-        this.ws.send('心跳')
       }, 45000)
     },
     async getAuctionDetail(params) {

@@ -64,13 +64,8 @@
 
 <script>
 import { transformTime } from '@/utils/tool'
-import { auction_info } from '@/api/auction/auction'
-// import Countdown from '../components/countdown.vue'
 export default {
   name: 'list',
-  // components: {
-  //   Countdown
-  // },
   props: {
     scaleRadio: {
       type: Number,
@@ -83,11 +78,13 @@ export default {
   data() {
     return {
       auctionList: [],
-      currentDate: Date.now()
+      currentDate: Date.now(),
+      ws: null
     }
   },
   created() {
     this.getAuctionList()
+    this.initWebSocket()
   },
   mounted() {
     const self = this
@@ -99,8 +96,66 @@ export default {
   },
   destroyed() {
     window.onload = window.onresize = null
+    this.lockReconnect = false
+    // 组件销毁时，关闭与服务器的连接
+    if (this.ws) {
+      this.ws.close() // 离开路由之后断开websocket连接
+    }
+    clearInterval(this.timeoutObj)
   },
   methods: {
+    initWebSocket() {
+      if (window.WebSocket) {
+        const self = this
+        let ws = new WebSocket('wss://app.onlyfun.city/ws') // 建立连接
+        this.ws = ws
+        // 服务器连接成功
+        ws.onopen = function () {
+          console.log('连接成功')
+          self.longstart()
+        }
+        // 服务器连接关闭
+        ws.onclose = function () {
+          console.log('连接关闭')
+        }
+        // 服务器连接出错
+        ws.onerror = function () {
+          console.log('连接出错')
+        }
+        // 解析信息
+        ws.onmessage = function (e) {
+          console.log(e, e.data, '接收数据')
+          self.longstart()
+          try {
+            let data = JSON.parse(e.data)
+            if (data && data.price) {
+              self.auctionList.forEach((item) => {
+                if (item.permlink[1] === data.item) {
+                  item.new_price = data.price
+                  item.end_time = data.end_time
+                }
+              })
+            }
+          } catch (err) {
+            return
+          }
+        }
+      }
+    },
+    longstart() {
+      clearInterval(this.timeoutObj)
+      // clearTimeout(this.serverTimeoutObj)
+      this.timeoutObj = setInterval(() => {
+        console.log('重置监测心跳')
+        this.ws.send('heart')
+        // this.serverTimeoutObj = setTimeout(() => {
+        //   this.lockReconnect = true // 心跳重连设置为true
+        //   console.log('后台挂掉，没有心跳了....')
+        //   console.log('打印websocket的地址:' + this.ws)
+        //   this.ws.close()
+        // }, 2000)
+      }, 45000)
+    },
     handleClick() {},
     transformTime,
     async getAuctionList() {
