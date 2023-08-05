@@ -1,28 +1,58 @@
 <template>
   <div class="casting_container">
     <div class="casting">
-      <el-page-header @back="goBack" class="goahead" title="返回">
+      <el-page-header
+        @back="goBack"
+        class="goahead"
+        :title="$t('inventory.inventory')"
+      >
       </el-page-header>
       <div class="topic">
-        物品栏<span style="font-size: 14px"
-          >&nbsp;&nbsp;&nbsp;当前已选中&nbsp;&nbsp;{{
+        {{ $t('inventory.inventory') }}
+        <span
+          style="
+            display: inline-block;
+            font-size: 14px;
+            max-width: 500px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          "
+          :title="
+            $t('inventory.current_select') +
             'common：' +
             cardTypeLength.common +
             ' uncommon：' +
             cardTypeLength.uncommon +
-            '张' +
+            '  ' +
             ' rare：' +
             cardTypeLength.rare +
-            '张' +
+            '  ' +
             ' epic：' +
             cardTypeLength.epic +
-            '张' +
+            '  ' +
             ' legendary：' +
-            cardTypeLength.legendary +
-            '张'
+            cardTypeLength.legendary
+          "
+          >&nbsp;&nbsp;&nbsp;{{ $t('inventory.current_select') }}&nbsp;&nbsp;{{
+            'common：' +
+            cardTypeLength.common +
+            ' uncommon：' +
+            cardTypeLength.uncommon +
+            '  ' +
+            ' rare：' +
+            cardTypeLength.rare +
+            '  ' +
+            ' epic：' +
+            cardTypeLength.epic +
+            '  ' +
+            ' legendary：' +
+            cardTypeLength.legendary
           }}
         </span>
-        <span class="point_num" @click="pointCast">纪念值：{{ point }}</span>
+        <span class="point_num" @click="pointCast"
+          >{{ $t('inventory.commemorative') }}{{ point }}</span
+        >
       </div>
 
       <div class="top">
@@ -46,7 +76,7 @@
             @click="castNft('cast')"
             round
             plain
-            >铸造</el-button
+            >{{ $t('inventory.cast') }}</el-button
           >
           <el-button
             type="primary"
@@ -54,7 +84,7 @@
             @click="castNft('advanced_cast')"
             round
             plain
-            >高级铸造</el-button
+            >{{ $t('inventory.advanced_cast') }}</el-button
           >
         </div>
       </div>
@@ -63,7 +93,7 @@
         v-model="checkAllStatus[activeIndex]"
         v-if="currentType !== 'other'"
         class="check_all"
-        >全选</el-checkbox
+        >{{ $t('inventory.select_all') }}</el-checkbox
       >
 
       <div class="middle" v-loading="cardLoading">
@@ -80,7 +110,9 @@
           </div>
           <div class="nft_bottom">
             <div class="nft_rarity">{{ item.rarity }}</div>
-            <div v-if="item.point">{{ '面值：' + item.point }}</div>
+            <div v-if="item.point">
+              {{ $t('inventory.value') + item.point }}
+            </div>
             <div class="check_box" v-if="item.rarity">
               <el-checkbox
                 v-model="item.checked"
@@ -94,7 +126,7 @@
             </div>
 
             <div class="check_box" v-else-if="!item.rarity && !item.point">
-              <span>共{{ item.num }}个</span>
+              <span>{{ $t('inventory.in_total') }}{{ item.num }}</span>
             </div>
           </div>
         </div>
@@ -111,8 +143,12 @@
     <el-dialog title="" :visible.sync="castVisible" width="30%">
       <span>{{ cardTips }}</span>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="castVisible = false">取 消</el-button>
-        <el-button type="primary" @click="confirmCast">确 定</el-button>
+        <el-button @click="castVisible = false">{{
+          $t('inventory.cancel')
+        }}</el-button>
+        <el-button type="primary" @click="confirmCast">{{
+          $t('inventory.confirm')
+        }}</el-button>
       </span>
     </el-dialog>
   </div>
@@ -259,14 +295,16 @@ export default {
       const contract = new web3.eth.Contract(contractABI, contractAddress)
 
       const userAddress = sessionStorage.getItem('walletAccount') // 用户地址
+
       if (userAddress) {
         const nftIds = await contract.methods.getOwnerNFTs(userAddress).call()
 
         return nftIds
       } else {
-        this.$message.waring('请使用metamask连接后刷新页面')
+        this.$message.waring(this.$t('inventory.link_tip'))
       }
     },
+
     async getNft(ids) {
       const params = { nft_id: ids }
       const res = await get_nft(params)
@@ -279,12 +317,12 @@ export default {
       const self = this
       if (window.ethereum) {
         if (typeof window.ethereum.isMetaMask === 'undefined') {
-          self.$message.error('请安装 MetaMask！')
+          self.$message.error(this.$t('inventory.install') + ' MetaMask！')
         } else {
           window.ethereum
             .request({ method: 'eth_requestAccounts' })
             .catch(function (reason) {
-              self.$message.error('出错了！' + reason.message)
+              self.$message.error(this.$t('inventory.error') + reason.message)
             })
             .then(function (accounts) {
               // console.log('account', accounts)
@@ -305,9 +343,10 @@ export default {
                 accounts[0],
                 (err, res) => {
                   if (err) {
-                    self.$message.error('签名失败，因为' + err.message)
+                    self.$message.error(
+                      this.$t('inventory.sign_fail') + err.message
+                    )
                   } else {
-                    console.log('签名后的数据：', res)
                     self.sign = res
                     self.address = accounts[0]
 
@@ -324,7 +363,7 @@ export default {
             })
         }
       } else {
-        self.$message.error('请安装 MetaMask！')
+        self.$message.error(this.$t('inventory.install') + ' MetaMask！')
       }
     },
     getCheckedCardsId() {
@@ -348,7 +387,9 @@ export default {
       if (type === 'cast') {
         if (this.checkedCards.length !== 16) {
           this.$message.warning(
-            '铸造需任意16张nft！当前已选择' + this.checkedCards.length + '张'
+            this.$t('inventory.cast_select') +
+              this.checkedCards.length +
+              this.$t('inventory.number')
           )
           return false
         } else {
@@ -380,9 +421,7 @@ export default {
           epicArr.length !== 6 ||
           legendaryArr.length !== 8
         ) {
-          this.$message.warning(
-            '高级铸造需legendary 8张+epic 6张+rare 3张+uncommon 1张方可合成！'
-          )
+          this.$message.warning(this.$t('inventory.advanced_cast_tip'))
           return false
         } else {
           return true
@@ -391,7 +430,7 @@ export default {
     },
     pointCast() {
       if (this.point < 300) {
-        this.$message.warning('合成需要300纪念值！')
+        this.$message.warning(this.$t('inventory.commemorative_tip'))
         return
       }
 
@@ -400,7 +439,7 @@ export default {
         type: 'super_fox'
       }
       this.castVisible = true
-      this.cardTips = '确认消耗300纪念值合成吗？'
+      this.cardTips = this.$t('inventory.card_tip1')
     },
     handleCardClick(item) {
       //   console.log(item.name)
@@ -408,20 +447,17 @@ export default {
 
       if (item.name.indexOf('debris') !== -1) {
         if (item.num > 10) {
-          this.cardTips = '确认花费10个宝箱碎片合成一个宝箱吗？'
+          this.cardTips = this.$t('inventory.card_tip2')
         } else {
-          this.$message.warning('需要10个宝箱碎片方可合成！')
+          this.$message.warning(this.$t('inventory.card_waring'))
           return
         }
         this.castVisible = true
-        // if (item.point) {
-        //   this.cardTips = '确认花费300个纪念币进行合成？'
-        // }
       }
 
       if (item.name.indexOf('Treasure') !== -1 && item.states === 'close') {
         this.castVisible = true
-        this.cardTips = '确认打开宝箱吗？'
+        this.cardTips = this.$t('inventory.confirm_open_treasure')
       }
     },
     confirmCast() {
@@ -435,7 +471,7 @@ export default {
     async handleCast(sign, address, nonce) {
       console.log(this.checkedTreasure)
       const loading = Loading.service({
-        text: '加载中...',
+        text: this.$t('message.loading'),
         spinner: 'el-icon-loading ElementLoading',
         background: 'rgba(0, 0, 0, 0.2)'
       })
@@ -459,7 +495,9 @@ export default {
 
         if (res && res.success === 'ok') {
           this.$message.success(
-            '恭喜你获得' + this.checkedTreasure.type + '宝箱一个！'
+            this.$t('inventory.treasure_tip1') +
+              this.checkedTreasure.type +
+              this.$t('inventory.treasure_tip2')
           )
           this.checkedTreasure.num -= 10
           this.getCard()
@@ -484,7 +522,7 @@ export default {
               text += '、' + item.value
             }
           })
-          this.$message.success('恭喜你获得' + text + '！')
+          this.$message.success(this.$t('inventory.treasure_tip1') + text)
           this.checkedTreasure.num -= 1
           this.getCard()
         }
@@ -644,118 +682,17 @@ export default {
 
       let result = await this.getNft(ids)
 
-      //   const mock = [
-      //     {
-      //       nft_id: 395,
-      //       name: 'Commemorative coin # 0',
-      //       description:
-      //         "The Cyber Fox are a very unique being, representing an independent thinking, anti-traditional and freedom-seeking attitude. They not only have the agility and dexterity of foxes, but also incorporate a lot of high-tech elements, such as mechanized bodies and advanced electronic devices. Cyber Foxes are the world's only hope for redemption from rebellion.",
-      //       image:
-      //         'https://cdn.steemitimages.com/DQmdJ6yGBLjKDj1yQzWKbRoDKW4ZctymMwGRKJt8y2vcr5D/bi1.jpg',
-      //       attributes: [{ trait_type: 'point', value: 1 }]
-      //     },
-      //     {
-      //       nft_id: 401,
-      //       name: 'Commemorative coin # 1',
-      //       description:
-      //         "The Cyber Fox are a very unique being, representing an independent thinking, anti-traditional and freedom-seeking attitude. They not only have the agility and dexterity of foxes, but also incorporate a lot of high-tech elements, such as mechanized bodies and advanced electronic devices. Cyber Foxes are the world's only hope for redemption from rebellion.",
-      //       image:
-      //         'https://cdn.steemitimages.com/DQmdJ6yGBLjKDj1yQzWKbRoDKW4ZctymMwGRKJt8y2vcr5D/bi1.jpg',
-      //       attributes: [{ trait_type: 'point', value: 5 }]
-      //     },
-      //     {
-      //       nft_id: 403,
-      //       name: 'Commemorative coin # 2',
-      //       description:
-      //         "The Cyber Fox are a very unique being, representing an independent thinking, anti-traditional and freedom-seeking attitude. They not only have the agility and dexterity of foxes, but also incorporate a lot of high-tech elements, such as mechanized bodies and advanced electronic devices. Cyber Foxes are the world's only hope for redemption from rebellion.",
-      //       image:
-      //         'https://cdn.steemitimages.com/DQmdJ6yGBLjKDj1yQzWKbRoDKW4ZctymMwGRKJt8y2vcr5D/bi1.jpg',
-      //       attributes: [{ trait_type: 'point', value: 5 }]
-      //     },
-      //     {
-      //       nft_id: 396,
-      //       name: 'debris_white # 0',
-      //       description:
-      //         "The Cyber Fox are a very unique being, representing an independent thinking, anti-traditional and freedom-seeking attitude. They not only have the agility and dexterity of foxes, but also incorporate a lot of high-tech elements, such as mechanized bodies and advanced electronic devices. Cyber Foxes are the world's only hope for redemption from rebellion.",
-      //       image:
-      //         'https://cdn.steemitimages.com/DQmcXydBLfFF4KPG5WySaFHHLo6UvAjT4w4WDkTwoV62crH/open_w.jpg',
-      //       attributes: [{ trait_type: 'debris', value: 'white' }]
-      //     },
-      //     {
-      //       nft_id: 397,
-      //       name: 'Treasure box # 0',
-      //       description:
-      //         "The Cyber Fox are a very unique being, representing an independent thinking, anti-traditional and freedom-seeking attitude. They not only have the agility and dexterity of foxes, but also incorporate a lot of high-tech elements, such as mechanized bodies and advanced electronic devices. Cyber Foxes are the world's only hope for redemption from rebellion.",
-      //       image:
-      //         'https://cdn.steemitimages.com/DQmSVcn55SqodwMaXuesBMnK47yL4Gz37WUESTqvYxZhFgL/open_w.jpg',
-      //       attributes: [
-      //         { trait_type: 'treasure box', value: 'white' },
-      //         { trait_type: 'states', value: 'open' },
-      //         { trait_type: 'prize', value: '1000poys' }
-      //       ]
-      //     },
-      //     {
-      //       nft_id: 399,
-      //       name: 'Treasure box # 0',
-      //       description:
-      //         "The Cyber Fox are a very unique being, representing an independent thinking, anti-traditional and freedom-seeking attitude. They not only have the agility and dexterity of foxes, but also incorporate a lot of high-tech elements, such as mechanized bodies and advanced electronic devices. Cyber Foxes are the world's only hope for redemption from rebellion.",
-      //       image:
-      //         'https://cdn.steemitimages.com/DQmSVcn55SqodwMaXuesBMnK47yL4Gz37WUESTqvYxZhFgL/close_w.jpg',
-      //       attributes: [
-      //         { trait_type: 'treasure box', value: 'white' },
-      //         { trait_type: 'states', value: 'close' }
-      //       ]
-      //     },
-      //     {
-      //       name: 'Cyber Fox # 2',
-      //       description:
-      //         "The Cyber Fox are a very unique being, representing an independent thinking, anti-traditional and freedom-seeking attitude. They not only have the agility and dexterity of foxes, but also incorporate a lot of high-tech elements, such as mechanized bodies and advanced electronic devices. Cyber Foxes are the world's only hope for redemption from rebellion.",
-      //       image:
-      //         'https://cdn.steemitimages.com/DQmPRmj1kf8Mh8LuWer9dbcD8uWiHopoamYRCfGdVganCBz/fox%20(1).jpg',
-      //       attributes: [
-      //         {
-      //           trait_type: 'body',
-      //           value: 'flesh'
-      //         },
-      //         {
-      //           trait_type: 'equip',
-      //           value: 'Combat Uniform'
-      //         },
-      //         {
-      //           trait_type: 'decoration',
-      //           value: 'Gemstone'
-      //         },
-      //         {
-      //           trait_type: 'makeup',
-      //           value: 'Tattoos'
-      //         },
-      //         {
-      //           trait_type: 'rarity',
-      //           value: 'uncommon'
-      //         },
-      //         {
-      //           trait_type: 'type',
-      //           value: 1
-      //         }
-      //       ],
-      //       nft_id: 250
-      //     }
-      //   ]
-      //   for (let index = 0; index < 10; index++) {
-      //     result.push({
-      //       nft_id: 398,
-      //       name: 'Treasure box # 0',
-      //       description:
-      //         "The Cyber Fox are a very unique being, representing an independent thinking, anti-traditional and freedom-seeking attitude. They not only have the agility and dexterity of foxes, but also incorporate a lot of high-tech elements, such as mechanized bodies and advanced electronic devices. Cyber Foxes are the world's only hope for redemption from rebellion.",
-      //       image:
-      //         'https://cdn.steemitimages.com/DQmSVcn55SqodwMaXuesBMnK47yL4Gz37WUESTqvYxZhFgL/close_w.jpg',
-      //       attributes: [
-      //         { trait_type: 'treasure box', value: 'white' },
-      //         { trait_type: 'states', value: 'close' }
-      //       ]
-      //     })
-      //   }
-      //   result = result.concat(mock)
+      // for (let index = 0; index < 100; index++) {
+      //   result.push({
+      //     nft_id: 395 + index,
+      //     name: 'Commemorative coin # 0',
+      //     description:
+      //       "The Cyber Fox are a very unique being, representing an independent thinking, anti-traditional and freedom-seeking attitude. They not only have the agility and dexterity of foxes, but also incorporate a lot of high-tech elements, such as mechanized bodies and advanced electronic devices. Cyber Foxes are the world's only hope for redemption from rebellion.",
+      //     image:
+      //       'https://cdn.steemitimages.com/DQmdJ6yGBLjKDj1yQzWKbRoDKW4ZctymMwGRKJt8y2vcr5D/bi1.jpg',
+      //     attributes: [{ trait_type: 'point', value: 1 }]
+      //   })
+      // }
 
       result.forEach((ele) => {
         ele.content = {}

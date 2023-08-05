@@ -1,20 +1,31 @@
 <template>
   <div class="auction_container">
     <div class="auction">
-
       <div class="left_container">
         <div class="nav_left">
-          <router-link :to="item.url" v-for="item in activationList" :key="item.id" class="nav_item">
-            <svg :style="{
+          <router-link
+            :to="item.url"
+            v-for="item in activationList"
+            :key="item.id"
+            class="nav_item"
+          >
+            <svg
+              :style="{
                 fill: '#087790',
                 width: '15px',
                 height: '15px',
                 marginRight: '5px',
                 verticalAlign: 'middle'
-              }">
-              <use :xlink:href="'#icon-auction-' + item.icon" rel="external nofollow" />
+              }"
+            >
+              <use
+                :xlink:href="'#icon-auction-' + item.icon"
+                rel="external nofollow"
+              />
             </svg>
-            <span :title="item.text"> {{ item.text }} </span>
+            <span :title="item.text">
+              {{ item.text }}
+            </span>
             <i class="el-icon-arrow-right nav_icon"></i>
           </router-link>
         </div>
@@ -26,7 +37,11 @@
 
           <List></List>
         </div>
-        <el-page-header v-if="!isMainPage" @back="goBack" style="margin-bottom: 20px;margin-left: 20px;">
+        <el-page-header
+          v-if="!isMainPage"
+          @back="goBack"
+          style="margin-bottom: 20px; margin-left: 20px"
+        >
         </el-page-header>
         <Wallet :balance-amount="balance"></Wallet>
         <router-view></router-view>
@@ -56,19 +71,19 @@ export default {
         {
           id: 0,
           icon: 'home',
-          text: '拍卖商城',
+          text: this.$t('auction.auction_shop'),
           url: '/auction'
         },
         {
           id: 1,
           icon: 'my',
-          text: '我的拍卖',
+          text: this.$t('auction.my_auction'),
           url: '/myauction'
         },
         {
           id: 2,
           icon: 'publish',
-          text: '我要发布',
+          text: this.$t('auction.publish'),
           url: 'publish'
         }
       ]
@@ -104,6 +119,35 @@ export default {
       if (res && res.success === 'ok') {
         this.balance = res.data.token_num
       }
+    }
+  },
+  watch: {
+    '$i18n.locale': {
+      handler(newVal, oldVal) {
+        console.log(newVal, oldVal)
+        this.activationList = [
+          {
+            id: 0,
+            icon: 'home',
+            text: this.$t('auction.auction_shop'),
+            url: '/auction'
+          },
+          {
+            id: 1,
+            icon: 'my',
+            text: this.$t('auction.my_auction'),
+            url: '/myauction'
+          },
+          {
+            id: 2,
+            icon: 'publish',
+            text: this.$t('auction.publish'),
+            url: 'publish'
+          }
+        ]
+      },
+      deep: true,
+      immediate: true
     }
   }
 }

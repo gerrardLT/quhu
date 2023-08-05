@@ -67,3 +67,50 @@ export async function getLaunchdBids (data) {
       data
     })
   }
+
+   //获取地址
+   export function get_address (data) {
+    return request({
+      url: '/auction/get_address',
+      method: 'post',
+      data
+    })
+  }
+
+
+
+     //登记地址
+     export function upload_address (data) {
+      return request({
+        url: '/auction/address',
+        method: 'post',
+        data
+      })
+    }
+  
+    
+     //拍卖发货登记
+     export function goods (data) {
+      return request({
+        url: '/auction/goods',
+        method: 'post',
+        data
+      })
+    }
+        
+     //拍卖发货获取
+     export function get_goods (data) {
+      return request({
+        url: '/auction/get_goods',
+        method: 'post',
+        data
+      })
+    }
+         //确认收货
+         export function confirm (data) {
+          return request({
+            url: '/auction/confirm',
+            method: 'post',
+            data
+          })
+        }

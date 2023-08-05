@@ -12,24 +12,29 @@
     <div class="setting_container">
       <div class="setting_tab">
         <el-tabs type="border-card">
-          <el-tab-pane class="tab_content" label="基本信息">
+          <el-tab-pane class="tab_content" :label="$t('setting.base_info')">
             <el-form
               :model="baseInfoForm"
               :rules="baseRules"
               ref="baseFormRef"
               label-width="100px"
             >
-              <!-- <el-form-item label="昵称" prop="nickName" style="width: 400px">
-                <el-input v-model="baseInfoForm.nickName" clearable></el-input>
-              </el-form-item> -->
-              <el-form-item label="用户名" prop="user" style="width: 400px">
+              <el-form-item
+                :label="$t('setting.user_name')"
+                prop="user"
+                style="width: 400px"
+              >
                 <el-input
                   v-model="baseInfoForm.user"
                   clearable
                   :disabled="userChanged"
                 ></el-input>
               </el-form-item>
-              <el-form-item label="密码" prop="password" style="width: 400px">
+              <el-form-item
+                :label="$t('setting.password')"
+                prop="password"
+                style="width: 400px"
+              >
                 <el-input
                   v-model="baseInfoForm.password"
                   clearable
@@ -43,15 +48,15 @@
                   v-if="!userChanged"
                   style="margin-right: 80px"
                   @click="save"
-                  >保存</el-button
+                  >{{ $t('setting.save') }}</el-button
                 >
-                <el-button type="primary" @click="bindEthAccount"
-                  >绑定ETH账号</el-button
-                >
+                <el-button type="primary" @click="bindEthAccount">{{
+                  $t('setting.bind_eth')
+                }}</el-button>
               </el-form-item>
             </el-form>
           </el-tab-pane>
-          <el-tab-pane class="tab_content" label="安全设置">
+          <el-tab-pane class="tab_content" :label="$t('setting.safe_set')">
             <el-form
               :model="safeInfoForm"
               :rules="safeRules"
@@ -59,7 +64,7 @@
               label-width="100px"
             >
               <el-form-item
-                label="原密码"
+                :label="$t('setting.old_pass')"
                 prop="oldPassword"
                 v-if="!isEthLogin"
                 style="width: 400px"
@@ -72,7 +77,7 @@
                 ></el-input>
               </el-form-item>
               <el-form-item
-                label="新密码"
+                :label="$t('setting.new_pass')"
                 prop="newPassword"
                 style="width: 400px"
               >
@@ -84,7 +89,7 @@
                 ></el-input>
               </el-form-item>
               <el-form-item
-                label="确认密码"
+                :label="$t('setting.confirm_pass')"
                 prop="passwordAgain"
                 style="width: 400px"
               >
@@ -96,11 +101,13 @@
                 ></el-input>
               </el-form-item>
               <el-form-item>
-                <el-button type="primary" @click="savePwd">保存</el-button>
+                <el-button type="primary" @click="savePwd">{{
+                  $t('setting.save')
+                }}</el-button>
               </el-form-item>
             </el-form>
           </el-tab-pane>
-          <el-tab-pane class="tab_content" label="退出登录">
+          <el-tab-pane class="tab_content" :label="$t('setting.exit_login')">
             <div class="login_out">
               <div class="title">
                 <svg
@@ -112,15 +119,16 @@
                   <use xlink:href="#icon-sign-out" rel="external nofollow" />
                 </svg>
                 <span style="margin-left: 20px">
-                  您确定要退出吗？
+                  {{ $t('setting.exit_tip1') }}
+
                   <br />
-                  退出后内容将不再保存！
+                  {{ $t('setting.exit_tip2') }}
                 </span>
               </div>
               <div class="btns">
-                <el-button type="primary" @click="confirmLoginOut"
-                  >确定</el-button
-                >
+                <el-button type="primary" @click="confirmLoginOut">{{
+                  $t('setting.confirm')
+                }}</el-button>
               </div>
             </div>
           </el-tab-pane>
@@ -146,20 +154,17 @@ export default {
     const validate = (value, type, cb) => {
       const reg = /^[a-zA-Z0-9_\u4e00-\u9fa5]{2,12}$/
       if (value.trim() === '') {
-        cb('请输入要修改的' + type)
+        cb(this.$t('setting.input_change') + type)
       } else {
         if (!reg.test(value)) {
-          cb('请输入2到12位字符的汉字，字母，数字，下划线')
+          cb(this.$t('setting.input_tip'))
         } else {
           cb()
         }
       }
     }
-    // const validateNick = (rule, value, callback) => {
-    //   validate(value, '昵称', callback)
-    // }
     const validateUserName = (rule, value, callback) => {
-      validate(value, '用户名', callback)
+      validate(value, this.$t('setting.user_name'), callback)
     }
     return {
       baseInfoForm: {
@@ -176,13 +181,25 @@ export default {
       },
       safeRules: {
         oldPassword: [
-          { required: true, message: '请输入原密码', trigger: 'blur' }
+          {
+            required: true,
+            message: this.$t('setting.input_old_pass'),
+            trigger: 'blur'
+          }
         ],
         newPassword: [
-          { required: true, message: '请输入新密码', trigger: 'blur' }
+          {
+            required: true,
+            message: this.$t('setting.input_new_pass'),
+            trigger: 'blur'
+          }
         ],
         passwordAgain: [
-          { required: true, message: '请再次确认密码', trigger: 'blur' }
+          {
+            required: true,
+            message: this.$t('setting.re_confirm_pass'),
+            trigger: 'blur'
+          }
         ]
       },
       baseRules: {
@@ -243,16 +260,14 @@ export default {
         !pwdReg.test(this.safeInfoForm.newPassword) ||
         !pwdReg.test(this.safeInfoForm.passwordAgain)
       ) {
-        this.$message.error(
-          '密码应为字母，数字，特殊符号(~!@#$%^&*()_.)，两种及以上组合，8-16位字符串，如：xxxxx@abc'
-        )
+        this.$message.error(this.$t('setting.pass_tip'))
         return
       }
 
       if (this.safeInfoForm.newPassword === this.safeInfoForm.passwordAgain) {
         if (loginType === 'password') {
           const loading = Loading.service({
-            text: '加载中...',
+            text: this.$t('message.loading'),
             spinner: 'el-icon-loading ElementLoading',
             background: 'rgba(0, 0, 0, 0.2)'
           })
@@ -267,7 +282,7 @@ export default {
               if (loading) {
                 loading.close()
               }
-              self.$message.success('修改成功！')
+              self.$message.success(self.$t('setting.change_success'))
               this.safeInfoForm = {
                 oldPassword: '',
                 newPassword: '',
@@ -278,12 +293,12 @@ export default {
         } else if (loginType === 'eth') {
           if (window.ethereum) {
             if (typeof window.ethereum.isMetaMask === 'undefined') {
-              self.$message.error('请安装 MetaMask！')
+              self.$message.error(self.$t('setting.install') + ' MetaMask！')
             } else {
               window.ethereum
                 .request({ method: 'eth_requestAccounts' })
                 .catch(function (reason) {
-                  self.$message.error('出错了！' + reason.message)
+                  self.$message.error(self.$t('setting.error') + reason.message)
                 })
                 .then(function (accounts) {
                   // console.log('account', accounts)
@@ -296,7 +311,9 @@ export default {
                     accounts[0],
                     (err, res) => {
                       if (err) {
-                        self.$message.error('签名失败，因为' + err.message)
+                        self.$message.error(
+                          self.$t('setting.sign_fail') + err.message
+                        )
                       } else {
                         changePwd({
                           id: accounts[0],
@@ -305,7 +322,9 @@ export default {
                           old_password: MD5(self.safeInfoForm.oldPassword),
                           new_password: MD5(self.safeInfoForm.newPassword)
                         }).then((res) => {
-                          self.$message.success('密码修改成功！')
+                          self.$message.success(
+                            self.$t('setting.change_success')
+                          )
                           this.safeInfoForm = {
                             oldPassword: '',
                             newPassword: '',
@@ -318,11 +337,11 @@ export default {
                 })
             }
           } else {
-            self.$message.error('请安装 MetaMask！')
+            self.$message.error(self.$t('setting.install') + ' MetaMask！')
           }
         }
       } else {
-        this.$message.error('密码不一致，请重新输入')
+        this.$message.error(this.$t('setting.fail_tip'))
       }
     },
     callMeta(fn, signType) {
@@ -330,7 +349,7 @@ export default {
       window.ethereum
         .request({ method: 'eth_requestAccounts' })
         .catch(function (reason) {
-          self.$message.error('出错了！' + reason.message)
+          self.$message.error(self.$t('setting.error') + reason.message)
         })
         .then(function (accounts) {
           // console.log('account', accounts)
@@ -349,7 +368,7 @@ export default {
     handleSign(err, res) {
       const self = this
       if (err) {
-        self.$message.error('签名失败，因为' + err.message)
+        self.$message.error(self.$t('setting.sign_fail') + err.message)
       } else {
         self.$store.dispatch('updateUser', {
           // user_name: self.baseInfoForm.nickName,
@@ -366,12 +385,12 @@ export default {
       if (this.isEthLogin) {
         if (window.ethereum) {
           if (typeof window.ethereum.isMetaMask === 'undefined') {
-            self.$message.error('请安装 MetaMask！')
+            self.$message.error(self.$t('setting.install') + ' MetaMask！')
           } else {
             self.callMeta(self.handleSign, 'change')
           }
         } else {
-          self.$message.error('请安装 MetaMask！')
+          self.$message.error(self.$t('setting.install') + ' MetaMask！')
         }
       } else {
         this.$store.dispatch('updateUser', {
@@ -389,15 +408,15 @@ export default {
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
       const self = this
       if (this.baseInfoForm.password.trim() === '') {
-        self.$message.error('请输入密码！')
+        self.$message.error(self.$t('setting.input_pass_tip'))
         return
       } else {
         this.callMeta(async (err, res, account) => {
           if (err) {
-            self.$message.error('签名失败，因为' + err.message)
+            self.$message.error(self.$t('setting.sign_fail') + err.message)
           } else {
             const loading = Loading.service({
-              text: '加载中...',
+              text: this.$t('message.loading'),
               spinner: 'el-icon-loading ElementLoading',
               background: 'rgba(0, 0, 0, 0.2)'
             })
@@ -409,7 +428,7 @@ export default {
               sign: res
             })
             if (res && res.success === 'ok') {
-              self.$message.success('绑定成功！')
+              self.$message.success(self.$t('setting.bind_success'))
             }
             if (loading) {
               loading.close()
@@ -431,6 +450,19 @@ export default {
 </script>
 
 <style scoped lang="scss">
+::v-deep .el-button--primary {
+  background-color: #087790;
+  border-color: #087790;
+}
+::v-deep
+  .el-tabs--border-card
+  > .el-tabs__header
+  .el-tabs__item:not(.is-disabled):hover {
+  color: #087790;
+}
+::v-deep .el-tabs--border-card > .el-tabs__header .el-tabs__item.is-active {
+  color: #087790;
+}
 .save_btn {
   display: flex;
   justify-content: center;

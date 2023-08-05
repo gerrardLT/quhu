@@ -1,64 +1,125 @@
 <template>
   <div class="publish_container">
     <div class="flex margin-10">
-      <span class="prefix">商品标题：</span>
-      <el-input maxlength="20" placeholder="请输入商品标题" v-model="product.title">
+      <span class="prefix">{{ $t('publish.deposit_description') }}：</span>
+      <span style="color: #000; font-size: 14px">{{
+        $t('publish.deposit_description_tip')
+      }}</span>
+    </div>
+    <div class="flex margin-10">
+      <span class="prefix">{{ $t('publish.title') }}：</span>
+      <el-input
+        maxlength="20"
+        :placeholder="$t('publish.input_title')"
+        v-model="product.title"
+      >
       </el-input>
     </div>
     <div class="flex margin-10">
-      <span class="prefix">起拍价：</span>
-      <el-input placeholder="请输入起拍价" v-model="product.starting_price">
+      <span class="prefix">{{ $t('publish.start_price') }}：</span>
+      <el-input
+        :placeholder="$t('publish.input_start_price')"
+        v-model="product.starting_price"
+      >
       </el-input>
     </div>
     <div class="flex margin-10">
-      <span class="prefix">最小加价幅度：</span>
-      <el-input placeholder="请输入最小加价幅度" v-model="product.increase">
+      <span class="prefix">{{ $t('publish.markup') }}：</span>
+      <el-input
+        :placeholder="$t('publish.input_markup')"
+        v-model="product.increase"
+      >
       </el-input>
     </div>
     <div class="flex margin-10">
-      <span class="prefix">币种选择：</span>
-      <el-select class="price_select" v-model="product.coins" clearable placeholder="请选择币种">
-        <el-option v-for="item in payTypes" :key="item.value" :label="item.label" :value="item.value">
+      <span class="prefix">{{ $t('publish.select_coin') }}：</span>
+      <el-select
+        class="price_select"
+        v-model="product.coins"
+        clearable
+        :placeholder="$t('publish.select_coin_tip')"
+      >
+        <el-option
+          v-for="item in payTypes"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        >
         </el-option>
       </el-select>
     </div>
+
     <div class="flex margin-10">
-      <span class="prefix">拍卖开始时间：</span>
-      <el-date-picker v-model="product.start.start_date" type="date" :picker-options="pickerOptions" placeholder="选择日期" format="yyyy 年 MM 月 dd 日" value-format="timestamp">
+      <span class="prefix">{{ $t('publish.start_time') }}：</span>
+      <el-date-picker
+        v-model="product.start.start_date"
+        type="date"
+        :picker-options="pickerOptions"
+        :placeholder="$t('publish.select_date')"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="timestamp"
+      >
       </el-date-picker>
       <span>&nbsp;-&nbsp;</span>
-      <el-time-picker v-model="product.start.start_time" :picker-options="{
+      <el-time-picker
+        v-model="product.start.start_time"
+        :picker-options="{
           selectableRange: '00:00:00 - 23:59:59'
-        }" placeholder="选择时间" format="HH:mm:ss" value-format="timestamp">
+        }"
+        :placeholder="$t('publish.select_time')"
+        format="HH:mm:ss"
+        value-format="timestamp"
+      >
       </el-time-picker>
     </div>
     <div class="flex margin-10">
-      <span class="prefix">拍卖结束时间：</span>
-      <el-date-picker v-model="product.end.end_date" :picker-options="pickerOptions" type="date" placeholder="选择日期" format="yyyy 年 MM 月 dd 日" value-format="timestamp">
+      <span class="prefix">{{ $t('publish.end_time') }}：</span>
+      <el-date-picker
+        v-model="product.end.end_date"
+        :picker-options="pickerOptions"
+        type="date"
+        :placeholder="$t('publish.select_date')"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="timestamp"
+      >
       </el-date-picker>
       <span>&nbsp;-&nbsp;</span>
-      <el-time-picker v-model="product.end.end_time" :picker-options="{
+      <el-time-picker
+        v-model="product.end.end_time"
+        :picker-options="{
           selectableRange: '00:00:00 - 23:59:59'
-        }" placeholder="选择时间" format="HH:mm:ss" value-format="timestamp">
+        }"
+        :placeholder="$t('publish.select_time')"
+        format="HH:mm:ss"
+        value-format="timestamp"
+      >
       </el-time-picker>
     </div>
     <div class="description">
-      <div class="prefix" style="margin-bottom: 10px">拍卖商品描述：</div>
+      <div class="prefix" style="margin-bottom: 10px">
+        {{ $t('publish.description') }}：
+      </div>
       <Editor ref="editor" :quillContent="product.body"></Editor>
     </div>
 
     <div style="margin-top: 20px">
-      <div style="margin-bottom: 10px">商品首图：</div>
-      <el-upload class="avatar-uploader" :show-file-list="false" :action="product.actionUrl" :http-request="onUploadHandler" v-loading="uploadLoading">
+      <div style="margin-bottom: 10px">{{ $t('publish.picture') }}：</div>
+      <el-upload
+        class="avatar-uploader"
+        :show-file-list="false"
+        :action="product.actionUrl"
+        :http-request="onUploadHandler"
+        v-loading="uploadLoading"
+      >
         <img v-if="product.image" :src="product.image" class="avatar-img" />
         <i v-else class="el-icon-plus avatar-uploader-icon"></i>
       </el-upload>
     </div>
 
     <span slot="footer" class="footer">
-      <el-button @click="reset">重置</el-button>
+      <el-button @click="reset">{{ $t('publish.reset') }}</el-button>
       <el-button class="sub_confirm" type="primary" @click="submit">{{
-        $route.query.author ? '编辑' : '发布'
+        $route.query.author ? $t('publish.edit') : $t('publish.publish')
       }}</el-button>
     </span>
   </div>
@@ -97,7 +158,7 @@ export default {
           end_date: '',
           end_time: ''
         },
-        coins: 'poys',
+        coins: 'ofc',
         actionUrl: 'https://steemitimages.com/',
         image: '',
         starting_price: '',
@@ -106,22 +167,22 @@ export default {
       },
 
       payTypes: [
-        {
-          value: 'poys',
-          label: 'poys'
-        },
+        // {
+        //   value: 'poys',
+        //   label: 'poys'
+        // },
         {
           value: 'ofc',
           label: 'ofc'
-        },
-        {
-          value: 'busd',
-          label: 'busd'
-        },
-        {
-          value: 'bnb',
-          label: 'bnb'
         }
+        // {
+        //   value: 'busd',
+        //   label: 'busd'
+        // },
+        // {
+        //   value: 'bnb',
+        //   label: 'bnb'
+        // }
       ]
     }
   },
@@ -214,11 +275,7 @@ export default {
     async submit() {
       console.log(this.product)
       const query = this.$route.query
-      const loading = Loading.service({
-        text: '加载中...',
-        spinner: 'el-icon-loading ElementLoading',
-        background: 'rgba(0, 0, 0, 0.2)'
-      })
+
       let { title, coins, increase, starting_price, image, start, end } =
         this.product
       const reg = /^[1-9]\d*$/
@@ -239,48 +296,48 @@ export default {
       )
       //   console.log(endTime)
       if (!title.trim()) {
-        this.$message.warning('请输入商品名')
+        this.$message.warning(this.$t('publish.input_title'))
         return
       }
       if (!starting_price) {
-        this.$message.warning('请输入起拍价')
+        this.$message.warning(this.$t('publish.input_start_price'))
         return
       }
       if (!increase) {
-        this.$message.warning('请输入加价幅度')
+        this.$message.warning(this.$t('publish.input_markup'))
         return
       }
       if (!coins) {
-        this.$message.warning('请选择币种')
+        this.$message.warning(this.$t('publish.select_coin_tip'))
         return
       }
       if (!start.start_date) {
-        this.$message.warning('请选择开始日期')
+        this.$message.warning(this.$t('publish.select_start_date'))
         return
       }
       if (!start.start_time) {
-        this.$message.warning('请选择开始时间')
+        this.$message.warning(this.$t('publish.select_start_time'))
         return
       }
       if (!end.end_date) {
-        this.$message.warning('请选择结束日期')
+        this.$message.warning(this.$t('publish.select_end_date'))
         return
       }
       if (!end.end_time) {
-        this.$message.warning('请选择结束时间')
+        this.$message.warning(this.$t('publish.select_end_time'))
         return
       }
       if (!image) {
-        this.$message.warning('请上传图片')
+        this.$message.warning(this.$t('publish.upload_img'))
         return
       }
       //   console.log(Number(this.starting_price), Number(this.increase))
       if (!reg.test(Number(starting_price))) {
-        this.$message.warning('请输入数字')
+        this.$message.warning(this.$t('publish.price_tip'))
         return
       }
       if (!reg.test(Number(increase))) {
-        this.$message.warning('请输入数字')
+        this.$message.warning(this.$t('publish.markup_tip'))
         return
       }
       const params = {
@@ -302,9 +359,14 @@ export default {
         params.permlink = [query.author, query.permlink]
       }
       console.log(params)
+      const loading = Loading.service({
+        text: this.$t('message.loading'),
+        spinner: 'el-icon-loading ElementLoading',
+        background: 'rgba(0, 0, 0, 0.2)'
+      })
       const res = await auction_post(params)
       if (res && res.success === 'ok') {
-        this.$message.success('发布成功！')
+        this.$message.success(this.$t('publish.publish_success'))
         this.$router.push({
           path: '/myAuction',
           query: {
@@ -345,7 +407,7 @@ export default {
       console.log(e)
       const isLt2M = e.file.size / 1024 / 1024 < 2
       if (!isLt2M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!')
+        this.$message.error(this.$t('publish.upload_tip'))
       }
       if (isLt2M) {
         let dataUrl = ''
@@ -401,6 +463,9 @@ export default {
 </script>
 
 <style scoped lang="scss">
+::v-deep .el-button--primary {
+  background-color: #087790;
+}
 .publish_container {
   margin-left: 30px;
 }

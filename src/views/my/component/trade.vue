@@ -1,11 +1,11 @@
 <template>
   <div>
-    <el-dialog :visible.sync="dialogVisible" title="兑换交易系统">
+    <el-dialog :visible.sync="dialogVisible" :title="$t('trade.trade_system')">
       <el-form :model="form" label-width="80px" ref="form">
-        <el-form-item label="币种数量">
+        <el-form-item :label="$t('trade.coin_quantity')">
           <el-input v-model.number="form.quantity"></el-input>
         </el-form-item>
-        <el-form-item label="选择币种">
+        <el-form-item :label="$t('trade.select_coin')">
           <el-select v-model="form.selectedCurrency">
             <el-option
               v-for="item in currencies"
@@ -15,13 +15,17 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="兑换币种余额">
+        <el-form-item :label="$t('trade.coin_balance')">
           {{ form.balance }}
         </el-form-item>
       </el-form>
       <div slot="footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="exchange">兑 换</el-button>
+        <el-button @click="dialogVisible = false">{{
+          $t('trade.cancel')
+        }}</el-button>
+        <el-button type="primary" @click="exchange">{{
+          $t('trade.exchange')
+        }}</el-button>
       </div>
     </el-dialog>
   </div>

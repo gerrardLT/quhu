@@ -34,7 +34,7 @@
               >
                 <use :xlink:href="'#icon-explore'" rel="external nofollow" />
               </svg>
-              <span style="fontsize: 14px">短文广场</span>
+              <span style="fontsize: 14px">{{ $t('home.short_corner') }}</span>
             </div>
 
             <el-submenu index="1">
@@ -49,7 +49,7 @@
                 >
                   <use :xlink:href="'#icon-ze-edit'" rel="external nofollow" />
                 </svg>
-                <span style="fontsize: 14px">我的专栏</span>
+                <span style="fontsize: 14px">{{ $t('home.my_column') }}</span>
               </template>
               <el-menu-item
                 style="minwidth: 90px"
@@ -57,7 +57,14 @@
                 :key="index"
                 :index="'1-' + index"
                 @click="getArticlesByColumn(item, index)"
-                >{{ item }}</el-menu-item
+              >
+                <!-- <img
+                  :src="require(`../../assets/defaultAvatarUrl.png`)"
+                  width="18px"
+                  height="18px"
+                  alt=""
+                /> -->
+                {{ item }}</el-menu-item
               >
             </el-submenu>
 
@@ -76,7 +83,9 @@
                     rel="external nofollow"
                   />
                 </svg>
-                <span style="fontsize: 14px">加入的专栏</span>
+                <span style="fontsize: 14px">{{
+                  $t('home.joined_column')
+                }}</span>
               </template>
               <el-menu-item
                 style="minwidth: 90px"
@@ -101,24 +110,8 @@
               >
                 <use :xlink:href="'#icon-add'" rel="external nofollow" />
               </svg>
-              <span style="fontsize: 14px">创建专栏</span>
+              <span style="fontsize: 14px">{{ $t('home.create_column') }}</span>
             </div>
-            <!-- <div
-              :class="{ activeText: activeMenuIndex === 2, 'menu-style': true }"
-              @click="privateManage"
-            >
-              <svg
-                :style="{
-                  fill: '#087790',
-                  width: '15px',
-                  height: '15px',
-                  marginRight: '5px'
-                }"
-              >
-                <use :xlink:href="'#icon-setting'" rel="external nofollow" />
-              </svg>
-              <span style="fontsize: 14px">专栏隐私管理</span>
-            </div> -->
           </el-menu>
         </div>
       </el-col>
@@ -133,7 +126,7 @@
         <div class="mid_wrapper">
           <div class="post-container">
             <div @click="postArticle" class="post-topic-head">
-              <div class="tip">点击发表文章...</div>
+              <div class="tip">{{ $t('home.post_article') }}</div>
             </div>
             <div class="post-topic-footer">
               <div class="post-topic-btn">
@@ -148,13 +141,9 @@
                     "
                   >
                     <div class="common post-article">
-                      <span>写长文</span>
+                      <span>{{ $t('home.post_long_article') }}</span>
                     </div>
                   </router-link>
-
-                  <!-- <div class="common post-article" @click="createColumn">
-                    <span>创建专栏</span>
-                  </div> -->
                   <div
                     v-if="
                       currentInfo.buy_article &&
@@ -166,23 +155,23 @@
                     class="common remove-article"
                     @click="handleRemove"
                   >
-                    <span> 退出专栏 </span>
+                    <span> {{ $t('home.exit_column') }} </span>
                   </div>
                   <el-dialog
-                    title="删除提示"
+                    :title="$t('home.delete_tip')"
                     :visible.sync="removePopVisible"
                     :close-on-click-modal="false"
                     width="30%"
                     center
                   >
-                    <span>确认退出当前专栏吗？</span>
+                    <span>{{ $t('home.exit_tip') }}</span>
                     <span slot="footer" class="dialog-footer">
-                      <el-button @click="removePopVisible = false"
-                        >取 消</el-button
-                      >
-                      <el-button type="primary" @click="removeOut"
-                        >确 定</el-button
-                      >
+                      <el-button @click="removePopVisible = false">{{
+                        $t('home.cancel')
+                      }}</el-button>
+                      <el-button type="primary" @click="removeOut">{{
+                        $t('home.confirm')
+                      }}</el-button>
                     </span>
                   </el-dialog>
                 </div>
@@ -190,24 +179,26 @@
             </div>
           </div>
           <el-dialog
-            title="提示"
+            :title="$t('home.tip')"
             :visible.sync="applyDialogVisible"
             :close-on-click-modal="false"
             width="30%"
           >
             <span
-              >您订阅的专栏"{{ selectedColumn }}"已过期。确定花费{{
+              >{{ $t('home.read_tip1') }}"{{ selectedColumn }}"{{
+                $t('home.read_tip2')
+              }}{{
                 keepThreeNum((columnPrice.num / 12) * subscribeMonth) +
                 columnPrice.label
-              }}续订当前专栏吗？</span
+              }}{{ $t('home.read_tip3') }}</span
             >
             <div class="subscribe_time">
-              <el-tag>订阅时长</el-tag>
+              <el-tag>{{ $t('home.read_length') }}</el-tag>
               <el-select
                 class="price_select"
                 v-model="subscribeMonth"
                 clearable
-                placeholder="请选择订阅时长"
+                :placeholder="$t('home.read_select_tip')"
                 @change="$forceUpdate()"
               >
                 <el-option
@@ -220,8 +211,12 @@
               </el-select>
             </div>
             <span slot="footer" class="dialog-footer">
-              <el-button @click="applyDialogVisible = false">取 消</el-button>
-              <el-button type="primary" @click="applyColumn">确 定</el-button>
+              <el-button @click="applyDialogVisible = false">{{
+                $t('home.cancel')
+              }}</el-button>
+              <el-button type="primary" @click="applyColumn">{{
+                $t('home.confirm')
+              }}</el-button>
             </span>
           </el-dialog>
           <div
@@ -264,7 +259,7 @@
                             ) !== -1
                           "
                           @click.native="articleSet(item, index, '+')"
-                          >置顶</el-dropdown-item
+                          >{{ $t('home.top') }}</el-dropdown-item
                         >
                         <el-dropdown-item
                           v-show="
@@ -274,30 +269,23 @@
                             ) !== -1
                           "
                           @click.native="articleSet(item, index, '-')"
-                          >取消置顶</el-dropdown-item
+                          >{{ $t('home.cancel_top') }}</el-dropdown-item
                         >
                         <!-- <el-dropdown-item>置底</el-dropdown-item> -->
-                        <el-dropdown-item
-                          @click.native="articleSet(item, index, 'delete')"
-                          v-show="
-                            userInfo.buy_article.my.indexOf(
-                              item.body.subscriptions_name
-                            ) !== -1
-                          "
-                          >删除</el-dropdown-item
-                        >
+
                         <el-dropdown-item
                           @click.native="articleSet(item, index, 'collect')"
-                          v-show="!item.isFavorite"
-                          >收藏</el-dropdown-item
+                          v-show="!item.favorites"
+                          >{{ $t('home.favorite') }}</el-dropdown-item
                         >
                         <el-dropdown-item
-                          v-show="item.isFavorite"
+                          v-show="item.favorites"
                           @click.native="
                             articleSet(item, index, 'removeCollect')
                           "
-                          >移除收藏</el-dropdown-item
+                          >{{ $t('home.cancel_favorite') }}</el-dropdown-item
                         >
+
                         <el-dropdown-item
                           v-show="
                             editLimt(item.created) &&
@@ -306,7 +294,17 @@
                             ) !== -1
                           "
                           @click.native="editArticle(item)"
-                          >编辑</el-dropdown-item
+                          >{{ $t('home.edit') }}</el-dropdown-item
+                        >
+                        <el-dropdown-item
+                          @click.native="articleSet(item, index, 'delete')"
+                          v-show="
+                            userInfo.buy_article.my.indexOf(
+                              item.body.subscriptions_name
+                            ) !== -1
+                          "
+                          class="deleteColor"
+                          >{{ $t('home.delete') }}</el-dropdown-item
                         >
                       </el-dropdown-menu>
                     </el-dropdown>
@@ -326,11 +324,11 @@
                               {{ item.body.author }}
                             </div>
                             <div class="author-column-id">
-                              用户ID：{{ userInfo.steem_id }}
+                              {{ $t('home.user_id') }}：{{ userInfo.steem_id }}
                             </div>
                             <div class="author-column-special">
                               <span v-if="searchUserColumn.length > 0"
-                                >他的专栏：</span
+                                >{{ $t('home.his_column') }}：</span
                               >
 
                               <span v-if="searchUserColumn.length > 0">
@@ -344,9 +342,9 @@
                                 >
                               </span>
 
-                              <span style="color: #5d5d5d" v-else
-                                >他还没有专栏或专栏已隐藏</span
-                              >
+                              <span style="color: #5d5d5d" v-else>{{
+                                $t('home.column_tip')
+                              }}</span>
                             </div>
                           </div>
                           <img
@@ -425,11 +423,11 @@
                               {{ item.body.author }}
                             </div>
                             <div class="author-column-id">
-                              用户ID：{{ userInfo.steem_id }}
+                              {{ $t('home.user_id') }}：{{ userInfo.steem_id }}
                             </div>
                             <div class="author-column-special">
                               <span v-if="searchUserColumn.length > 0"
-                                >他的专栏：</span
+                                >{{ $t('home.his_column') }}：</span
                               >
 
                               <span v-if="searchUserColumn.length > 0">
@@ -443,9 +441,9 @@
                                 >
                               </span>
 
-                              <span style="color: #5d5d5d" v-else
-                                >他还没有专栏或专栏已隐藏</span
-                              >
+                              <span style="color: #5d5d5d" v-else>{{
+                                $t('home.column_tip')
+                              }}</span>
                             </div>
                           </div>
                           <img
@@ -480,7 +478,7 @@
                               ) !== -1
                             "
                             @click.native="articleSet(item, index, '+')"
-                            >置顶</el-dropdown-item
+                            >{{ $t('home.top') }}</el-dropdown-item
                           >
                           <el-dropdown-item
                             v-show="
@@ -490,9 +488,22 @@
                               ) !== -1
                             "
                             @click.native="articleSet(item, index, '-')"
-                            >取消置顶</el-dropdown-item
+                            >{{ $t('home.cancel_top') }}</el-dropdown-item
                           >
                           <!-- <el-dropdown-item>置底</el-dropdown-item> -->
+
+                          <el-dropdown-item
+                            @click.native="articleSet(item, index, 'collect')"
+                            v-show="!item.favorites"
+                            >{{ $t('home.favorite') }}</el-dropdown-item
+                          >
+                          <el-dropdown-item
+                            v-show="item.favorites"
+                            @click.native="
+                              articleSet(item, index, 'removeCollect')
+                            "
+                            >{{ $t('home.cancel_favorite') }}</el-dropdown-item
+                          >
                           <el-dropdown-item
                             @click.native="articleSet(item, index, 'delete')"
                             v-show="
@@ -500,19 +511,8 @@
                                 item.body.subscriptions_name
                               ) !== -1
                             "
-                            >删除</el-dropdown-item
-                          >
-                          <el-dropdown-item
-                            @click.native="articleSet(item, index, 'collect')"
-                            v-show="!item.isFavorite"
-                            >收藏</el-dropdown-item
-                          >
-                          <el-dropdown-item
-                            v-show="item.isFavorite"
-                            @click.native="
-                              articleSet(item, index, 'removeCollect')
-                            "
-                            >移除收藏</el-dropdown-item
+                            class="deleteColor"
+                            >{{ $t('home.delete') }}</el-dropdown-item
                           >
                           <!-- <el-dropdown-item @click.native="editArticle(item)"
                             >编辑</el-dropdown-item
@@ -572,18 +572,38 @@
                   <div class="operation-icon-container">
                     <div class="operation-icon">
                       <div
-                        title="点赞"
-                        class="like"
+                        :title="$t('home.star')"
+                        class="like-outer"
                         @click="praise(item, 'article')"
                       >
-                        <Icon name="praise" :color="'#5D5D5D'" />
+                        <Icon
+                          name="praise"
+                          :color="item.isPraised ? '#fda956' : '#5D5D5D'"
+                        />
+                        <span class="vote-num">{{ item.voteNum || '' }}</span>
                       </div>
                       <div
-                        title="评论"
+                        :title="$t('home.comment')"
                         class="comment"
                         @click="editComment(item, index)"
                       >
                         <Icon name="discuss" />
+                      </div>
+                      <div
+                        v-if="!item.favorites"
+                        :title="$t('home.favorite')"
+                        class="subscribe"
+                        @click="articleSet(item, index, 'collect')"
+                      >
+                        <Icon name="collect" :color="'#5D5D5D'" />
+                      </div>
+                      <div
+                        v-else
+                        :title="$t('home.favorite')"
+                        class="subscribe"
+                        @click="articleSet(item, index, 'removeCollect')"
+                      >
+                        <Icon name="collect" :color="'#fda956'" />
                       </div>
                       <!-- <div title="分享" class="subscribe">
                         <Icon name="share" />
@@ -601,23 +621,40 @@
                       >View on Blockbrowser</a
                     >
                     <div class="details-container" @click="goDetail(item)">
-                      <div class="text">查看详情</div>
+                      <div class="text">{{ $t('home.view_detail') }}</div>
                       <div class="icon">
                         <Icon name="arrowR" />
                       </div>
                     </div>
                   </div>
-                  <!-- <div class="praisedPeople">{{ }}觉得很赞</div> -->
+                  <!-- :style="{
+                        color: people === userInfo.steem_id ? '#087790' : ''
+                      }" -->
+                  <div
+                    class="praisedPeople"
+                    v-if="item.list && item.list.length > 0"
+                  >
+                    <div
+                      class="vote_people"
+                      v-for="(people, num) in item.list"
+                      :key="people"
+                    >
+                      {{ people }}{{ num === item.list.length - 1 ? '' : '、' }}
+                    </div>
+                    <span style="margin-left: 10px; color: #8b8e9d">{{
+                      $t('home.feel_nice')
+                    }}</span>
+                  </div>
                   <el-input
                     v-show="item.isEditReply"
-                    placeholder="请输入内容"
+                    :placeholder="$t('home.content_tip')"
                     v-model="item.reply"
                     class="reply_input"
                   >
                     <el-button
                       slot="append"
                       @click="submitReply(item, index, 'articleReply')"
-                      >回复</el-button
+                      >{{ $t('home.reply') }}</el-button
                     >
                   </el-input>
                   <div class="comment-item-container"></div>
@@ -664,32 +701,25 @@
                       </div>
                     </div>
 
-                    <div class="operation-icon">
+                    <div class="operation-icon" style="margin-bottom: 20px">
                       <div
-                        title="点赞"
+                        :title="$t('home.star')"
                         class="like"
                         @click="praise(currentDetail, 'detail')"
                       >
                         <Icon
                           name="praise"
                           :color="
-                            currentDetail.isPraised ? '#4fbdd4' : '#5D5D5D'
+                            currentDetail.isPraised ? '#fda956' : '#5D5D5D'
                           "
                         />
                         <span class="vote-num">{{
                           currentDetail.voteNum || ''
                         }}</span>
                       </div>
-                      <!-- <div
-                        title="评论"
-                        class="comment"
-                        @click="editComment(item, index)"
-                      >
-                        <Icon name="discuss" />
-                      </div> -->
                       <div
                         v-if="!currentDetail.isFavorite"
-                        title="收藏"
+                        :title="$t('home.favorite')"
                         class="subscribe"
                         @click="articleSet(item, index, 'collect')"
                       >
@@ -697,21 +727,13 @@
                       </div>
                       <div
                         v-if="currentDetail.isFavorite"
-                        title="收藏"
+                        :title="$t('home.favorite')"
                         class="subscribe"
                         @click="articleSet(item, index, 'removeCollect')"
                       >
-                        <Icon name="collect" :color="'#4fbdd4'" />
+                        <Icon name="collect" :color="'#fda956'" />
                       </div>
                     </div>
-                    <!-- <Comment
-                      style="margin: 0 auto"
-                      @doSend="doSend"
-                      @deleteComment="deleteComment"
-                      :commentList="currentDetail.commentList"
-                      :commentNum="commentNum"
-                      :avatar="avatar"
-                    ></Comment> -->
                     <div class="Comment" :style="{ width: '90%' }">
                       <div style="display: flex">
                         <el-avatar
@@ -727,7 +749,7 @@
                           <el-input
                             type="textarea"
                             :autosize="{ minRows: 4, maxRows: 8 }"
-                            placeholder="说点什么吧"
+                            :placeholder="$t('home.say_something')"
                             v-model="textareaConetent"
                           ></el-input>
 
@@ -738,7 +760,7 @@
                                 type="primary"
                                 @click="submitReply(item, index, 'ownReply')"
                                 style="float: right"
-                                >发送</el-button
+                                >{{ $t('home.send') }}</el-button
                               >
                             </div>
                           </div>
@@ -761,7 +783,7 @@
               </div>
             </div>
           </div>
-          <el-empty v-else description="暂无数据"></el-empty>
+          <el-empty v-else :description="$t('home.no_data')"></el-empty>
 
           <div v-if="showEditor" class="create-topic-container">
             <div class="create-topic-panel">
@@ -771,7 +793,7 @@
                     type="text"
                     v-model="titleText"
                     class="titie_text"
-                    placeholder="请输入标题"
+                    :placeholder="$t('home.title_tip')"
                   />
                 </div>
                 <div @click="closeEditor" class="close-icon">
@@ -832,20 +854,29 @@
                   <div class="middle">
                     <el-select
                       v-model="articlePostType"
+                      :placeholder="$t('home.select_tip')"
                       @change="$forceUpdate()"
                     >
-                      <el-option label="公开" value="公开" />
-                      <el-option label="仅自己可见" value="仅自己可见" />
+                      <el-option
+                        :label="$t('home.public')"
+                        :value="$t('home.public')"
+                      />
+                      <el-option
+                        :label="$t('home.only_self')"
+                        :value="$t('home.only_self')"
+                      />
                     </el-select>
                   </div>
                   <div class="right">
                     <div class="text-range">{{ TiLength }}/300</div>
 
-                    <div @click="submit()" class="submit-btn">发布</div>
+                    <div @click="submit()" class="submit-btn">
+                      {{ $t('home.publish') }}
+                    </div>
                   </div>
                 </div>
                 <div style="color: #c0c0c0; font-size: 14px; text-align: right">
-                  专栏发文后48H内可编辑和删除
+                  {{ $t('home.publish_tip') }}
                 </div>
               </div>
             </div>
@@ -867,14 +898,25 @@
                   class="f14 cla woo-box-item-flex"
                   style="align-self: center"
                 >
-                  热门专栏
+                  {{ $t('home.hot_column') }}
                 </div>
                 <div
                   class="woo-box-flex woo-box-alignCenter"
                   @click="getHotColumns"
                 >
-                  <i class="el-icon-refresh"></i
-                  ><span class="f12 clb">点击刷新</span>
+                  <i class="el-icon-refresh" style="color: #a2a2a2"></i
+                  ><span
+                    class="f12 clb"
+                    style="
+                      display: inline-block;
+                      color: #a2a2a2;
+                      max-width: 50px;
+                      white-space: nowrap;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                    "
+                    >{{ $t('home.click_refresh') }}</span
+                  >
                 </div>
               </div>
               <div class="woo-divider-main woo-divider-x"></div>
@@ -886,7 +928,14 @@
                 >
                   <div class="wbpro-side-panel">
                     <div class="con woo-box-flex woo-box-alignCenter">
-                      <div class="rank top f16">
+                      <div
+                        :class="{
+                          'rank-top': [0, 1, 2].indexOf(hotIndex) !== -1,
+                          rank: true,
+                          top: true,
+                          f16: true
+                        }"
+                      >
                         {{ Number(hotIndex) + 1 }}
                       </div>
                       <div
@@ -901,7 +950,7 @@
                           v-if="hot.isHot"
                           class="wbpro-icon-search-tp1"
                           style="background: rgb(255, 148, 6); cursor: pointer"
-                          >热</span
+                          >{{ $t('home.hot') }}</span
                         >
                       </div>
                     </div>
@@ -909,8 +958,23 @@
                   </div>
                 </div>
               </div>
-
-              <el-empty v-else description="暂无数据"></el-empty>
+              <el-empty v-else :description="$t('home.no_data')"></el-empty>
+              <div class="hot_auction" @click="goLink">
+                <svg
+                  :style="{
+                    fill: '#EE9611',
+                    width: '25px',
+                    height: '25px',
+                    marginRight: '15px'
+                  }"
+                >
+                  <use :xlink:href="'#icon-ring1'" rel="external nofollow" />
+                </svg>
+                <span
+                  class="hot_text animate__animated animate__heartBeat animate__slower"
+                  >{{ $t('home.hot_auction') }}</span
+                >
+              </div>
               <div class="woo-divider-main woo-divider-x"></div>
             </div>
           </div>
@@ -918,17 +982,20 @@
       </el-col>
     </el-row>
     <el-dialog
-      title="创建专栏"
+      :title="$t('home.create_column')"
       :visible.sync="dialogVisible"
       :close-on-click-modal="false"
       width="60%"
       :before-close="handleSubscriptionsClose"
     >
-      <el-input placeholder="请输入专栏名称" v-model="subscriptionsInfo.name">
+      <el-input
+        :placeholder="$t('home.column_name_tip')"
+        v-model="subscriptionsInfo.name"
+      >
       </el-input>
       <div class="margin-top-10 sub_price">
         <el-input
-          placeholder="请输入专栏价格"
+          :placeholder="$t('home.column_price_tip')"
           v-model="subscriptionsInfo.price"
         >
         </el-input>
@@ -937,7 +1004,7 @@
           class="price_select"
           v-model="subscriptionsInfo.currency"
           clearable
-          placeholder="请选择币种"
+          :placeholder="$t('home.column_coin_tip')"
         >
           <el-option
             v-for="item in payTypes"
@@ -949,25 +1016,27 @@
         </el-select>
       </div>
       <div class="price_tips">
-        此价格默认订阅时长为12个月，订阅者可自行选择1、3、6、9、12个月订阅时长
+        {{ $t('home.price_tip') }}
       </div>
       <el-input
         class="margin-top-10"
         type="textarea"
         :rows="2"
-        placeholder="请输入专栏介绍"
+        :placeholder="$t('home.intro_tip')"
         v-model="subscriptionsInfo.introduction"
       >
       </el-input>
       <div style="margin-top: 20px">
-        <div style="margin-bottom: 10px">专栏发文权限：</div>
-        <el-radio v-model="subscriptionsInfo.radio" label="self">自己</el-radio>
-        <el-radio v-model="subscriptionsInfo.radio" label="all"
-          >所有人</el-radio
-        >
+        <div style="margin-bottom: 10px">{{ $t('home.auth_tip') }}</div>
+        <el-radio v-model="subscriptionsInfo.radio" label="self">{{
+          $t('home.self')
+        }}</el-radio>
+        <el-radio v-model="subscriptionsInfo.radio" label="all">{{
+          $t('home.all')
+        }}</el-radio>
       </div>
       <div style="margin-top: 20px">
-        <div style="margin-bottom: 10px">专栏封面：</div>
+        <div style="margin-bottom: 10px">{{ $t('home.column_picture') }}</div>
         <el-upload
           class="avatar-uploader"
           :show-file-list="false"
@@ -985,14 +1054,16 @@
 
       <span slot="footer" class="dialog-footer create-footer">
         <div class="rule">
-          专栏规则： 第一个专栏免费 第二个专栏20busd 第三个及以上80busd
+          {{ $t('home.column_rule') }}
         </div>
-        <el-button @click="handleSubscriptionsClose">取 消</el-button>
+        <el-button @click="handleSubscriptionsClose">{{
+          $t('home.cancel')
+        }}</el-button>
         <el-button
           class="sub_confirm"
           type="primary"
           @click="submitSubscriptions"
-          >确 定</el-button
+          >{{ $t('home.confirm') }}</el-button
         >
       </span>
     </el-dialog>
@@ -1055,7 +1126,7 @@ export default {
     return {
       searchUserColumn: [],
       articlePermlinkList: [],
-      articlePostType: '公开',
+      articlePostType: '',
       articleStyleObj: {},
       applyDialogVisible: false,
       radio: '',
@@ -1197,11 +1268,11 @@ export default {
       columnK: 0,
       selectedMenu: '',
       subscribeTimeList: [
-        { label: '1个月', value: 1 },
-        { label: '3个月', value: 3 },
-        { label: '6个月', value: 6 },
-        { label: '9个月', value: 9 },
-        { label: '12个月', value: 12 }
+        { label: this.$t('home.one_month'), value: 1 },
+        { label: this.$t('home.three_month'), value: 3 },
+        { label: this.$t('home.six_month'), value: 6 },
+        { label: this.$t('home.nine_month'), value: 9 },
+        { label: this.$t('home.twelve_month'), value: 12 }
       ],
       subscribeMonth: 12,
       TiLength: 0,
@@ -1225,7 +1296,6 @@ export default {
     this.$EventBus.$on('update-article', this.updateArticle)
     this.updateColumn()
     this.getHotColumns()
-    this.getCollectList()
   },
   async mounted() {
     if (screen.width < 500) {
@@ -1241,6 +1311,9 @@ export default {
   },
   methods: {
     decrypt,
+    goLink() {
+      this.$EventBus.$emit('changeTab', { name: 'auction' }, 2)
+    },
     async getUserColumn(name) {
       this.searchUserColumn = []
       const res = await searchColumn({
@@ -1257,8 +1330,6 @@ export default {
       const result = this.formatPostArticle(res)
       // console.log(result)
       this.articleList.unshift(result)
-      // console.log(this.articleList)
-      // this.$forceUpdate()
     },
     editLimt(time) {
       const utcTimeStr = time
@@ -1297,7 +1368,7 @@ export default {
                 if (
                   this.contentRefList['content' + item.permlink] &&
                   this.contentRefList['content' + item.permlink].offsetHeight >
-                    600
+                    200
                 ) {
                   item.isArticleActive = true
                 } else {
@@ -1367,29 +1438,13 @@ export default {
       const res = await add2Column(params)
 
       if (res && res.success === 'ok') {
-        this.$message.success('续费成功！')
+        this.$message.success(this.$t('home.reread_success'))
         window.reload()
       } else {
         this.$message.error(res.error)
       }
     },
-    async getCollectList() {
-      const loginType = localStorage.getItem('login-type')
-      //       const articleOtherInfo = await getVote({
-      //   permlink: val.permlink,
-      //   steem_id: userInfo.steem_id
-      // })
-      // const favorites = await getfavorites({
-      //   id:
-      //     loginType === 'password'
-      //       ? this.userInfo.user
-      //       : this.userInfo.eth_account,
-      //   token: getToken()
-      // })
-      // if (favorites && favorites.success === 'ok') {
-      //   this.favorites = favorites.data
-      // }
-    },
+
     privateManage() {
       this.activeMenuIndex = 2
       this.activeMenuId = ''
@@ -1436,7 +1491,7 @@ export default {
           })
           if (res && res.success === 'ok') {
             this.articleList.unshift(this.articleList.splice(i, 1)[0])
-            this.$message.success('置顶成功')
+            this.$message.success(this.$t('home.top_success'))
           }
           break
         case '-':
@@ -1452,7 +1507,7 @@ export default {
             type
           })
           if (res2 && res2.success === 'ok') {
-            this.$message.success('取消置顶成功')
+            this.$message.success(this.$t('home.cancel_top_success'))
           }
 
           break
@@ -1468,7 +1523,7 @@ export default {
             type
           })
           if (res3 && res3.success === 'ok') {
-            this.$message.success('删除成功')
+            this.$message.success(this.$t('home.delete_success'))
           }
 
           break
@@ -1480,7 +1535,8 @@ export default {
           })
 
           if (res1 && res1.success === 'ok') {
-            this.$message.success('收藏成功')
+            this.$message.success(this.$t('home.favorite_success'))
+            v.favorites = true
             this.articleList.forEach((item) => {
               if (item.permlink === this.currentDetail.permlink) {
                 this.currentDetail.isFavorite = true
@@ -1496,7 +1552,8 @@ export default {
           })
 
           if (result && result.success === 'ok') {
-            this.$message.success('取消收藏成功')
+            this.$message.success(this.$t('home.cancel_favorite_success'))
+            v.favorites = false
             this.articleList.forEach((item) => {
               if (item.permlink === this.currentDetail.permlink) {
                 this.currentDetail.isFavorite = false
@@ -1519,7 +1576,7 @@ export default {
         res.data.forEach((item, i) => {
           arr.push({
             value: item,
-            isHot: Math.floor(Math.random() * res.data.length) === i
+            isHot: false
           })
         })
         this.hotColumns = arr
@@ -1531,44 +1588,33 @@ export default {
       const token = getToken()
       const loginType = localStorage.getItem('login-type')
       let res = {}
-      if (type === 'article') {
-        res = await vote2({
-          id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
-          steem_id: userInfo.steem_id,
-          token,
-          permlink: [v.author, v.permlink]
-        })
+      res = await vote({
+        id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
+        steem_id: userInfo.steem_id,
+        token,
+        permlink: [v.author, v.permlink]
+      })
+
+      if (res && res.success === 'ok') {
+        if (res.type === '+') {
+          this.$message.success(this.$t('home.star_success'))
+          if (v.list) {
+            v.list.push(userInfo.steem_id)
+          }
+          v.isPraised = true
+          v.voteNum += 1
+        } else if (res.type === '-') {
+          this.$message.success(this.$t('home.cancel_star_success'))
+          if (v.list) {
+            v.list = v.list.filter((item) => {
+              return item !== userInfo.steem_id
+            })
+          }
+          v.isPraised = false
+          v.voteNum -= 1
+        }
       } else {
-        res = await vote({
-          id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
-          steem_id: userInfo.steem_id,
-          token,
-          permlink: [v.author, v.permlink]
-        })
-      }
-      if (type === 'detail') {
-        if (res && res.success === 'ok') {
-          if (res.type === '+') {
-            this.$message.success('点赞成功')
-            v.isPraised = true
-            v.voteNum += 1
-          } else if (res.type === '-') {
-            this.$message.success('取消点赞成功')
-            v.isPraised = false
-            v.voteNum -= 1
-          }
-        } else {
-          this.$message.success('网络问题！请重试')
-        }
-      }
-      if (type === 'article') {
-        if (res && res.success === 'ok') {
-          if (res.type === '+') {
-            this.$message.success('点赞成功')
-            v.isPraised = true
-            v.voteNum += 1
-          }
-        }
+        this.$message.success(this.$t('home.network_error_tip'))
       }
     },
     showIcon(v) {
@@ -1692,15 +1738,8 @@ export default {
     },
     onEditorReady() {
       console.log(this.$refs.myQuillEditor.quill)
-      // valueChanges.subscribe
-      // document.querySelector('.ql-formats .ql-uploadImg').innerText = '图'
-      // document.querySelector('.ql-formats .ql-uploadFile').innerText = '文';
     },
-    // onEditorBlur() {},
-    // onEditorFocus() {},
-    // onUploadImage() {
-    //   console.log('触发上传')
-    // },
+
     async removeOut() {
       const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
@@ -1712,7 +1751,7 @@ export default {
       const res = await removeColumn(params)
       // console.log(res)
       if (res && res.success === 'ok') {
-        this.$message.success('退出专栏成功')
+        this.$message.success(this.$t('home.exit_column_tip'))
       } else {
         this.$message.error(res.error)
       }
@@ -1765,27 +1804,29 @@ export default {
       }
     },
     getArticlesData() {
-      const self = this
-      //为了保证兼容性，这里取两个值，哪个有值取哪一个
-      //scrollTop就是触发滚轮事件时滚轮的高度
-      const scrollTop =
-        document.documentElement.scrollTop || document.body.scrollTop
+      if (this.$route.path === '/home') {
+        const self = this
+        //为了保证兼容性，这里取两个值，哪个有值取哪一个
+        //scrollTop就是触发滚轮事件时滚轮的高度
+        const scrollTop =
+          document.documentElement.scrollTop || document.body.scrollTop
 
-      const containerHeight = document.body.offsetHeight
-      // 获取滚动容器的滚动高度
-      const containerScrollHeight = document.body.scrollHeight
-      const debounceLoad = debounce(self.loadMoreArticle)
-      // console.log(
-      //   'scrollTop : ' + scrollTop,
-      //   'containerHeight : ' + containerHeight,
-      //   'containerScrollHeight : ' + containerScrollHeight
-      // )
-      // 如果滚动到了底部且没有正在加载数据，则调用 loadMore 方法加载新的数据
-      // console.log(containerHeight + scrollTop, containerScrollHeight)
-      if (containerHeight + scrollTop >= containerScrollHeight) {
-        // 标记正在加载数据
-        console.log('调用了')
-        debounceLoad() // 加载数据
+        const containerHeight = document.body.offsetHeight
+        // 获取滚动容器的滚动高度
+        const containerScrollHeight = document.body.scrollHeight
+        const debounceLoad = debounce(self.loadMoreArticle)
+        // console.log(
+        //   'scrollTop : ' + scrollTop,
+        //   'containerHeight : ' + containerHeight,
+        //   'containerScrollHeight : ' + containerScrollHeight
+        // )
+        // 如果滚动到了底部且没有正在加载数据，则调用 loadMore 方法加载新的数据
+        // console.log(containerHeight + scrollTop, containerScrollHeight)
+        if (containerHeight + scrollTop >= containerScrollHeight) {
+          // 标记正在加载数据
+          // console.log('调用了')
+          debounceLoad() // 加载数据
+        }
       }
     },
     formatPostArticle(res) {
@@ -1799,6 +1840,7 @@ export default {
 
       res.isPraised = false
       res.isFavorite = false
+      console.log(this.favorites)
       if (this.favorites.length > 0) {
         this.favorites.forEach((ele) => {
           if (ele.permlink[1] === res.permlink) {
@@ -1809,7 +1851,7 @@ export default {
         })
       }
 
-      console.log(res)
+      // console.log(res)
       return res
     },
     async getArticlesByColumn(v, i, type, loadType) {
@@ -1935,8 +1977,10 @@ export default {
 
             element.isShowDetailDialog = false
 
-            element.isPraised = false
-            element.isFavorite = false
+            element.isPraised = element.voted
+            element.isFavorite = element.favorites
+            // element.isFavorite = false
+            element.voteNum = element.vote
             if (this.favorites.length > 0) {
               this.favorites.forEach((ele) => {
                 if (ele.permlink[1] === element.permlink) {
@@ -2024,31 +2068,31 @@ export default {
       const reg = /^[+]{0,1}(\d+)$/
 
       if (!reg.test(price)) {
-        this.$message.error('价格请输入正整数！')
+        this.$message.error(this.$t('home.price_integar_tip'))
         return
       }
       if (!name.trim()) {
-        this.$message.error('请输入专栏名称！')
+        this.$message.error(this.$t('home.column_name_tip'))
         return
       }
       if (!price) {
-        this.$message.error('请选择专栏价格！')
+        this.$message.error(this.$t('home.price_select_tip'))
         return
       }
       if (!currency) {
-        this.$message.error('请选择币种！')
+        this.$message.error(this.$t('home.coin_select_tip'))
         return
       }
       if (!introduction.trim()) {
-        this.$message.error('请输入专栏简介！')
+        this.$message.error(this.$t('home.intro_tip'))
         return
       }
       if (!radio) {
-        this.$message.error('请选择发文权限！')
+        this.$message.error(this.$t('home.post_auth_tip'))
         return
       }
       if (!image) {
-        this.$message.error('请选择专栏封面！')
+        this.$message.error(this.$t('home.column_picture_select_tip'))
         return
       }
 
@@ -2071,10 +2115,10 @@ export default {
 
       if (res && res.success === 'ok') {
         this.updateColumn()
-        this.$message.success('创建专栏成功')
+        this.$message.success(this.$t('home.create_success_tip'))
         this.handleSubscriptionsClose()
       } else {
-        this.$message.error('创建失败！请重新创建专栏')
+        this.$message.error(this.$t('home.create_fail_tip'))
         this.handleSubscriptionsClose()
       }
     },
@@ -2097,7 +2141,7 @@ export default {
         reply
       } = v
       const loading = Loading.service({
-        text: '加载中...',
+        text: this.$t('message.loading'),
         spinner: 'el-icon-loading ElementLoading',
         background: 'rgba(0, 0, 0, 0.2)'
       })
@@ -2114,7 +2158,7 @@ export default {
         loading.close()
       }
       if (res && res.success === 'ok') {
-        this.$message.success('回复成功')
+        this.$message.success(this.$t('home.reply_success'))
         console.log(this.currentDetail, this.selectedMenu, decrypt(body))
         if (type === 'ownReply') {
           // console.log(new Date().toLocaleString(), body)
@@ -2155,7 +2199,7 @@ export default {
 
         // v.reply = ''
       } else {
-        this.$message.error('发文失败！ 请重新发文')
+        this.$message.error(this.$t('home.post_fail_tip'))
         this.closeEditor()
 
         // v.reply = ''
@@ -2181,7 +2225,7 @@ export default {
         }
       })
       if (!flag) {
-        this.$message.warning('您未拥有该专栏编辑权限！')
+        this.$message.warning(this.$t('home.have_no_right'))
         return
       }
       this.showEditor = true
@@ -2223,14 +2267,22 @@ export default {
           imgHtml += `<img src="${item.url}" preview=${this.fileList[0].url} style="object-fit:cover;background:#f5f6f7;margin-left:5px;margin-bottom:5px;" class="img-container" width="150px" height="150px" alt="" />`
         })
       }
+      if (!this.articlePostType) {
+        this.$message.error(this.$t('home.select_post_status_tip'))
+        return
+      }
+      if (!(this.postContent + imgHtml)) {
+        this.$message.error(this.$t('home.post_content_tip'))
+        return
+      }
       // console.log(this.content, this.content.length)
       // console.log(imgHtml)
       const loading = Loading.service({
-        text: '加载中...',
+        text: this.$t('message.loading'),
         spinner: 'el-icon-loading ElementLoading',
         background: 'rgba(0, 0, 0, 0.2)'
       })
-      console.log(this.articlePostType)
+      // console.log(this.articlePostType)
       const res = await post({
         type: 'post',
         id: loginType === 'password' ? userInfo.user : userInfo.eth_account,
@@ -2240,7 +2292,7 @@ export default {
         subscriptions_name: this.selectedColumn || '',
         permlink: '',
         title: this.titleText,
-        public: this.articlePostType === '公开' ? 'yes' : 'no',
+        public: this.articlePostType === this.$t('home.public') ? 'yes' : 'no',
         body: this.postContent + imgHtml
       })
 
@@ -2248,7 +2300,7 @@ export default {
         console.log(res.result, this.articleList)
         this.closeEditor()
 
-        this.$message.success('发文成功')
+        this.$message.success(this.$t('home.post_success'))
         res.result.json_metadata = this.eval(res.result.json_metadata)
         if (
           res.result.json_metadata.encrypted &&
@@ -2261,11 +2313,16 @@ export default {
 
         res.result.isEditReply = false
         res.result.reply = ''
-
-        res.result.isShowDetailDialog = false
-
         res.result.isPraised = false
         res.result.isFavorite = false
+        res.result.favorites = false
+        res.result.voteNum = 0
+        res.result.vote = 0
+        res.result.list = []
+        res.result.isShowDetailDialog = false
+
+        // res.result.isPraised = false
+        // res.result.isFavorite = false
         if (this.favorites.length > 0) {
           this.favorites.forEach((ele) => {
             if (ele.permlink[1] === res.result.permlink) {
@@ -2290,7 +2347,7 @@ export default {
 
         // }, 1000)
       } else {
-        this.$message.error('发文失败！ 请重新发文')
+        this.$message.error(this.$t('home.post_fail_tip'))
         this.closeEditor()
       }
       this.TiLength = 0
@@ -2333,7 +2390,7 @@ export default {
       })
       const obj = res.result[val.author + '/' + val.permlink]
       // const commentList = this.getReply(obj, res.result)
-      const commentList = []
+      let commentList = []
       const result = Object.assign(res.result, {})
       // 判断评论和正文
       for (const key in result) {
@@ -2351,7 +2408,7 @@ export default {
         comment.reply = ''
         comment.child = []
       })
-
+      commentList = commentList.reverse()
       // const commentTree = this.toTree(commentList, val.author)
       // console.log(commentList[0].parent_author)
       const commentTree = this.buildTreeWithCycle(commentList, val.author)
@@ -2465,6 +2522,9 @@ export default {
   //   width: 200% !important;
   //   height: 200% !important;
   // }
+}
+.deleteColor {
+  color: #f57f59;
 }
 .write_container {
   margin-left: 100px;
@@ -2581,11 +2641,42 @@ export default {
   top: 90px;
 }
 .recommend_wrapper {
-  min-height: 500px;
+  min-height: 600px;
   background-color: #fff;
   margin-left: 20px;
   width: 250px;
+  position: relative;
+  border-radius: 10px;
+  .hot_auction {
+    position: absolute;
+    bottom: 20px;
+    left: 18px;
+    cursor: pointer;
+    display: flex;
+    color: #dd2222;
+    margin-top: 20px;
+    align-items: center;
+    .hot_text {
+      font-size: 18px;
+      font-weight: bold;
+      width: auto;
+      display: inline-block;
+      // animation: shake 4s ease-in-out infinite;
+    }
+  }
 }
+@keyframes shake {
+  0% {
+    font-size: 14px;
+  }
+  50% {
+    font-size: 16px;
+  }
+  100% {
+    font-size: 14px;
+  }
+}
+
 .sub_confirm {
   background: #4fbdd4;
 }
@@ -2694,7 +2785,7 @@ export default {
 }
 ::v-deep .reply_input {
   width: calc(100% - 76px);
-  padding-left: 56px;
+  padding-left: 30px;
   padding-right: 20px;
 }
 .topic-detail::-webkit-scrollbar {
@@ -2775,7 +2866,6 @@ export default {
 .operation-icon {
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
   justify-content: flex-end;
   .like {
     display: flex;
@@ -2783,12 +2873,25 @@ export default {
     width: 40px !important;
     .vote-num {
       margin-left: 5px;
-      color: #4fbdd4;
+      color: #fda956;
+    }
+  }
+  .like-outer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    vertical-align: middle;
+    margin-right: 20px;
+    // width: 25px !important;
+    .vote-num {
+      display: inline-block;
+      margin-left: 5px;
+      color: #fda956;
     }
   }
 }
 .topic-detail-panel .operation-icon div {
-  width: 21px;
+  width: auto;
   height: 21px;
   margin-right: 30px;
   cursor: pointer;
@@ -2813,7 +2916,7 @@ export default {
 .post-container {
   margin-bottom: 5px;
   background-color: #fff;
-  border-radius: 4px;
+  border-radius: 10px;
   padding-top: 20px;
 }
 .post-topic-head {
@@ -2875,10 +2978,10 @@ export default {
 }
 .post-article {
   position: relative;
-  // padding: 2px 8px;
+  padding: 0 10px;
   margin-left: 16px;
   height: 30px;
-  width: 60px;
+  min-width: 60px;
   line-height: 30px;
   border-radius: 10px;
   text-align: center;
@@ -2893,7 +2996,9 @@ export default {
 }
 .remove-article {
   margin-left: 16px;
+  padding: 0 10px;
   height: 30px;
+  min-width: 80px;
   line-height: 30px;
   border-radius: 10px;
   text-align: center;
@@ -2901,7 +3006,6 @@ export default {
   font-weight: 700;
   color: #8b8e9d;
   cursor: pointer;
-  width: 80px;
 }
 .remove-article:hover {
   background: #4fbdd4;
@@ -2911,7 +3015,7 @@ export default {
   margin-top: 10px;
   background: #fff;
   margin-bottom: 10px;
-  border-radius: 4px;
+  border-radius: 10px;
 }
 
 .topic-container .header-container {
@@ -2991,7 +3095,7 @@ export default {
   overflow-y: auto;
 }
 .hide_content {
-  max-height: 600px;
+  max-height: 200px;
   overflow-y: hidden;
 }
 .talk-content-container {
@@ -3011,18 +3115,20 @@ export default {
 
 .topic-container .operation-icon-container {
   position: relative;
-  padding-left: 56px;
+  padding-left: 30px;
   padding-right: 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 15px 0;
+  margin-top: 15px;
+  margin-bottom: 10px;
 }
 .topic-container .operation-icon-container .operation-icon {
   display: flex;
 }
 .topic-container .operation-icon-container .operation-icon div {
-  width: 21px;
+  vertical-align: middle;
+  width: auto;
   height: 21px;
   margin-right: 30px;
   cursor: pointer;
@@ -3031,7 +3137,7 @@ export default {
   color: #c5c6cb;
   font-size: 12px;
   position: absolute;
-  right: 100px;
+  right: 120px;
 }
 .topic-container .operation-icon-container .details-container {
   display: flex;
@@ -3050,6 +3156,19 @@ export default {
   /* background-image: url(assets/resources/sprite@1x.fb4b9063d37e9252.png); */
   /* background-position: -297px -197px; */
 }
+.praisedPeople {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  padding-left: 30px;
+  padding-right: 20px;
+  margin-bottom: 20px;
+  .vote_people {
+    color: #567895;
+    cursor: pointer;
+  }
+}
+
 .create-topic-container {
   position: fixed;
   width: 100%;
@@ -3254,6 +3373,7 @@ export default {
   border-radius: 2px;
   color: #fff;
   cursor: pointer;
+  font-size: 12px;
 }
 
 .topic-detail .content .topic-detail-panel {
@@ -3325,9 +3445,7 @@ export default {
   height: 40px;
   padding: 0 30px 0 24px;
 }
-.wbpro-side-card7 .top {
-  color: #f26d5f;
-}
+
 .wbpro-side-card7 .rank {
   position: absolute;
   top: 50%;
@@ -3336,7 +3454,11 @@ export default {
   -webkit-transform: translateY(-50%);
   transform: translateY(-50%);
   text-align: center;
-  color: #ff8200;
+  color: #ffad33;
+  font-weight: bold;
+}
+.wbpro-side-card7 .rank-top {
+  color: #f93a3a;
 }
 .wbpro-side-card7 .wbpro-textcut {
   margin-right: 10px;

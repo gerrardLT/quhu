@@ -14,31 +14,9 @@ import MD5 from 'MD5'
 import { getUser, changeUser } from '@/api/user/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { Loading } from 'element-ui'
-
+import i18n from '@/language'
 Vue.use(Vuex)
-// {
-//   user,
-//   user_name,
-//   email,
-//   eth_account,
-//   steem_id,
-//   invitedId,
-//   integral,
-//   token_num,
-//   lock_token,
-//   auth_info,
-//   spread_award_info,
-//   auction_info,
-//   buy_article,
-//   essay_info,
-//   countdown,
-//   prepare_info,
-//   goods,
-//   status,
-//   phone,
-//   avatar,
-//   activation
-// }
+
 const store = new Vuex.Store({
   state: {
     userInfo: {
@@ -50,7 +28,7 @@ const store = new Vuex.Store({
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
       state.userInfo = Object.assign({}, userInfo, data)
       localStorage.setItem('quhu-userInfo', JSON.stringify(state.userInfo))
-      this.$message.success('修改成功！')
+      this.$message.success(i18n.t('message.change_success'))
     },
     SET_USERINFO (state, data) {
       const userInfo = Object.assign(state.userInfo, data)
@@ -107,7 +85,7 @@ const store = new Vuex.Store({
         data: changeInfo
       }
       const loading = Loading.service({
-        text: '加载中...',
+        text: i18n.t('message.loading'),
         spinner: 'el-icon-loading ElementLoading',
         background: 'rgba(0, 0, 0, 0.2)'
       })

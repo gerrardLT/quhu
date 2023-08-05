@@ -20,7 +20,7 @@
             <el-input
               prefix-icon="el-icon-user"
               v-model="loginForm.user"
-              placeholder="请输入账号"
+              :placeholder="$t('login.input_account')"
               clearable
             ></el-input>
           </el-form-item>
@@ -30,25 +30,31 @@
               show-password
               prefix-icon="el-icon-lock"
               v-model="loginForm.password"
-              placeholder="请输入密码"
+              :placeholder="$t('login.input_password')"
               clearable
             ></el-input>
           </el-form-item>
           <el-form-item prop="inviteCode" class="invite">
             <el-input v-if="invitedId" v-model="invitedId" disabled>
-              <template slot="prepend">邀请码：</template>
+              <template slot="prepend">{{ $t('login.invitedId') }}：</template>
             </el-input>
           </el-form-item>
         </div>
         <!-- 按钮 -->
         <el-form-item class="btns">
           <el-button class="btn" type="primary" @click="passwordLogin">{{
-            userType === 'login' ? '登 录' : '注 册'
+            userType === 'login' ? $t('login.login') : $t('login.register')
           }}</el-button>
           <div class="login_area">
-            <div class="wallet_login" @click="walletLogin">钱包登录</div>
+            <div class="wallet_login" @click="walletLogin">
+              {{ $t('login.wallet_login') }}
+            </div>
             <div class="register_btn" @click="toggle">
-              {{ userType === 'login' ? '注册账号' : '账号登录' }}
+              {{
+                userType === 'login'
+                  ? $t('login.register_account')
+                  : $t('login.account_login')
+              }}
             </div>
           </div>
         </el-form-item>
@@ -58,7 +64,7 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
+import { mapActions } from 'Vuex'
 import MD5 from 'MD5'
 import { login, register } from '@/api/store/login'
 import { setToken } from '@/utils/auth'
@@ -70,6 +76,9 @@ export default {
     if (this.invitedId) {
       this.userType = 'register'
     }
+    const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
+
+    this.loginForm.user = (userInfo && userInfo.user) || ''
   },
   data() {
     return {
@@ -89,7 +98,7 @@ export default {
           {
             pattern: '/^[a-zA-Z0-9_-]{4,16}$/',
             required: true,
-            message: '请输入正确的账号',
+            message: this.$t('login.input_correct_account'),
             trigger: 'blur'
           }
         ]
@@ -111,12 +120,12 @@ export default {
       const self = this
       if (window.ethereum) {
         if (typeof window.ethereum.isMetaMask === 'undefined') {
-          self.$message.error('请安装 MetaMask！')
+          self.$message.error(self.$t('login.install') + ' MetaMask！')
         } else {
           window.ethereum
             .request({ method: 'eth_requestAccounts' })
             .catch(function (reason) {
-              self.$message.error('出错了！' + reason.message)
+              self.$message.error(self.$t('login.error') + reason.message)
             })
             .then(function (accounts) {
               // console.log('account', accounts)
@@ -128,7 +137,9 @@ export default {
                 accounts[0],
                 (err, res) => {
                   if (err) {
-                    self.$message.error('签名失败，因为' + err.message)
+                    self.$message.error(
+                      self.$t('login.sign_error') + err.message
+                    )
                   } else {
                     console.log('签名后的数据：', res)
                     login({
@@ -136,7 +147,7 @@ export default {
                       data: [accounts[0], res]
                     }).then((data) => {
                       setToken(data.token)
-                      self.$message.success('登录成功！')
+                      self.$message.success(self.$t('login.login_success'))
                       localStorage.setItem('login-type', 'eth')
                       self.$store.dispatch('getUserInfo', {
                         id: accounts[0],
@@ -149,7 +160,7 @@ export default {
             })
         }
       } else {
-        self.$message.error('请安装 MetaMask！')
+        self.$message.error(self.$t('login.install') + ' MetaMask！')
       }
     },
     passwordLogin() {
@@ -161,18 +172,16 @@ export default {
         const pwdReg =
           /(?!^(\d+|[a-zA-Z]+|[~!@#$%^&*()_.]+)$)^[\w~!@#$%^&*()_.]{8,16}$/
         if (user === '') {
-          this.$message.error('请输入账号')
+          this.$message.error(this.$t('login.input_account'))
         } else if (password === '') {
-          this.$message.error('请输入密码')
+          this.$message.error(this.$t('login.input_password'))
         } else if (!reg.test(user)) {
-          this.$message.error('请输入2到16位字符的汉字，字母，数字，下划线')
+          this.$message.error(this.$t('login.account_tip'))
         } else if (!pwdReg.test(password)) {
-          this.$message.error(
-            '密码应为字母，数字，特殊符号(~!@#$%^&*()_.)，两种及以上组合，8-16位字符串，如：xxxxx@abc'
-          )
+          this.$message.error(this.$t('login.password_tip'))
         } else {
           const loading = Loading.service({
-            text: '加载中...',
+            text: this.$t('login.login_success'),
             spinner: 'el-icon-loading ElementLoading',
             background: 'rgba(0, 0, 0, 0.2)'
           })
@@ -186,7 +195,7 @@ export default {
               }
               setToken(data.token)
               localStorage.setItem('login-type', 'password')
-              this.$message.success('登录成功！')
+              this.$message.success(this.$t('login.login_success'))
               this.$store.dispatch('getUserInfo', {
                 id: user,
                 token: data.token
@@ -210,7 +219,7 @@ export default {
                   user,
                   password
                 }
-                this.$message.success('注册成功！')
+                this.$message.success(this.$t('login.register_success'))
                 this.toggle()
               }
             })

@@ -3,7 +3,7 @@
     <div
       class="tips animate__animated animate__zoomIn animate__slow animate__delay-3s"
     >
-      恭喜合成了{{ cardName }}!
+      {{ $t('animation.exchange') }}{{ cardName }}!
     </div>
     <canvas id="canvas"></canvas>
     <div
@@ -15,7 +15,7 @@
       class="back animate__animated animate__zoomIn animate__slow animate__delay-3s"
       @click="back"
     >
-      返&nbsp;回
+      {{ $t('animation.goback') }}
     </div>
   </div>
 </template>

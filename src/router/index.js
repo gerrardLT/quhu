@@ -30,6 +30,7 @@ import About from '../views/my/About.vue'
 import Invite from '../views/my/Invite.vue'
 import MySpecial from '../views/my/MySpecial.vue'
 import Introduce from '../views/my/Introduce.vue'
+import Mining from '../views/mining/Mining.vue'
 import { getToken } from '@/utils/auth'
 
 Vue.use(VueRouter)
@@ -70,6 +71,11 @@ const routes = [
       {name: 'inventory', path: '/inventory', component: Inventory,
       meta: { isTabPage: true }}
     ]
+  },
+  {
+    path: '/mining',
+    component: Mining,
+    meta: { isTabPage: true }
   },
   {
     path: '/auction',
@@ -132,7 +138,7 @@ router.beforeEach((to, from, next) => {
     Vue.prototype.$isTabPage = false
   }
 
-console.log(window._axiosPromiseArr)
+// console.log(window._axiosPromiseArr)
   window._axiosPromiseArr.forEach((ele, index) => {
     ele.cancel()
     delete window._axiosPromiseArr[index]

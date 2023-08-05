@@ -4,7 +4,10 @@
       <div class="bg rotate"></div>
       <div class="open-has">
         <h3 class="title-open">
-          恭喜你，<br />成功领取<span class="user"></span>
+          {{ $t('treasure.congratulations') }} <br />{{
+            $t('treasure.get_success')
+          }}
+          <span class="user"></span>
         </h3>
         <div class="mod-chest">
           <div class="chest-close show">
@@ -21,7 +24,9 @@
                   x 500
                 </div>
                 <div class="func">
-                  <button class="chest-btn">查看详情并提取</button>
+                  <button class="chest-btn">
+                    {{ $t('treasure.view_and_get') }}
+                  </button>
                 </div>
               </div>
             </div>
@@ -29,11 +34,13 @@
         </div>
       </div>
       <div class="open-none" style="display: none">
-        <h3>你来晚啦，下次早点吧！</h3>
+        <h3>{{ $t('treasure.too_late') }}</h3>
         <div class="mod-chest">
           <div class="chest-open show"></div>
         </div>
-        <div class="func"><button class="chest-btn">查看领取详情</button></div>
+        <div class="func">
+          <button class="chest-btn">{{ $t('treasure.view_detail') }}</button>
+        </div>
       </div>
     </div>
   </div>

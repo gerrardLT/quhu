@@ -9,25 +9,33 @@
 <template>
   <div class="wallet">
     <div class="operation">
-      <el-button type="success" around @click="showTrade">兑换</el-button>
-      <el-button type="danger" around @click="showAddress">充值</el-button>
-      <el-button type="primary" around @click="withdrawalVisible = true"
-        >提现</el-button
-      >
-      <el-button type="warning" around @click="ask">提现查询</el-button>
+      <el-button type="success" around @click="showTrade">{{
+        $t('voucher.exchange')
+      }}</el-button>
+      <el-button type="danger" around @click="showAddress">{{
+        $t('voucher.recharge')
+      }}</el-button>
+      <el-button type="primary" around @click="withdrawalVisible = true">{{
+        $t('voucher.withdrawal')
+      }}</el-button>
+      <el-button type="warning" around @click="ask">{{
+        $t('voucher.withdrawal_query')
+      }}</el-button>
     </div>
     <div class="check">
-      <span @click="dialogFormVisible = true">充值还未到账？点我查询</span>
+      <span @click="dialogFormVisible = true">{{
+        $t('voucher.query_tip')
+      }}</span>
     </div>
     <div v-show="isShowAddress" class="address-container">
-      <span>转入地址（bsc链）：{{ address }}</span>
+      <span>{{ $t('voucher.to_address') }}：{{ address }}</span>
       <i class="el-icon-copy-document" @click="copy(address, $event)"></i>
     </div>
     <div class="coin-list">
       <div class="coin-header">
-        <div class="coin-title">币种资产</div>
-        <div class="balance-title">余额</div>
-        <div class="balance-title">锁仓额</div>
+        <div class="coin-title">{{ $t('voucher.coin_property') }}</div>
+        <div class="balance-title">{{ $t('voucher.balance') }}</div>
+        <div class="balance-title">{{ $t('voucher.locked') }}</div>
       </div>
       <div class="coin">
         <div class="coin-item" v-for="item in balanceList" :key="item.id">
@@ -38,7 +46,7 @@
       </div>
     </div>
     <div class="cost-list">
-      <div class="cost-title">交易记录</div>
+      <div class="cost-title">{{ $t('voucher.exchange_report') }}</div>
       <el-table
         :data="tableData"
         stripe
@@ -46,14 +54,28 @@
         height="300"
         v-loading="tableLoading"
       >
-        <el-table-column prop="timestamp" label="日期" width="240">
+        <el-table-column
+          prop="timestamp"
+          :label="$t('voucher.exchange_report')"
+          width="240"
+        >
         </el-table-column>
-        <el-table-column prop="orderid" label="订单号" width="180">
+        <el-table-column
+          prop="orderid"
+          :label="$t('voucher.order_number')"
+          width="180"
+        >
         </el-table-column>
-        <el-table-column prop="type" label="商品名"> </el-table-column>
-        <el-table-column prop="token" label="支付币种" width="180">
+        <el-table-column prop="type" :label="$t('voucher.order_number')">
         </el-table-column>
-        <el-table-column prop="amount" label="支付金额"> </el-table-column>
+        <el-table-column
+          prop="token"
+          :label="$t('voucher.pay_currency')"
+          width="180"
+        >
+        </el-table-column>
+        <el-table-column prop="amount" :label="$t('voucher.pay_amount')">
+        </el-table-column>
       </el-table>
     </div>
     <div class="record-page">
@@ -69,24 +91,26 @@
     </div>
     <el-dialog
       :close-on-click-modal="false"
-      title="充值自助查询"
+      :title="$t('voucher.recharge_query')"
       :visible.sync="dialogFormVisible"
     >
       <el-form :model="checkForm">
-        <el-form-item label="hash值" label-width="120">
+        <el-form-item label="hash" label-width="120">
           <el-input
             v-model="checkForm.hash"
             autocomplete="off"
-            placeholder="请输入hash"
+            :placeholder="$t('voucher.input_hash')"
           ></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="handleCheck">点击查询</el-button>
+        <el-button type="primary" @click="handleCheck">{{
+          $t('voucher.click_query')
+        }}</el-button>
       </div>
     </el-dialog>
     <el-dialog
-      title="提现"
+      :title="$t('voucher.withdrawal')"
       :close-on-click-modal="false"
       :visible.sync="withdrawalVisible"
       width="30%"
@@ -95,13 +119,13 @@
         <el-input
           v-model="withdrawalAmount"
           autocomplete="off"
-          placeholder="请输入提现数量"
+          :placeholder="$t('voucher.withdrawal_tip1')"
         ></el-input>
         <el-select
           class="price_select"
           v-model="withdrawalCoin"
           clearable
-          placeholder="请选择提现币种"
+          :placeholder="$t('voucher.withdrawal_tip2')"
           @change="$forceUpdate()"
         >
           <el-option
@@ -117,11 +141,11 @@
       <el-input
         v-model="withdrawalAddress"
         autocomplete="off"
-        placeholder="请输入提现地址（bsc链）"
+        :placeholder="$t('voucher.withdrawal_tip3')"
       ></el-input>
       <span slot="footer" class="withdrawal-dialog-footer">
         <div class="show-withdrawal">
-          <div>到账数量</div>
+          <div>{{ $t('voucher.received') }}</div>
           <div>
             {{
               withdrawalAmount === '0' || withdrawalAmount === ''
@@ -129,19 +153,24 @@
                 : withdrawalAmount - withdrawalCoinNumber + withdrawalCoin
             }}
           </div>
-          <div>网络手续费{{ withdrawalCoinNumber + withdrawalCoin }}</div>
+          <div>
+            {{ $t('voucher.net_cost')
+            }}{{ withdrawalCoinNumber + withdrawalCoin }}
+          </div>
         </div>
-        <el-button @click="withdrawalVisible = false">取 消</el-button>
+        <el-button @click="withdrawalVisible = false">{{
+          $t('voucher.cancel')
+        }}</el-button>
         <el-button
           :disabled="withdrawalAmount === '0' || withdrawalAmount === ''"
           type="primary"
           @click="spend"
-          >提现</el-button
+          >{{ $t('voucher.withdrawal') }}</el-button
         >
       </span>
     </el-dialog>
     <el-dialog
-      title="提现查询"
+      :title="$t('voucher.withdrawal_query')"
       :close-on-click-modal="false"
       :visible.sync="searchVisible"
       width="80%"
@@ -154,21 +183,49 @@
           height="600"
           v-loading="searchLoading"
         >
-          <el-table-column prop="timestamp" label="日期" width="160">
+          <el-table-column
+            prop="timestamp"
+            :label="$t('voucher.date')"
+            width="160"
+          >
           </el-table-column>
-          <el-table-column prop="orderid" label="订单号" width="150">
+          <el-table-column
+            prop="orderid"
+            :label="$t('voucher.order_number')"
+            width="150"
+          >
           </el-table-column>
-          <el-table-column prop="steem_id" label="用户id" width="100">
+          <el-table-column
+            prop="steem_id"
+            :label="$t('voucher.user_id')"
+            width="100"
+          >
           </el-table-column>
-          <el-table-column prop="token" label="币种" width="60">
+          <el-table-column prop="token" :label="$t('voucher.coin')" width="60">
           </el-table-column>
-          <el-table-column prop="nums" label="数量" width="100">
+          <el-table-column
+            prop="nums"
+            :label="$t('voucher.quantity')"
+            width="100"
+          >
           </el-table-column>
-          <el-table-column prop="pay" label="支付状态" width="240">
+          <el-table-column
+            prop="pay"
+            :label="$t('voucher.pay_status')"
+            width="240"
+          >
           </el-table-column>
-          <el-table-column prop="types" label="审核状态" width="80">
+          <el-table-column
+            prop="types"
+            :label="$t('voucher.audit_status')"
+            width="80"
+          >
           </el-table-column>
-          <el-table-column prop="address" label="提现地址"> </el-table-column>
+          <el-table-column
+            prop="address"
+            :label="$t('voucher.withdrawal_address')"
+          >
+          </el-table-column>
         </el-table>
         <el-pagination
           @current-change="handleCurrentChangeSearch"
@@ -185,11 +242,11 @@
     <el-dialog
       :visible.sync="coinTradeVisible"
       :close-on-click-modal="false"
-      title="兑换"
+      :title="$t('voucher.exchange')"
       width="50%"
       custom-class="trade_dialog"
       v-loading="tradeLoading"
-      element-loading-text="拼命加载中"
+      :element-loading-text="$t('voucher.loading')"
       element-loading-spinner="el-icon-loading"
       element-loading-background="rgba(0, 0, 0, 0.8)"
     >
@@ -217,14 +274,6 @@
 
           <div class="from_input">
             <div class="amount_container">
-              <!-- <el-form-item prop="exchangeAmount">
-                <el-input
-                  class="amount_input"
-                  style="marginleft: 0"
-                  v-model="tradeForm.exchangeAmount"
-                  placeholder="请输入兑换数量"
-                />
-              </el-form-item> -->
               <el-input
                 class="amount_input"
                 v-model="tradeForm.exchangeAmount"
@@ -232,7 +281,7 @@
               ></el-input>
               <div>
                 <span
-                  >余额：
+                  >{{ $t('voucher.balance') }}：
                   {{ userInfo.token_num[tradeForm.exchangeCurrency] }}</span
                 >
               </div>
@@ -288,8 +337,11 @@
           </div>
         </div>
         <div class="operation_btns">
-          <el-button type="primary" :disabled="validateAmount" @click="exchange"
-            >兑换</el-button
+          <el-button
+            type="primary"
+            :disabled="validateAmount"
+            @click="exchange"
+            >{{ $t('voucher.exchange') }}</el-button
           >
         </div>
       </el-form>
@@ -336,10 +388,18 @@ export default {
       },
       rules: {
         exchangeCurrency: [
-          { required: true, message: '请选择兑换币种', trigger: 'change' }
+          {
+            required: true,
+            message: this.$t('voucher.coin_tip'),
+            trigger: 'change'
+          }
         ],
         convertCurrency: [
-          { required: true, message: '请选择可兑换币种', trigger: 'change' }
+          {
+            required: true,
+            message: this.$t('voucher.coin_tip'),
+            trigger: 'change'
+          }
         ]
       },
       currencyBalances: {
@@ -455,7 +515,7 @@ export default {
         amount: this.tradeForm.exchangeAmount
       })
       if (res && res.success === 'ok') {
-        this.$message.success('兑换成功！')
+        this.$message.success(this.$t('voucher.exchange_success'))
       }
 
       this.tradeLoading = false
@@ -555,7 +615,7 @@ export default {
     },
     async handleCheck() {
       if (!this.checkForm.hash.trim()) {
-        this.$message.error('请输入hash值！')
+        this.$message.error(this.$t('voucher.hash_tip'))
         return
       }
       const userInfo = this.userInfo
@@ -569,9 +629,9 @@ export default {
       const res = await check(params)
       if (res && res.success === 'ok') {
         if (res.type === false) {
-          this.$message.error('失败：记录已存在')
+          this.$message.error(this.$t('voucher.fail_tip'))
         } else {
-          this.$message.success('成功：已记录')
+          this.$message.success(this.$t('voucher.success_tip'))
         }
       }
       this.dialogFormVisible = false
@@ -621,15 +681,15 @@ export default {
       const reg = /^[+]{0,1}(\d+)$/
 
       if (!reg.test(Number(this.withdrawalAmount))) {
-        this.$message.error('请输入正确数量！')
+        this.$message.error(this.$t('voucher.quantity_tip'))
         return
       }
       if (!this.withdrawalAddress.trim()) {
-        this.$message.error('请输入提现地址！')
+        this.$message.error(this.$t('voucher.withdrawal_tip3'))
         return
       }
       const loading = Loading.service({
-        text: '加载中...',
+        text: this.$t('message.loading'),
         spinner: 'el-icon-loading ElementLoading',
         background: 'rgba(0, 0, 0, 0.2)'
       })
@@ -645,7 +705,7 @@ export default {
       }
       const res = await withdrawal(params)
       if (res && res.success === 'ok') {
-        this.$message.success('提现成功！')
+        this.$message.success(this.$t('voucher.withdrawal_success'))
         this.withdrawalVisible = false
         this.withdrawalCoin = 'ofc'
         this.withdrawalAmount = ''

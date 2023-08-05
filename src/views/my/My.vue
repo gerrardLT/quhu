@@ -14,7 +14,8 @@
                 fill: '#087790',
                 width: '15px',
                 height: '15px',
-                marginRight: '5px'
+                marginRight: '5px',
+                verticalAlign: '-1px'
               }"
             >
               <use :xlink:href="'#icon-' + item.icon" rel="external nofollow" />
@@ -67,33 +68,33 @@ export default {
       navList: [
         {
           id: 1,
-          icon: 'ze-balance-o',
-          title: '我的钱包',
-          url: '/voucher'
+          icon: 'semiDesign-semi-icons-mail',
+          title: this.$t('my.help'),
+          url: '/introduce'
         },
         {
           id: 2,
-          icon: 'ze-flower-o',
-          title: '活跃度',
-          url: '/activation'
+          icon: 'ze-balance-o',
+          title: this.$t('my.my_wallet'),
+          url: '/voucher'
         },
         {
           id: 3,
-          icon: 'ze-setting-o',
-          title: '用户设置',
-          url: '/setting'
+          icon: 'ze-flower-o',
+          title: this.$t('my.activation'),
+          url: '/activation'
         },
         {
           id: 4,
-          icon: 'yqm',
-          title: '邀请好友',
-          url: '/invite'
+          icon: 'ze-setting-o',
+          title: this.$t('my.setting'),
+          url: '/setting'
         },
         {
           id: 5,
-          icon: 'semiDesign-semi-icons-mail',
-          title: '帮助与客服',
-          url: '/introduce'
+          icon: 'yqm',
+          title: this.$t('my.invite'),
+          url: '/invite'
         }
       ]
     }
@@ -101,6 +102,47 @@ export default {
   methods: {
     goBack() {
       this.$router.go(-1)
+    }
+  },
+  watch: {
+    '$i18n.locale': {
+      handler(newVal, oldVal) {
+        console.log(newVal, oldVal)
+        this.navList = [
+          {
+            id: 1,
+            icon: 'semiDesign-semi-icons-mail',
+            title: this.$t('my.help'),
+            url: '/introduce'
+          },
+          {
+            id: 2,
+            icon: 'ze-balance-o',
+            title: this.$t('my.my_wallet'),
+            url: '/voucher'
+          },
+          {
+            id: 3,
+            icon: 'ze-flower-o',
+            title: this.$t('my.activation'),
+            url: '/activation'
+          },
+          {
+            id: 4,
+            icon: 'ze-setting-o',
+            title: this.$t('my.setting'),
+            url: '/setting'
+          },
+          {
+            id: 5,
+            icon: 'yqm',
+            title: this.$t('my.invite'),
+            url: '/invite'
+          }
+        ]
+      },
+      deep: true,
+      immediate: true
     }
   }
 }
@@ -147,7 +189,8 @@ export default {
     height: 60px;
     line-height: 60px;
     position: relative;
-    min-width: 120px;
+    min-width: 130px;
+
     cursor: pointer;
     font-size: 14px;
   }

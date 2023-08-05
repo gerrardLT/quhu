@@ -6,10 +6,7 @@
     <el-row class="special_row">
       <el-col :span="18" class="my_special" v-loading="specialLoading">
         <div class="special_top">
-          <span>我的专栏</span>
-          <!-- <el-button class="learnMore" @click="learnMoreSpecial" type="text"
-            >查看更多</el-button
-          > -->
+          <span>{{ $t('introduce.my_column') }}</span>
         </div>
         <div v-if="specialList.length > 0" class="special_content">
           <div
@@ -17,26 +14,29 @@
             :key="i"
             class="special_item"
             @click="goColumnDetail(item)"
-            title="点击查看专栏详情"
+            :title="$t('introduce.view_tip')"
           >
             <img :src="item.image" class="image" alt="" />
             <div class="right">
               <div class="title">{{ item.title }}</div>
-              <div class="members">共{{ item.member }}人</div>
+              <div class="members">
+                {{ $t('introduce.in_all') }} {{ item.member }}
+                {{ $t('introduce.person') }}
+              </div>
             </div>
           </div>
         </div>
-        <el-empty v-else description="暂无数据"></el-empty>
+        <el-empty v-else :description="$t('introduce.no_data')"></el-empty>
       </el-col>
       <el-col :span="6" class="collect" v-loading="favoriteLoading">
-        <div class="collect_title">我的收藏</div>
+        <div class="collect_title">{{ $t('introduce.my_collect') }}</div>
         <div v-if="favorites.length > 0" class="collect_content">
           <div
             class="collect_item"
             v-for="(item, i) in favorites"
             :key="i"
-            @click="goLink(item, i)"
-            title="点击跳转文章详情"
+            @click="goArticle(item)"
+            :title="$t('introduce.to_detail_tip')"
           >
             <!-- <img :src="userInfo.avatar" alt="" class="collect_left" /> -->
             <div class="collect_right">
@@ -45,17 +45,14 @@
             </div>
           </div>
         </div>
-        <el-empty v-else description="暂无数据"></el-empty>
+        <el-empty v-else :description="$t('introduce.no_data')"></el-empty>
       </el-col>
     </el-row>
     <el-row>
       <el-col :span="18" v-loading="trailLoading">
         <el-card class="box-card">
           <div slot="header">
-            <span>最新动态</span>
-            <!-- <el-button style="float: right; padding: 3px 0" type="text"
-              >查看更多</el-button
-            > -->
+            <span>{{ $t('introduce.new_info') }}</span>
           </div>
           <div v-if="trailList.length > 0" class="trail_container">
             <div
@@ -63,7 +60,7 @@
               :key="i"
               class="trail_item"
               @click="goLink(v, i)"
-              title="点击跳转文章详情"
+              :title="$t('introduce.to_detail_tip')"
             >
               <img :src="userInfo.avatar" alt="" />
               <div class="content">
@@ -74,14 +71,35 @@
             </div>
           </div>
 
-          <el-empty v-else description="暂无数据"></el-empty>
+          <el-empty v-else :description="$t('introduce.no_data')"></el-empty>
         </el-card>
       </el-col>
       <el-col :span="6" class="report" v-loading="reportLoading">
-        <div class="report_title">站内通知</div>
-        <div v-if="reportList.length > 0" class="report_content">
-          <div v-for="(v, i) in reportList" :key="i" class="report_item">
-            <div class="report_right">
+        <div class="report_title">{{ $t('introduce.inform') }}</div>
+        <div class="tag_container">
+          <el-tag
+            type="info"
+            :class="{ tag: true, active: activeTagIndex === 0 }"
+            @click="toggleTag('upvote', 0)"
+            >{{ $t('introduce.star') }}</el-tag
+          >
+          <el-tag
+            type="info"
+            :class="{ tag: true, active: activeTagIndex === 1 }"
+            @click="toggleTag('replie', 1)"
+            >{{ $t('introduce.reply') }}</el-tag
+          >
+          <el-tag
+            type="info"
+            :class="{ tag: true, active: activeTagIndex === 2 }"
+            @click="toggleTag('mentions', 2)"
+            >{{ $t('introduce.mention') }}</el-tag
+          >
+        </div>
+
+        <div v-if="filterReportList.length > 0" class="report_content">
+          <div v-for="(v, i) in filterReportList" :key="i" class="report_item">
+            <div class="report_right" @click="goLink(v, i, 'trail')">
               <div class="title" :title="v.title">{{ v.title }}</div>
               <div style="color: #c0c0c0">
                 {{ transformTime(Number(v.timestamp)) }}
@@ -90,7 +108,7 @@
             </div>
           </div>
         </div>
-        <el-empty v-else description="暂无数据"></el-empty>
+        <el-empty v-else :description="$t('introduce.no_data')"></el-empty>
       </el-col>
     </el-row>
   </div>
@@ -144,6 +162,9 @@ export default {
     })
     if (reports && reports.success === 'ok') {
       this.reportList = reports.data
+      this.filterReportList = this.reportList.filter((item) => {
+        return item.type === 'upvote'
+      })
       console.log(this.reportList)
     }
     this.reportLoading = false
@@ -175,7 +196,9 @@ export default {
       trailList: [],
       favorites: [],
       reportList: [],
+      filterReportList: [],
       currentInfo: {},
+      activeTagIndex: 0,
       specialLoading: false,
       favoriteLoading: false,
       trailLoading: false,
@@ -183,13 +206,28 @@ export default {
     }
   },
   methods: {
+    toggleTag(type, index) {
+      this.activeTagIndex = index
+      this.filterReportList = this.reportList.filter((ele) => {
+        return ele.type === type
+      })
+    },
+    goArticle(data) {
+      // window.open(
+      //   window.location.host +
+      //     `/api/article?author=${data.permlink[0]}&permlink=${data.permlink[1]}`
+      // )
+      window.open(
+        `https://app.onlyfun.city/api/article?author=${data.permlink[0]}&permlink=${data.permlink[1]}`
+      )
+    },
     copy(e) {
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
       clipboard(
         'https://app.onlyfun.city/login?invitedId=' + userInfo.invitedId,
         e
       )
-      this.$message.success('复制成功！')
+      this.$message.success(this.$t('introduce.copy_success'))
     },
     goColumnDetail(v) {
       // console.log(v)
@@ -200,12 +238,23 @@ export default {
         }
       })
     },
-    goLink(v, i) {
-      this.$EventBus.$emit('changeTab', { name: 'home' }, 0, {
-        author: v.permlink[0],
-        permlink: v.permlink[1],
-        isShowDetailDialog: true
-      })
+    goLink(v, i, type) {
+      console.log(v, i)
+      if (type === 'trail') {
+        if (v.type === 'replie') {
+          this.$EventBus.$emit('changeTab', { name: 'home' }, 0, {
+            author: v.perlink[0],
+            permlink: v.perlink[1],
+            isShowDetailDialog: true
+          })
+        }
+      } else {
+        this.$EventBus.$emit('changeTab', { name: 'home' }, 0, {
+          author: type === 'trail' ? v.perlink[0] : v.permlink[0],
+          permlink: type === 'trail' ? v.perlink[1] : v.permlink[1],
+          isShowDetailDialog: true
+        })
+      }
     },
     learnMoreSpecial() {
       this.$EventBus.$emit('changeTab', { name: 'home' }, 0)
@@ -272,7 +321,26 @@ export default {
 .trail_container {
   overflow: auto;
 }
-
+.tag_container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  .tag {
+    margin-left: 0;
+    cursor: pointer;
+    height: 20px;
+    line-height: 20px;
+  }
+  .tag:hover {
+    color: #087790;
+    border-color: #087790;
+  }
+  .active {
+    color: #087790;
+    border-color: #087790;
+  }
+}
 .special_row {
   .my_special {
     padding: 10px 20px;
@@ -434,7 +502,6 @@ export default {
   overflow: auto;
   .report_content {
     height: calc(100% - 19px);
-    padding-top: 10px;
     .report_item {
       height: 50px;
       display: flex;
@@ -581,7 +648,8 @@ export default {
 .tag {
   margin-left: 20px;
   border-radius: 20px;
-  width: 50px;
+  min-width: 50px;
+  max-width: 100px;
   height: 24px;
   text-align: center;
   font-size: 14px;

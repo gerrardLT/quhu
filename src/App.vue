@@ -11,6 +11,13 @@
     <!-- 路由占位符 -->
     <router-view> </router-view>
     <Tabs v-if="isTabP"></Tabs>
+    <el-switch
+      class="language"
+      v-model="langValue"
+      :active-text="active_text"
+      :inactive-text="inactive_text"
+      @change="translate"
+    />
   </div>
 </template>
 
@@ -36,10 +43,19 @@ export default {
     window.addEventListener('beforeunload', () => {
       sessionStorage.setItem('store', JSON.stringify(this.$store.state))
     })
+    this.setSwitch()
   },
   mounted() {
     if (!this.isTabP) {
       this.$refs.app.style.paddingTop = 0
+    }
+  },
+  data() {
+    return {
+      langValue: false,
+      lang: '',
+      active_text: '',
+      inactive_text: ''
     }
   },
   computed: {
@@ -47,7 +63,27 @@ export default {
       return this.$route.meta.isTabPage
     }
   },
-  methods: {},
+  methods: {
+    setSwitch() {
+      this.active_text =
+        navigator.language === 'zh' || navigator.language === 'zh-CN'
+          ? 'en'
+          : '中文'
+      this.inactive_text =
+        navigator.language === 'zh' || navigator.language === 'zh-CN'
+          ? '中文'
+          : 'en'
+      this.lang =
+        navigator.language === 'zh' || navigator.language === 'zh-CN'
+          ? 'zh'
+          : 'en'
+      this.$i18n.locale = this.lang
+    },
+    translate() {
+      this.lang = this.lang === 'zh' || this.lang === 'zh-CN' ? 'en' : 'zh'
+      this.$i18n.locale = this.lang
+    }
+  },
   watch: {
     isTabP: {
       handler(newVal, oldVal) {
@@ -66,4 +102,14 @@ export default {
 }
 </script>
 
-<style></style>
+<style>
+.language {
+  position: absolute;
+  right: 20px;
+  top: 30px;
+  z-index: 1000;
+}
+/* ::v-deep .el-switch__label.is-active {
+  color: #087790;
+} */
+</style>

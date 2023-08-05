@@ -33,8 +33,8 @@ module.exports = {
         }
       },
       '/steem': {
-        // target: 'https://node.onlyfun.city',
-        target: 'https://api.justyy.com',
+        target: 'https://app.onlyfun.city/api',
+        // target: 'https://api.justyy.com',
         changeOrigin: true,
         pathRewrite: {
           '/steem': ''
@@ -95,7 +95,7 @@ module.exports = {
         symbolId: 'icon-[name]'
       });
 
-      config
+    config
     .plugin('html')
     .tap(args => {
         args[0].title = 'onlyfun'
@@ -113,6 +113,7 @@ module.exports = {
       // 'window.Quill': 'quill/dist/quill.js',
       // 'Quill': 'quill/dist/quill.js'
     }])
+
   //   config.set('externals', {
   //     three: 'three',
   //     'vue-router': 'VueRouter',
@@ -200,6 +201,7 @@ module.exports = {
     } else {
       // 为开发环境修改配置
       config.mode = 'development'
+      config.devtool = "source-map"
     }
   }
 };

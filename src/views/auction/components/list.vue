@@ -1,7 +1,12 @@
 <template>
   <div>
-    <div class="list_container" v-if="auctionList.length>0">
-      <div v-for="item in auctionList" :key="item.title" class="auction-card animate__animated animate__zoomIn" @click="handleClick(item)">
+    <div class="list_container" v-if="auctionList.length > 0">
+      <div
+        v-for="item in auctionList"
+        :key="item.title"
+        class="auction-card animate__animated animate__zoomIn"
+        @click="handleClick(item)"
+      >
         <div class="auction-img">
           <img alt="image" :src="item.image" />
           <div class="auction-timer">
@@ -9,61 +14,84 @@
               <div>
                 <!-- <span id="hours1">12</span>H : <span id="minutes1">22</span>M :
               <span id="seconds1">56</span>S -->
-                <el-statistic v-if="item.end_time * 1000 > currentDate" :value="item.end_time * 1000" time-indices format="HH:mm:ss">
+                <el-statistic
+                  v-if="item.end_time * 1000 > currentDate"
+                  :value="item.end_time * 1000"
+                  time-indices
+                  format="HH:mm:ss"
+                >
                 </el-statistic>
                 <!-- <Countdown :end-time="item.end_time"></Countdown> -->
-                <div style="color: #303133" v-else>已过期</div>
+                <div style="color: #303133" v-else>
+                  {{ $t('auction_detail.expire') }}
+                </div>
               </div>
             </div>
           </div>
         </div>
         <div class="auction-content">
           <h3>
-            <router-link :to="{
-              path: '/auctiondetail',
-              query: {
-                author: item.permlink[0],
-                permlink: item.permlink[1]
-              }
-            }">{{ item.title }}</router-link>
+            <router-link
+              :to="{
+                path: '/auctiondetail',
+                query: {
+                  author: item.permlink[0],
+                  permlink: item.permlink[1]
+                }
+              }"
+              >{{ item.title }}</router-link
+            >
           </h3>
           <div class="author-price-area">
             <div class="author">
               <img :src="item.avatar" alt="" />
               <span class="name">by {{ item.author }} </span>
             </div>
-
           </div>
           <div class="author-current-price">
-            <span style="font-size: 14px; font-weight: 600; color: #696969">起拍价：</span>
+            <span style="font-size: 14px; font-weight: 600; color: #696969"
+              >{{ $t('auction_detail.start_price') }}：</span
+            >
             <div>
-              <span :title="item.starting_price">{{ item.starting_price }}</span><span> {{ item.coins }}</span>
+              <span :title="item.starting_price">{{ item.starting_price }}</span
+              ><span> {{ item.coins }}</span>
             </div>
           </div>
 
           <div class="author-current-price">
-            <span style="font-size: 14px; font-weight: 600; color: #696969">当前价：</span>
-            <span class="new-price">{{ item.new_price }} <span> {{ item.coins }}</span></span>
+            <span style="font-size: 14px; font-weight: 600; color: #696969"
+              >{{ $t('auction_detail.current_price') }}：</span
+            >
+            <span class="new-price"
+              >{{ item.new_price }} <span> {{ item.coins }}</span></span
+            >
           </div>
-          <div class="auction-card-bttm" v-if="item.end_time * 1000 > currentDate">
-            <router-link class="auction-bid-btn" :to="{
-              path: '/auctiondetail',
-              query: {
-                author: item.permlink[0],
-                permlink: item.permlink[1]
-              }
-            }">出价</router-link>
+          <div
+            class="auction-card-bttm"
+            v-if="item.end_time * 1000 > currentDate"
+          >
+            <router-link
+              class="auction-bid-btn"
+              :to="{
+                path: '/auctiondetail',
+                query: {
+                  author: item.permlink[0],
+                  permlink: item.permlink[1]
+                }
+              }"
+              >{{ $t('auction_detail.offer') }}</router-link
+            >
           </div>
         </div>
       </div>
     </div>
-    <el-empty v-else description="暂无数据"></el-empty>
+    <el-empty v-else :description="$t('auction_detail.no_data')"></el-empty>
   </div>
-
 </template>
 
 <script>
 import { transformTime } from '@/utils/tool'
+import { auction_info } from '@/api/auction/auction'
 export default {
   name: 'list',
   props: {
@@ -84,13 +112,17 @@ export default {
   },
   created() {
     this.getAuctionList()
-    this.initWebSocket()
+    if (this.scaleRadio === 1) {
+      this.initWebSocket()
+    }
   },
   mounted() {
     const self = this
     if (self.scaleRadio !== 1) {
       window.onload = window.onresize = function () {
-        document.querySelector('.list_container').style.zoom = self.scaleRadio
+        if (document.querySelector('.list_container')) {
+          document.querySelector('.list_container').style.zoom = self.scaleRadio
+        }
       }
     }
   },
@@ -107,7 +139,8 @@ export default {
     initWebSocket() {
       if (window.WebSocket) {
         const self = this
-        let ws = new WebSocket('wss://app.onlyfun.city/ws') // 建立连接
+        const hostname = window.location.hostname
+        let ws = new WebSocket('wss://' + hostname + '/ws') // 建立连接
         this.ws = ws
         // 服务器连接成功
         ws.onopen = function () {
@@ -162,10 +195,12 @@ export default {
       const res = await auction_info({
         tag: 'bid_onlyfun'
       })
-      console.log(res)
-      if (res && res.success === 'ok') {
-        this.auctionList = res.data
 
+      if (res && res.success === 'ok') {
+        let arr = res.data
+        arr.unshift(res.hot[0])
+        this.auctionList = arr
+        sessionStorage.setItem('hotList', JSON.stringify(res.hot))
         if (this.permlink && this.permlink.author) {
           this.auctionList = this.auctionList.filter((item) => {
             return item.permlink[0] !== this.permlink.author

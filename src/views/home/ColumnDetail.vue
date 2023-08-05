@@ -2,7 +2,11 @@
   <div>
     <div class="columnDetail_container">
       <div class="tool_bar">
-        <el-page-header @back="goBack" class="back" title="返回首页">
+        <el-page-header
+          @back="goBack"
+          class="go_back"
+          :title="$t('column_detail.go_back')"
+        >
         </el-page-header>
 
         <div class="share" v-if="isMyColumn">
@@ -10,7 +14,9 @@
           </Dropdown>
           <i
             class="el-icon-share share-icon"
-            :title="`点击复制${inviteType}链接`"
+            :title="`${$t('column_detail.click_copy')}${inviteType}${$t(
+              'column_detail.link'
+            )}`"
             @click="copyInviteCode($event)"
           ></i>
         </div>
@@ -44,11 +50,17 @@
             </div>
           </div>
           <div class="members">
-            <span>专栏成员数：{{ detail_info.member || 0 }}人</span>
+            <span
+              >{{ $t('column_detail.column_people') }}：{{
+                detail_info.member || 0
+              }}{{ $t('column_detail.person') }}</span
+            >
           </div>
           <div class="create_time">
             <span v-if="detail_info.time_stamp"
-              >专栏成立时间：{{ transformTime(detail_info.time_stamp) }}</span
+              >{{ $t('column_detail.create_time') }}：{{
+                transformTime(detail_info.time_stamp)
+              }}</span
             >
             <el-skeleton v-else :rows="1" />
           </div>
@@ -56,7 +68,7 @@
         <el-col
           :span="6"
           class="sub_image"
-          title="点击可修改专栏封面，请尽量上传方形图片，否则可能图片失真"
+          :title="$t('column_detail.picture_tip')"
         >
           <el-upload
             :action="actionUrl"
@@ -82,11 +94,17 @@
             </div>
           </div>
           <div class="members">
-            <span>专栏成员数：{{ detail_info.member || 0 }}人</span>
+            <span
+              >{{ $t('column_detail.column_people') }}：{{
+                detail_info.member || 0
+              }}{{ $t('column_detail.person') }}</span
+            >
           </div>
           <div class="create_time">
             <span v-if="detail_info.time_stamp"
-              >专栏成立时间：{{ transformTime(detail_info.time_stamp) }}</span
+              >{{ $t('column_detail.create_time') }}：{{
+                transformTime(detail_info.time_stamp)
+              }}</span
             >
             <el-skeleton v-else :rows="1" />
           </div>
@@ -100,9 +118,9 @@
           <div
             class="intro_title"
             @click="showIntro = !showIntro"
-            title="点击可修改专栏简介"
+            :title="$t('column_detail.intro_tip')"
           >
-            <span>专栏介绍 </span>
+            <span>{{ $t('column_detail.intro') }} </span>
             <svg
               :style="{
                 fill: '#087790',
@@ -119,7 +137,7 @@
             v-if="showIntro"
             type="textarea"
             :rows="2"
-            placeholder="请输入内容"
+            :placeholder="$t('column_detail.content_tip')"
             v-model="detail_info.introduction"
             @blur="showIntro = false"
           >
@@ -130,19 +148,19 @@
       <el-row type="flex" class="introduce" v-else>
         <el-col :span="24">
           <div class="intro_title">
-            <span>专栏介绍 </span>
+            <span>{{ $t('column_detail.intro') }} </span>
           </div>
           <div>{{ detail_info.introduction }}</div>
         </el-col>
       </el-row>
       <el-row class="set" v-if="isMyColumn">
         <div class="coinType common_set">
-          <el-tag>订阅本专栏所需币种</el-tag>
+          <el-tag>{{ $t('column_detail.coin_tip') }}</el-tag>
           <el-select
             class="price_select"
             v-model="detail_info.currency"
             clearable
-            placeholder="请选择币种"
+            :placeholder="$t('column_detail.select_coin')"
             @change="$forceUpdate()"
           >
             <el-option
@@ -155,44 +173,50 @@
           </el-select>
         </div>
         <div class="amount common_set">
-          <el-tag>订阅本专栏所需币种数</el-tag>
+          <el-tag>{{ $t('column_detail.coin_account_tip') }}</el-tag>
           <el-input
             style="width: 220px"
-            placeholder="请输入专栏价格"
+            :placeholder="$t('column_detail.input_column')"
             v-model="detail_info.price"
           >
           </el-input>
         </div>
         <div class="authority common_set">
-          <el-tag>专栏发文权限</el-tag>
+          <el-tag>{{ $t('column_detail.post_auth') }}</el-tag>
           <div class="radio">
-            <el-radio v-model="detail_info.allow" label="self">自己</el-radio>
-            <el-radio v-model="detail_info.allow" label="all">所有人</el-radio>
+            <el-radio v-model="detail_info.allow" label="self">{{
+              $t('column_detail.self')
+            }}</el-radio>
+            <el-radio v-model="detail_info.allow" label="all">{{
+              $t('column_detail.all')
+            }}</el-radio>
           </div>
         </div>
         <div class="public common_set">
-          <el-tag>是否公开专栏</el-tag>
+          <el-tag>{{ $t('column_detail.public_column') }}</el-tag>
           <div class="radio">
-            <el-radio v-model="detail_info.public" label="public"
-              >公开</el-radio
-            >
-            <el-radio v-model="detail_info.public" label="hide">隐藏</el-radio>
+            <el-radio v-model="detail_info.public" label="public">{{
+              $t('column_detail.public')
+            }}</el-radio>
+            <el-radio v-model="detail_info.public" label="hide">{{
+              $t('column_detail.hide')
+            }}</el-radio>
           </div>
         </div>
         <div class="save_container">
           <el-button class="save_btn" type="primary" @click="saveSet" round>
-            保存
+            {{ $t('column_detail.save') }}
           </el-button>
         </div>
       </el-row>
       <el-row class="set" v-else>
         <div class="subscribe_time common_set">
-          <el-tag>订阅时长（可叠加）</el-tag>
+          <el-tag>{{ $t('column_detail.subscribe_time') }}</el-tag>
           <el-select
             class="price_select"
             v-model="detail_info.month"
             clearable
-            placeholder="请选择订阅时长"
+            :placeholder="$t('column_detail.subscribe_time_tip')"
             @change="$forceUpdate()"
           >
             <el-option
@@ -207,7 +231,9 @@
         <div class="book">
           <div class="create_time" style="margin-bottom: 10px">
             <span v-if="!isMyColumn && expires && detail_info.price !== '0'">
-              订阅到期时间：{{ transformTime(expires) }}</span
+              {{ $t('column_detail.subscribe_end') }}：{{
+                transformTime(expires)
+              }}</span
             >
             <el-skeleton v-else :rows="1" />
           </div>
@@ -218,7 +244,7 @@
             @click="subscribe"
             round
           >
-            订阅（{{
+            {{ $t('column_detail.subscribe') }}（{{
               (detail_info.price === '0'
                 ? '0'
                 : keepThreeNum((detail_info.price / 12) * detail_info.month)) +
@@ -235,7 +261,7 @@
           @click="confirmVisible = true"
           round
         >
-          价格：{{
+          {{ $t('column_detail.price') }}：{{
             (detail_info.price === '0'
               ? '0'
               : keepThreeNum((detail_info.price / 12) * detail_info.month)) +
@@ -243,7 +269,7 @@
           }}
           <br />
           <br />
-          申请加入
+          {{ $t('column_detail.apply') }}
         </el-button>
         <el-button
           v-else
@@ -252,26 +278,28 @@
           @click="removeSub"
           round
         >
-          退出专栏
+          {{ $t('column_detail.exit') }}
         </el-button>
         <el-dialog
-          title="退出提示"
+          :title="$t('column_detail.exit_tip_text')"
           :visible.sync="removePopVisible"
           :close-on-click-modal="false"
           width="30%"
           center
           round
         >
-          <span
-            >当只有最后一位成员时退出专栏将自动解散。确认退出当前专栏吗？</span
-          >
+          <span>{{ $t('column_detail.exit_tip') }}</span>
           <span slot="footer" class="dialog-footer">
-            <el-button @click="removePopVisible = false">取 消</el-button>
-            <el-button type="primary" @click="remove">确 定</el-button>
+            <el-button @click="removePopVisible = false">{{
+              $t('column_detail.cancel')
+            }}</el-button>
+            <el-button type="primary" @click="remove">{{
+              $t('column_detail.confirm')
+            }}</el-button>
           </span>
         </el-dialog>
         <el-dialog
-          title="提示"
+          :title="$t('column_detail.tip')"
           :visible.sync="confirmVisible"
           width="30%"
           center
@@ -280,10 +308,12 @@
         >
           <span>{{ tips }} </span>
           <span slot="footer" class="dialog-footer">
-            <el-button @click="confirmVisible = false">取 消</el-button>
-            <el-button type="primary" @click="apply(inviteCode)"
-              >确 定</el-button
-            >
+            <el-button @click="confirmVisible = false">{{
+              $t('column_detail.cancel')
+            }}</el-button>
+            <el-button type="primary" @click="apply(inviteCode)">{{
+              $t('column_detail.confirm')
+            }}</el-button>
           </span>
         </el-dialog>
       </el-row>
@@ -333,7 +363,7 @@ export default {
   },
   data() {
     return {
-      inviteType: '分享',
+      inviteType: this.$t('column_detail.share'),
       inviteCode: '',
       subscribeType: '',
       confirmVisible: false,
@@ -352,16 +382,19 @@ export default {
         month: 12,
         public: true
       },
-      options: ['分享', '邀请'],
+      options: [
+        this.$t('column_detail.share'),
+        this.$t('column_detail.invite')
+      ],
       currentInfo: {},
       removePopVisible: false,
       isJoined: false,
       subscribeTimeList: [
-        { label: '1个月', value: 1 },
-        { label: '3个月', value: 3 },
-        { label: '6个月', value: 6 },
-        { label: '9个月', value: 9 },
-        { label: '12个月', value: 12 }
+        { label: this.$t('column_detail.one_month'), value: 1 },
+        { label: this.$t('column_detail.three_month'), value: 3 },
+        { label: this.$t('column_detail.six_month'), value: 6 },
+        { label: this.$t('column_detail.nine_month'), value: 9 },
+        { label: this.$t('column_detail.twelve_month'), value: 12 }
       ],
       expires: 0
     }
@@ -378,17 +411,19 @@ export default {
       let tip = ''
       const { inviteCode } = this.$route.query
       if (inviteCode) {
-        tip = '是否应邀加入该专栏？'
+        tip = this.$t('column_detail.apply_tip')
       } else {
         tip =
-          '确认花费' +
+          this.$t('column_detail.confirm_spend') +
           (this.detail_info.price === '0'
             ? '0'
             : this.keepThreeNum(
                 (this.detail_info.price / 12) * this.detail_info.month
               )) +
           this.detail_info.currency +
-          (this.subscribeType === 'again' ? '续订该专栏吗？' : '加入该专栏吗？')
+          (this.subscribeType === 'again'
+            ? this.$t('column_detail.read_column')
+            : this.$t('column_detail.apply_column'))
       }
       return tip
     }
@@ -400,9 +435,9 @@ export default {
       const loginType = localStorage.getItem('login-type')
       const subscriptions_name = this.$route.query.subName
       if (this.isMyColumn) {
-        if (this.inviteType === '邀请') {
+        if (this.inviteType === this.$t('column_detail.invite')) {
           const loading = Loading.service({
-            text: '加载中...',
+            text: this.$t('message.loading'),
             spinner: 'el-icon-loading ElementLoading',
             background: 'rgba(0, 0, 0, 0.2)'
           })
@@ -423,11 +458,11 @@ export default {
     },
     copyInviteCode(e) {
       const link =
-        this.inviteType === '分享'
+        this.inviteType === this.$t('column_detail.share')
           ? window.location.href
           : window.location.href + '&inviteCode=' + this.inviteCode
       clipboard(link, e)
-      this.$message.success('复制成功！')
+      this.$message.success(this.$t('column_detail.copy_success'))
     },
 
     subscribe() {
@@ -477,7 +512,7 @@ export default {
       const loginType = localStorage.getItem('login-type')
       const isLt2M = e.file.size / 1024 / 1024 < 2
       if (!isLt2M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!')
+        this.$message.error(this.$t('column_detail.avatar_tip'))
       }
       if (isLt2M) {
         let dataUrl = ''
@@ -563,16 +598,16 @@ export default {
       }
       // console.log(params)
       const loading = Loading.service({
-        text: '加载中...',
+        text: this.$t('message.loading'),
         spinner: 'el-icon-loading ElementLoading',
         background: 'rgba(0, 0, 0, 0.2)'
       })
       const res = await subscriptions(params)
 
       if (res && res.success === 'ok') {
-        this.$message.success('设置成功')
+        this.$message.success(this.$t('column_detail.set_success'))
       } else {
-        this.$message.error('设置失败！请重新设置')
+        this.$message.error(this.$t('column_detail.set_fail'))
       }
       if (loading) {
         loading.close()
@@ -594,7 +629,7 @@ export default {
       const res = await removeColumn(params)
       // console.log(res)
       if (res && res.success === 'ok') {
-        this.$message.success('退出专栏成功')
+        this.$message.success(this.$t('column_detail.exit_success_tip'))
       } else {
         this.$message.error(res.error)
       }
@@ -687,7 +722,7 @@ export default {
         params.invitedcode = inviteCode
       }
       const loading = Loading.service({
-        text: '加载中...',
+        text: this.$t('message.loading'),
         spinner: 'el-icon-loading ElementLoading',
         background: 'rgba(0, 0, 0, 0.2)'
       })
@@ -698,13 +733,13 @@ export default {
         if (res && res.success === 'ok') {
           const currentInfo = await this.getUser()
 
-          this.$message.success('订阅成功')
+          this.$message.success(this.$t('column_detail.read_success'))
         }
       } else {
         const res = await addColumn(params)
 
         if (res && res.success === 'ok') {
-          this.$message.success('加入专栏成功')
+          this.$message.success(this.$t('column_detail.apply_success'))
           this.$router.go(-1)
         }
       }
@@ -728,6 +763,7 @@ export default {
 .tool_bar {
   display: flex;
   justify-content: space-between;
+  margin-bottom: 10px;
   .share {
     height: 20px;
     cursor: pointer;
@@ -744,10 +780,20 @@ export default {
   width: 50px;
   padding: 0;
 }
-::v-deep .type_select .el-input__suffix {
+::v-deep .el-tag {
+  background-color: #54bcbd;
+  border-color: #54bcbd;
+  color: white;
 }
-.back {
-  margin-bottom: 20px;
+::v-deep .el-radio__input.is-checked + .el-radio__label {
+  color: #54bcbd;
+}
+::v-deep .el-radio__input.is-checked .el-radio__inner {
+  border-color: #54bcbd;
+  background: #54bcbd;
+}
+.go_back {
+  margin-bottom: 10px;
 }
 .columnDetail_container {
   padding: 20px 50px;
@@ -808,6 +854,8 @@ export default {
     margin-bottom: 20px;
     .intro_title {
       margin-bottom: 20px;
+      font-size: 18px;
+      font-weight: bold;
     }
   }
   .book {

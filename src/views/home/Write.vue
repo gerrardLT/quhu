@@ -6,11 +6,13 @@
           type="text"
           v-model="titleText"
           class="titie_text"
-          placeholder="请输入标题"
+          :placeholder="$t('write.title_tip')"
           maxlength="60"
           @input="inputTitle"
         />
-        <div class="limit">标题字数：{{ titleLength }}/60</div>
+        <div class="limit">
+          {{ $t('write.title_length') }}：{{ titleLength }}/60
+        </div>
       </div>
     </div>
     <quill-editor
@@ -30,14 +32,19 @@
         margin-top: 10px;
       "
     >
-      专栏发文后48H内可编辑和删除
+      {{ $t('write.post_tip') }}
     </div>
     <div class="footer">
       <el-select v-model="articlePostType" @change="$forceUpdate()">
-        <el-option label="公开" value="公开" />
-        <el-option label="仅自己可见" value="仅自己可见" />
+        <el-option :label="$t('write.public')" :value="$t('write.public')" />
+        <el-option
+          :label="$t('write.only_self')"
+          :value="$t('write.only_self')"
+        />
       </el-select>
-      <el-button @click="post" type="primary" class="btn">发布</el-button>
+      <el-button @click="post" type="primary" class="btn">{{
+        $t('write.post')
+      }}</el-button>
     </div>
     <el-upload
       :action="actionUrl"
@@ -66,7 +73,7 @@ export default {
   name: 'Write',
   data() {
     return {
-      articlePostType: '公开',
+      articlePostType: this.$t('write.public'),
       fileUpload: {},
       fileList: [],
       actionUrl: 'https://steemitimages.com/',
@@ -161,7 +168,7 @@ export default {
             }
           }
         },
-        placeholder: '请输入正文',
+        placeholder: this.$t('write.content_tip'),
         theme: 'snow'
       }
     }
@@ -307,7 +314,7 @@ export default {
       const loginType = localStorage.getItem('login-type')
       const selectedColumn = this.$route.query.selectedColumn
       const loading = Loading.service({
-        text: '加载中...',
+        text: this.$t('message.loading'),
         spinner: 'el-icon-loading ElementLoading',
         background: 'rgba(0, 0, 0, 0.2)'
       })
@@ -356,7 +363,7 @@ export default {
         subscriptions_name: selectedColumn,
         permlink: columnK ? [author, permlink] : '',
         title: this.titleText,
-        public: this.articlePostType === '公开' ? 'yes' : 'no',
+        public: this.articlePostType === this.$t('write.public') ? 'yes' : 'no',
         body: formatContent
       })
       if (res && res.success === 'ok') {
@@ -365,14 +372,14 @@ export default {
         this.$EventBus.$emit('update-article', res.result)
         setTimeout(() => {
           if (columnK) {
-            this.$message.success('编辑成功')
+            this.$message.success(this.$t('write.edit_success'))
           } else {
-            this.$message.success('发文成功')
+            this.$message.success(this.$t('write.post_success'))
           }
           this.$EventBus.$emit('changeTab', { name: 'home' }, 0)
         }, 1000)
       } else {
-        this.$message.error('发文失败！ 请重新发文')
+        this.$message.error(this.$t('write.post_fail'))
       }
       if (loading) {
         loading.close()

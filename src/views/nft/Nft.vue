@@ -27,7 +27,7 @@
           @click="connectWallet"
           @mouseover.native="handleMouseOver"
           class="connect_btn"
-          >{{ account || '连接钱包' }}</el-button
+          >{{ account || $t('nft.link_wallet') }}</el-button
         >
         <div
           class="logMenu"
@@ -125,7 +125,7 @@
                 </div>
                 <div class="second-services-content">
                   <h3>Connect Your <span>Wallet</span></h3>
-                  <p>连接你的钱包</p>
+                  <p>{{ $t('nft.link_your_wallet') }}</p>
                   <div class="star-icon">
                     <img src="img/bg/star-small-2.png" alt="star-small" />
                   </div>
@@ -143,7 +143,7 @@
                 </div>
                 <div class="second-services-content">
                   <h3>Select An <span>Quatity</span></h3>
-                  <p>选择你喜欢的支付方式</p>
+                  <p>{{ $t('nft.choose_pay') }}</p>
                   <div class="star-icon">
                     <img src="img/bg/star-small-2.png" alt="star-small" />
                   </div>
@@ -161,7 +161,7 @@
                 </div>
                 <div class="second-services-content">
                   <h3>Confirm <span>Transaction</span></h3>
-                  <p>签署你的交易.</p>
+                  <p>{{ $t('nft.sign_trade') }}</p>
                   <div class="star-icon">
                     <img src="img/bg/star-small-2.png" alt="star-small" />
                   </div>
@@ -179,7 +179,7 @@
                 </div>
                 <div class="second-services-content">
                   <h3>Receive Your <span>NFTs</span></h3>
-                  <p>获得你的NFT</p>
+                  <p>{{ $t('nft.get_nft') }}</p>
                   <div class="star-icon">
                     <img src="img/bg/star-small-2.png" alt="star-small" />
                   </div>
@@ -273,7 +273,7 @@
       </el-tooltip> -->
       <el-select
         v-model="mintCoin"
-        placeholder="请选择mint方式"
+        :placeholder="$t('nft.chosse_mint')"
         @change="$forceUpdate()"
       >
         <el-option
@@ -295,8 +295,12 @@
         </el-option>
       </el-select>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogMintVisible = false">取 消</el-button>
-        <el-button type="primary" @click="postMint">确 定</el-button>
+        <el-button @click="dialogMintVisible = false">{{
+          $t('nft.cancel')
+        }}</el-button>
+        <el-button type="primary" @click="postMint">{{
+          $t('nft.confirm')
+        }}</el-button>
       </span>
     </el-dialog>
     <!-- <el-image v-if="dialogImageUrlVisable" v-show="false" ref="elImage" :src="dialogImageUrl" :preview-src-list="[dialogImageUrl]"  fit="contain" >
@@ -342,33 +346,38 @@ export default {
       mintTypes: [
         {
           id: 0,
-          value: '3000OFC',
-          label: '成功率：60%'
+          value: '1BNB',
+          label: '100% ' + this.$t('nft.legendary_discount')
         },
         {
           id: 1,
-          value: '10POYS+1000OFC',
-          label: '成功率：60%'
+          value: '3000OFC',
+          label: this.$t('nft.rate') + '：60%'
         },
+        // {
+        //   id: 1,
+        //   value: '10POYS+1000OFC',
+        //   label: this.$t('nft.rate')+'：60%'
+        // },
         {
           id: 2,
           value: '2BUSD+100OFC',
-          label: '成功率：100%'
+          label: this.$t('nft.rate') + '：100%'
         },
         {
           id: 3,
           value: '0.01BNB+100OFC',
-          label: '成功率：100%'
+          label: this.$t('nft.rate') + '：100%'
         },
         {
           id: 4,
           value: '2BUSD+0.01BNB',
-          label: '成功率：100%'
+          label: this.$t('nft.rate') + '：100%'
         },
         {
           id: 5,
           value: '10POYS+2BUSD',
-          label: '成功率：100%'
+          label: this.$t('nft.rate') + '：100%'
         }
       ],
       sign: '',
@@ -469,7 +478,7 @@ export default {
           }
         )
       } else {
-        console.error('请安装MetaMask并启用以太坊提供程序')
+        console.error(this.$t('nft.metamask_tip'))
       }
     },
     async connectWallet() {
@@ -488,8 +497,8 @@ export default {
         }
       } else {
         // MetaMask未安装，或者未在浏览器中启用以太坊提供程序
-        console.error('请安装MetaMask并启用以太坊提供程序')
-        this.$message.error('请安装MetaMask!')
+        console.error(this.$t('nft.metamask_tip'))
+        this.$message.error(this.$t('nft.metamask_tip'))
       }
     },
     async openMint() {
@@ -504,9 +513,9 @@ export default {
           coin1 = 'ofc'
           coin2 = ''
           break
-        case '10POYS+1000OFC':
-          coin1 = 'poys'
-          coin2 = 'ofc'
+        case '1BNB':
+          coin1 = 'bnb'
+          coin2 = ''
           break
         case '2BUSD+100OFC':
           coin1 = 'busd'
@@ -542,7 +551,7 @@ export default {
       }
       const res = await mint(params)
       if (res && res.success === 'ok') {
-        this.$message.success('mint成功！')
+        this.$message.success(this.$t('nft.mint_success'))
         this.minted = true
         // this.mintCoin = ''
         this.nft_id = res.data.nft_id
@@ -556,7 +565,7 @@ export default {
     },
     async postMint() {
       if (this.mintCoin === '') {
-        this.$message.warning('请选择mint方式！')
+        this.$message.warning(this.$t('nft.choose_mint'))
         return
       }
       await this.getMetaData()
@@ -565,12 +574,12 @@ export default {
       const self = this
       if (window.ethereum) {
         if (typeof window.ethereum.isMetaMask === 'undefined') {
-          self.$message.error('请安装 MetaMask！')
+          self.$message.error(self.$t('nft.install') + ' MetaMask！')
         } else {
           window.ethereum
             .request({ method: 'eth_requestAccounts' })
             .catch(function (reason) {
-              self.$message.error('出错了！' + reason.message)
+              self.$message.error(self.$t('nft.error') + reason.message)
             })
             .then(function (accounts) {
               // console.log('account', accounts)
@@ -584,9 +593,8 @@ export default {
                 accounts[0],
                 (err, res) => {
                   if (err) {
-                    self.$message.error('签名失败，因为' + err.message)
+                    self.$message.error(self.$t('nft.sign_fail') + err.message)
                   } else {
-                    console.log('签名后的数据：', res)
                     self.sign = res
                     self.address = accounts[0]
                     self.mint()
@@ -596,12 +604,12 @@ export default {
             })
         }
       } else {
-        self.$message.error('请安装 MetaMask！')
+        self.$message.error(self.$t('nft.install') + ' MetaMask！')
       }
     },
     async getNft(params) {
       const loading = Loading.service({
-        text: '加载中...',
+        text: this.$t('message.loading'),
         spinner: 'el-icon-loading ElementLoading',
         background: 'rgba(0, 0, 0, 0.2)'
       })
@@ -654,6 +662,51 @@ export default {
       if (res && res.success === 'ok') {
         this.balanceAmount = res.data.token_num
       }
+    }
+  },
+  watch: {
+    '$i18n.locale': {
+      handler(newVal, oldVal) {
+        this.mintTypes = [
+          {
+            id: 0,
+            value: '1BNB',
+            label: '100% ' + this.$t('nft.legendary_discount')
+          },
+          {
+            id: 1,
+            value: '3000OFC',
+            label: this.$t('nft.rate') + '：60%'
+          },
+          // {
+          //   id: 1,
+          //   value: '10POYS+1000OFC',
+          //   label: this.$t('nft.rate')+'：60%'
+          // },
+          {
+            id: 2,
+            value: '2BUSD+100OFC',
+            label: this.$t('nft.rate') + '：100%'
+          },
+          {
+            id: 3,
+            value: '0.01BNB+100OFC',
+            label: this.$t('nft.rate') + '：100%'
+          },
+          {
+            id: 4,
+            value: '2BUSD+0.01BNB',
+            label: this.$t('nft.rate') + '：100%'
+          },
+          {
+            id: 5,
+            value: '10POYS+2BUSD',
+            label: this.$t('nft.rate') + '：100%'
+          }
+        ]
+      },
+      deep: true,
+      immediate: true
     }
   }
 }

@@ -19,6 +19,7 @@ import store from './store'
 import axios from 'axios'
 import Web3 from 'web3'
 import ElementUI from 'element-ui'
+import i18n from './language'
 import 'element-ui/lib/theme-chalk/index.css'
 // 引入quill-editor编辑器
 import VueQuillEditor from 'vue-quill-editor'
@@ -34,14 +35,18 @@ import 'vue-photo-preview/dist/skin.css'
 import 'animate.css';
 import "swiper/swiper.min.css"
 
+
 // 实现quill-editor编辑器拖拽上传图片
 Vue.use(VueQuillEditor)
 
 // 实现quill-editor编辑器调整图片尺寸
 
 Quill.register('modules/imageResize', ImageResize)
+
 Quill.register('modules/quillEmoji', quillEmoji)
+
 Vue.use(ElementUI)
+
 Vue.use(preview)
 
 Vue.prototype.Web3 = Web3
@@ -65,14 +70,8 @@ Vue.filter('dateFormat', function (originVal) {
   return `${y}-${m}-${d} ${hh}:${mm}:${ss}`
 })
 
-// new Vue({
-//   el: '#app',
-//   router,
-//   store, // 把store对象添加到vue实例上
-//   components: { App },
-//   template: '<App/>',
-// });
 new Vue({
+  i18n,
   router,
   store,
   render: h => h(App)

@@ -48,11 +48,11 @@
               @click="doReply(comment)"
             >
               <i class="el-icon-chat-square"></i>
-              回复
+              {{ $t('comment.reply') }}
             </div>
             <div class="reply-font" v-else @click="cancel(comment)">
               <i class="el-icon-chat-square"></i>
-              取消回复
+              {{ $t('comment.cancel_reply') }}
             </div>
           </div>
           <div v-if="comment.isEditReply">
@@ -140,7 +140,6 @@ export default {
   },
   components: {},
   mounted() {
-    console.log(this.comment)
     this.momentObj = moment()
     // this.roleType = this.$store.state.user.roleType
   },

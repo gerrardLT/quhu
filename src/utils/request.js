@@ -13,6 +13,7 @@ import baseUrl from '@/config/baseUrl'
 import { MessageBox, Loading, Message } from 'element-ui'
 import { getToken } from '@/utils/auth'
 import store from '@/store'
+import i18n from '@/language'
 const md5 = require('@/utils/md5.js')
 
 // console.log(md5('abcdef'))
@@ -79,27 +80,98 @@ service.interceptors.response.use((response) => {
   if (res.success && res.success === 'ok' || res.jsonrpc) {
     return res
   } else {
-    if (res.error_code === -1) { // 默认-1  只有为-1时才做轻提示
-      Message({
-        message: res.error,
-        type: 'warning',
-        duration: 5 * 1000
-      })
+    const errorCodeMap = {
+      500: 'unknown_error',
+      1001: 'token_expired',
+      1002: 'error_token',
+      1003: 'Cancel_Collection_Successfully',
+      1004: 'not_favorites',
+      1005: 'no_permissions',
+      1006: 'error_Address',
+      1007: 'error_obtaining_nft_information',
+      1008: 'nft_unlock',
+      1009: 'nFT_locked',
+      1010: 'balance_not_enough',
+      1011: 'confirmed_receipt',
+      1012: 'error_in_obtaining_auction_information',
+      1013: 'the_auction_hasnot_started_yet',
+      1014: 'Ended',
+      1015: 'Not_modifiable',
+      1016: 'No_one_won',
+      1017: 'lose_a_bid',
+      1018: 'Miss_subscriptions_name',
+      1019: 'Below_the_minimum_price',
+      1020: 'Has_been_opened',
+      1021: 'sixteen_NFTs_required',
+      1022: 'eighteen_NFTs_required',
+      1023: 'cast_tips',
+      1024: 'Requires_points',
+      1025: 'fragments_required',
+      1026: 'error_nonce',
+      1027: 'error_signature',
+      1028: 'NFT_Permission_check_error',
+      1029: 'Card_error_type1',
+      1030: 'Card_error_type2',
+      1031: 'Card_error_type3',
+      1032: 'Canceled',
+      1033: 'Below_minimum',
+      1034: 'Name_Repeated',
+      1035: 'Illegal_character',
+      1036: 'tags_error',
+      1037: 'No_permission',
+      1038: 'Over_words',
+      1039: 'Duplicate_Content',
+      1040: 'Duplicate_vote',
+      1041: 'No_Exit',
+      1042: 'month',
+      1043: 'error_invitedcode',
+      1044: 'subscriptions_free',
+      1045: 'user_exists',
+      1046: 'error_data',
+      1047: 'no_data',
+      1048: 'error_price',
+      1049: 'already_exists',
+      1050: 'error_username',
+      1051: 'no_user',
+      1052: 'Existing',
+      1053: 'user_has_been_registered',
+      1054: 'error_password',
+      1055: 'error_ip',
+      1056: 'ip_limit',
+    };
 
-      if(res.error ==='Token expired'){
-        setTimeout(() => {
-          store.dispatch('loginOutFalse')
-        }, 1000);
-      }
-    }
-    if (res.error_code === 500) { // 默认-1  只有为-1时才做轻提示
-      const message = '服务端错误'
-      Message({
-        message,
-        type: 'warning',
-        duration: 5 * 1000
-      })
-    }
+if(res.code === 1000){
+
+}else{
+  Message({
+    message: i18n.t('server.'+errorCodeMap[res.code]),
+    type: 'warning',
+    duration: 5 * 1000
+  })
+}
+
+
+    // if (res.code === -1) { // 默认-1  只有为-1时才做轻提示
+    //   Message({
+    //     message: res.error,
+    //     type: 'warning',
+    //     duration: 5 * 1000
+    //   })
+
+    //   if(res.error ==='Token expired'){
+    //     setTimeout(() => {
+    //       store.dispatch('loginOutFalse')
+    //     }, 1000);
+    //   }
+    // }
+    // if (res.code === 500) { // 默认-1  只有为-1时才做轻提示
+    //   const message = '服务端错误'
+    //   Message({
+    //     message,
+    //     type: 'warning',
+    //     duration: 5 * 1000
+    //   })
+    // }
     return Promise.reject(res).catch(() => { })
   }
 },

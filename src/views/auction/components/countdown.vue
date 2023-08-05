@@ -1,6 +1,6 @@
 <template>
   <div>
-    <p v-if="expired">已过期</p>
+    <p v-if="expired">{{ $t('auction_detail.expire') }}</p>
     <p v-else>{{ formatTime(countdown) }}</p>
   </div>
 </template>

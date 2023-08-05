@@ -130,7 +130,7 @@ export default {
             }
           }
         },
-        placeholder: '请输入正文',
+        placeholder: this.$t('publish.content_tip'),
         theme: 'snow'
       }
     }

@@ -9,13 +9,13 @@
 <template>
   <div class="invite_container">
     <div class="link">
-      邀请链接：{{
+      {{ $t('invite.invite_link') }}：{{
         'https://app.onlyfun.city/login?invitedId=' + userInfo.invitedId
       }}
     </div>
-    <el-button type="danger" round @click="copy($event)"
-      >复制邀请链接</el-button
-    >
+    <el-button type="danger" round @click="copy($event)">{{
+      $t('invite.copy_invite_link')
+    }}</el-button>
   </div>
 </template>
 
@@ -38,11 +38,7 @@ export default {
         'https://app.onlyfun.city/login?invitedId=' + this.userInfo.invitedId,
         e
       )
-      // clipboard(
-      //   'http://localhost:8888/#/login?invitedId=' + userInfo.invitedId,
-      //   e
-      // )
-      this.$message.success('复制成功！')
+      this.$message.success(this.$t('invite.copy_success'))
     }
   }
 }

@@ -56,14 +56,14 @@ e
               </div>
             </div>
           </el-col>
-          <el-col :span="6">
+          <el-col :span="4">
             <div class="Nav_right">
               <el-autocomplete
                 class="searchBar"
                 clearable
                 v-model="searchValue"
                 :fetch-suggestions="querySearch"
-                placeholder="请输入专栏名称"
+                :placeholder="$t('tab.reply')"
                 @select="handleSelect"
                 :popper-append-to-body="false"
                 popper-class="complete_list"
@@ -84,6 +84,7 @@ e
 <script>
 import { getToken } from '@/utils/auth'
 import { searchColumn } from '@/api/special/special'
+
 export default {
   name: 'Tabs',
   components: {},
@@ -101,7 +102,7 @@ export default {
         console.log(e)
         const path1 = e.currentTarget.location.pathname
         // self.toggleStyle(self.nameList.indexOf(path))
-        console.log(self.nameList, path1.replace('/', ''))
+        // console.log(self.nameList, path1.replace('/', ''))
         self.tabClick(
           { name: path1.replace('/', '') },
           self.nameList.indexOf(path1.replace('/', ''))
@@ -110,7 +111,7 @@ export default {
       false
     )
     if (sessionStorage.getItem('tabName')) {
-      console.log(this.$route)
+      // console.log(this.$route)
       this.activeName = this.$route.query.user
         ? 'home'
         : sessionStorage.getItem('tabName')
@@ -127,25 +128,31 @@ export default {
         {
           id: 0,
           icon: 'if-ui-home',
-          text: '首页',
+          text: this.$t('tab.home'),
           name: 'home'
         },
         {
           id: 1,
           icon: 'if-ui-art',
-          text: 'NFT',
+          text: this.$t('tab.nft'),
           name: 'nft'
         },
+        // {
+        //   id: 2,
+        //   icon: 'if-ui-mining',
+        //   text: this.$t('tab.mining'),
+        //   name: 'mining'
+        // },
         {
           id: 2,
           icon: 'if-court-hammer',
-          text: '竞拍',
+          text: this.$t('tab.auction'),
           name: 'auction'
         },
         {
           id: 3,
           icon: 'if-ui-user',
-          text: '我的',
+          text: this.$t('tab.introduce'),
           name: 'introduce'
         }
       ],
@@ -188,7 +195,7 @@ export default {
       }
     },
     tabClick(v, i, query) {
-      console.log(v, i, query)
+      // console.log(v, i, query)
       this.activeName = v.name
       sessionStorage.setItem('tabName', v.name)
       // console.log(this.$route.path, this.activeName)
@@ -232,7 +239,7 @@ export default {
   }
 }
 ::v-deep .searchBar {
-  width: calc(100% - 20px);
+  // width: calc(100% - 20px);
   .name {
     height: 50px;
     line-height: 50px;
@@ -289,6 +296,11 @@ export default {
   max-width: 1250px;
   height: 100%;
   margin: auto;
+  .language {
+    position: absolute;
+    right: 20px;
+    padding-left: 10px;
+  }
 }
 .woo-box-alignCenter {
   align-items: center;

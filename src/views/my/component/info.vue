@@ -9,7 +9,7 @@
           :show-file-list="false"
           :http-request="onUploadHandler"
         >
-          <img :src="imageUrl" alt="" title="点击修改头像" />
+          <img :src="imageUrl" alt="" :title="$t('info.change_avatar')" />
         </el-upload>
         <div class="camera">
           <svg
@@ -26,33 +26,26 @@
       <div class="nick_name">
         <el-input
           v-model="user_name"
-          placeholder="请输入昵称"
+          :placeholder="$t('info.nickname_change_tip')"
           maxlength="60"
           v-if="showNick"
           class="profile"
           @blur="editNick"
         ></el-input>
-        <span v-else @click="showNickInput" title="点击修改昵称" class="text">
+        <span
+          v-else
+          @click="showNickInput"
+          :title="$t('info.nickname_change_tip')"
+          class="text"
+        >
           {{ userInfo.user_name }}</span
         >
-        <span v-show="!userInfo.user_name" @click="showNickInput"
-          >请输入昵称</span
-        >
-
-        <!-- <svg
-          :style="{
-            width: '20px',
-            height: '20px',
-            marginLeft: '5px'
-          }"
-          :title="userInfo.sex === 'unknown' ? '点击修改性别' : ''"
-          @click="changeSex"
-        >
-          <use :xlink:href="sexTypes[userInfo.sex]" rel="external nofollow" />
-        </svg> -->
+        <span v-show="!userInfo.user_name" @click="showNickInput">{{
+          $t('info.nickname_tip')
+        }}</span>
       </div>
       <div class="steem_id">
-        <span>用户ID：{{ userInfo.steem_id }}</span
+        <span>{{ $t('info.user_id') }}：{{ userInfo.steem_id }}</span
         ><i
           style="margin-left: 10px"
           class="el-icon-copy-document"
@@ -65,7 +58,7 @@
       >
         <el-input
           v-model="profile"
-          placeholder="请输入简介"
+          :placeholder="$t('info.intro_tip')"
           maxlength="60"
           v-show="showIntro"
           class="profile"
@@ -74,13 +67,15 @@
         <span v-show="!showIntro" class="intro-text">{{
           userInfo.profile
         }}</span>
-        <span v-show="!userInfo.profile" @click="changeStatus">请输入简介</span>
+        <span v-show="!userInfo.profile" @click="changeStatus">{{
+          $t('info.intro_tip')
+        }}</span>
         <i
           v-show="!showIntro"
           class="el-icon-edit"
           style="margin-left: 5px; cursor: pointer"
           @click="changeStatus"
-          title="点击修改简介"
+          :title="$t('info.intro_change_tip')"
         ></i>
       </div>
       <div class="tags">
@@ -111,22 +106,26 @@
           class="button-new-tag"
           size="small"
           @click="showInput"
-          >添加标签</el-button
+          >{{ $t('info.add_label') }}</el-button
         >
       </div>
     </div>
     <el-dialog
-      title="性别选择"
+      :title="$t('info.select_gender')"
       :visible.sync="sexVisible"
       :close-on-click-modal="false"
       width="30%"
       center
     >
-      <el-radio v-model="sex" label="man">男</el-radio>
-      <el-radio v-model="sex" label="woman">女</el-radio>
+      <el-radio v-model="sex" label="man">{{ $t('info.male') }}</el-radio>
+      <el-radio v-model="sex" label="woman">{{ $t('info.female') }}</el-radio>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="sexVisible = false">取 消</el-button>
-        <el-button type="primary" @click="confirmSex">确 定</el-button>
+        <el-button @click="sexVisible = false">{{
+          $t('info.cancel')
+        }}</el-button>
+        <el-button type="primary" @click="confirmSex">{{
+          $t('info.confirm')
+        }}</el-button>
       </span>
     </el-dialog>
   </div>
@@ -213,7 +212,7 @@ export default {
     },
     async editNick() {
       if (this.user_name.trim() === '') {
-        this.$message.error('请输入昵称！')
+        this.$message.error(this.$t('info.nickname_tip'))
         return
       } else {
         const res = await baseData({
@@ -227,10 +226,10 @@ export default {
         if (res && res.success === 'ok') {
           this.userInfo.user_name = this.user_name
           localStorage.setItem('quhu-userInfo', JSON.stringify(this.userInfo))
-          this.$message.success('修改成功')
+          this.$message.success(this.$t('info.change_success'))
           this.showNick = !this.showNick
         } else {
-          this.$message.error('修改失败')
+          this.$message.error(this.$t('info.change_fail'))
         }
         this.user_name = ''
       }
@@ -253,10 +252,10 @@ export default {
         this.sexVisible = false
         this.userInfo.sex = this.sex
         localStorage.setItem('quhu-userInfo', JSON.stringify(this.userInfo))
-        this.$message.success('修改成功！')
+        this.$message.success(this.$t('info.change_success'))
       } else {
         this.sexVisible = false
-        this.$message.success('修改失败！')
+        this.$message.success(this.$t('info.change_fail'))
       }
     },
     async handleClose(tag) {
@@ -286,7 +285,7 @@ export default {
       let inputValue = this.inputValue
       const reg = /^[\u4e00-\u9fa5_a-zA-Z0-9]+$/
       if (!reg.test(inputValue.trim())) {
-        this.$message.error('请输入6位以下字母和汉字！')
+        this.$message.error(this.$t('info.nick_tip'))
         return
       }
       const arr = [inputValue]
@@ -313,7 +312,7 @@ export default {
     },
     async editIntro() {
       if (this.profile.trim() === '') {
-        this.$message.error('请输入简介！')
+        this.$message.error(this.$t('info.intro_tip'))
         return
       } else {
         const res = await baseData({
@@ -327,10 +326,10 @@ export default {
         if (res && res.success === 'ok') {
           this.userInfo.profile = this.profile
           localStorage.setItem('quhu-userInfo', JSON.stringify(this.userInfo))
-          this.$message.success('修改成功')
+          this.$message.success(this.$t('info.change_success'))
           this.showIntro = !this.showIntro
         } else {
-          this.$message.error('修改失败')
+          this.$message.error(this.$t('info.change_fail'))
         }
       }
     },
@@ -358,7 +357,7 @@ export default {
       const loginType = localStorage.getItem('login-type')
       const isLt2M = e.file.size / 1024 / 1024 < 2
       if (!isLt2M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!')
+        this.$message.error(this.$t('info.avatar_upload_tip'))
       }
       if (isLt2M) {
         let dataUrl = ''
