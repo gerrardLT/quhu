@@ -63,7 +63,7 @@ e
                 clearable
                 v-model="searchValue"
                 :fetch-suggestions="querySearch"
-                :placeholder="$t('tab.reply')"
+                :placeholder="$t('tab.input_column_name')"
                 @select="handleSelect"
                 :popper-append-to-body="false"
                 popper-class="complete_list"
@@ -137,26 +137,26 @@ export default {
           text: this.$t('tab.nft'),
           name: 'nft'
         },
-        // {
-        //   id: 2,
-        //   icon: 'if-ui-mining',
-        //   text: this.$t('tab.mining'),
-        //   name: 'mining'
-        // },
         {
           id: 2,
+          icon: 'if-ui-mining',
+          text: this.$t('tab.mining'),
+          name: 'mining'
+        },
+        {
+          id: 3,
           icon: 'if-court-hammer',
           text: this.$t('tab.auction'),
           name: 'auction'
         },
         {
-          id: 3,
+          id: 4,
           icon: 'if-ui-user',
           text: this.$t('tab.introduce'),
           name: 'introduce'
         }
       ],
-      nameList: ['home', 'nft', 'auction', 'introduce'],
+      nameList: ['home', 'nft', 'mining', 'auction', 'introduce'],
       activeName: 'home',
       color: '',
       searchValue: ''

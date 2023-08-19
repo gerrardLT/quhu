@@ -40,8 +40,14 @@
       <div class="coin">
         <div class="coin-item" v-for="item in balanceList" :key="item.id">
           <div class="coin-name">{{ item.name }}</div>
-          <div class="balance">{{ item.balance.toFixed(3) }}</div>
-          <div class="balance">{{ item.lock_balance.toFixed(3) }}</div>
+          <div class="balance">
+            {{ Number(item.balance) === 0 ? 0 : item.balance.toFixed(8) }}
+          </div>
+          <div class="balance">
+            {{
+              Number(item.lock_balance) === 0 ? 0 : item.lock_balance.toFixed(8)
+            }}
+          </div>
         </div>
       </div>
     </div>
@@ -56,7 +62,7 @@
       >
         <el-table-column
           prop="timestamp"
-          :label="$t('voucher.exchange_report')"
+          :label="$t('voucher.date')"
           width="240"
         >
         </el-table-column>
@@ -66,7 +72,7 @@
           width="180"
         >
         </el-table-column>
-        <el-table-column prop="type" :label="$t('voucher.order_number')">
+        <el-table-column prop="type" :label="$t('voucher.goods_name')">
         </el-table-column>
         <el-table-column
           prop="token"
@@ -679,11 +685,13 @@ export default {
     },
     async spend() {
       const reg = /^[+]{0,1}(\d+)$/
-
-      if (!reg.test(Number(this.withdrawalAmount))) {
-        this.$message.error(this.$t('voucher.quantity_tip'))
-        return
+      if (!(this.withdrawalCoin === 'btc' || this.withdrawalCoin === 'eth')) {
+        if (!reg.test(Number(this.withdrawalAmount))) {
+          this.$message.error(this.$t('voucher.quantity_tip'))
+          return
+        }
       }
+
       if (!this.withdrawalAddress.trim()) {
         this.$message.error(this.$t('voucher.withdrawal_tip3'))
         return

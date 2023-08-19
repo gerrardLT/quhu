@@ -138,6 +138,12 @@ service.interceptors.response.use((response) => {
       1054: 'error_password',
       1055: 'error_ip',
       1056: 'ip_limit',
+      1057:'hash_not_exist',
+      1058:'transaction_check_failed',
+      1059:'transaction_failed',
+      1060:'error_method',
+      1061:'nft_id_error',
+      1062:'card_error'
     };
 
 if(res.code === 1000){

@@ -206,6 +206,101 @@ export default {
     }
   },
   methods: {
+    //     async goDetail(val, ele) {
+    //   if (ele) {
+    //     setTimeout(() => {
+    //       // console.log(this.articleRefs['article' + ele.permlink])
+    //       // const el = this.articleRefs['article' + ele.permlink]
+    //       // const target = el.offsetTop
+    //       // el.scrollIntoView()
+    //     }, 500)
+    //   }
+
+    //   const userInfo = this.userInfo
+    //   const loginType = localStorage.getItem('login-type')
+    //   const token = getToken()
+    //   const res = await getArticleDetail({
+    //     id: loginType === 'password' ? userInfo.user : userInfo.eth_account,
+    //     jsonrpc: '2.0',
+    //     method: 'bridge.get_discussion',
+    //     params: { author: val.author, permlink: val.permlink }
+    //   })
+    //   const votes = await getVote({
+    //     permlink: val.permlink,
+    //     steem_id: userInfo.steem_id
+    //   })
+    //   const obj = res.result[val.author + '/' + val.permlink]
+    //   // const commentList = this.getReply(obj, res.result)
+    //   let commentList = []
+    //   const result = Object.assign(res.result, {})
+    //   // 判断评论和正文
+    //   for (const key in result) {
+    //     if (
+    //       key.startsWith('onlyfun-data', 0) &&
+    //       key !== val.author + '/' + val.permlink
+    //     ) {
+    //       result[key].body = this.eval(result[key].body)
+    //       commentList.push(result[key])
+    //     }
+    //   }
+    //   commentList.forEach((comment) => {
+    //     comment.isShowReplyText = false
+    //     // comment.isEditReply = false
+    //     comment.reply = ''
+    //     comment.child = []
+    //   })
+    //   commentList = commentList.reverse()
+    //   // const commentTree = this.toTree(commentList, val.author)
+    //   // console.log(commentList[0].parent_author)
+    //   const commentTree = this.buildTreeWithCycle(commentList, val.author)
+    //   // console.log(commentTree)
+    //   if (obj) {
+    //     obj.body = this.eval(obj.body)
+    //     let isPraised = false
+    //     let voteNum = 0
+    //     let isFavorite = false
+    //     const vote = votes.data.forEach((item, i) => {
+    //       isPraised = item.voted
+    //       voteNum = item.vote
+    //       isFavorite = item.favorites
+    //     })
+
+    //     obj.isPraised = isPraised
+    //     obj.voteNum = voteNum
+    //     obj.isFavorite = isFavorite
+    //     obj.commentList = commentTree
+    //     this.currentDetail = obj
+    //     if (ele) {
+    //       ele.isShowDetailDialog = true
+    //     } else {
+    //       val.isShowDetailDialog = true
+    //     }
+    //   }
+    //   // console.log(val)
+    // },
+    //     eval(fn) {
+    //   const Fn = Function
+    //   return new Fn('return ' + fn)()
+    // },
+    //     buildTreeWithCycle(data, parent_author, visited = {}) {
+    //   const tree = []
+    //   for (let i = 0; i < data.length; i++) {
+    //     const node = data[i]
+    //     if (node.parent_author === parent_author) {
+    //       if (visited[node.author]) {
+    //         // 如果节点已被访问过，说明存在循环引用，跳过该节点
+    //         continue
+    //       }
+    //       visited[node.author] = true
+    //       const children = this.buildTreeWithCycle(data, node.author, visited)
+    //       if (children.length) {
+    //         node.child = children
+    //       }
+    //       tree.push(node)
+    //     }
+    //   }
+    //   return tree
+    // },
     toggleTag(type, index) {
       this.activeTagIndex = index
       this.filterReportList = this.reportList.filter((ele) => {

@@ -746,13 +746,12 @@
                           style="margin: 0 10px"
                         />
                         <div style="flex: auto">
-                          <el-input
-                            type="textarea"
-                            :autosize="{ minRows: 4, maxRows: 8 }"
+                          <textarea
+                            class="el-textarea__inner"
+                            v-model.lazy="textareaConetent"
                             :placeholder="$t('home.say_something')"
-                            v-model="textareaConetent"
-                          ></el-input>
-
+                            style="min-height: 96px"
+                          ></textarea>
                           <div>
                             <div style="margin: 10px 0">
                               <el-button
@@ -767,6 +766,7 @@
                         </div>
                       </div>
                       <Comment
+                        class="comment-index"
                         style="margin: 0 auto"
                         v-for="(commentp, index) in currentDetail.commentList"
                         :key="index"
@@ -791,7 +791,7 @@
                 <div class="title">
                   <input
                     type="text"
-                    v-model="titleText"
+                    v-model.lazy="titleText"
                     class="titie_text"
                     :placeholder="$t('home.title_tip')"
                   />
@@ -804,7 +804,8 @@
                 <div class="horizontal-line"></div>
                 <div class="content-container">
                   <img class="avatar" :src="userAvatar" />
-                  <div
+                  <ShortPost ref="short_post" @upload="uploadImg"></ShortPost>
+                  <!-- <div
                     style="
                       width: calc(100% - 40px);
                       min-height: 110px;
@@ -822,7 +823,7 @@
                       @change="onEditorChange($event)"
                     >
                     </quill-editor>
-                  </div>
+                  </div> -->
                 </div>
                 <div class="horizontal-line"></div>
               </div>
@@ -854,7 +855,7 @@
                   <div class="middle">
                     <el-select
                       v-model="articlePostType"
-                      :placeholder="$t('home.select_tip')"
+                      :placeholder="articlePostType"
                       @change="$forceUpdate()"
                     >
                       <el-option
@@ -868,8 +869,6 @@
                     </el-select>
                   </div>
                   <div class="right">
-                    <div class="text-range">{{ TiLength }}/300</div>
-
                     <div @click="submit()" class="submit-btn">
                       {{ $t('home.publish') }}
                     </div>
@@ -1092,13 +1091,11 @@ import {
   getArticles,
   getArticleDetail,
   vote,
-  vote2,
   getVote,
   hotColumn,
   goTop,
   collect,
-  removeCollect,
-  getfavorites
+  removeCollect
 } from '@/api/special/special'
 import MD5 from 'MD5'
 import { getUser } from '@/api/user/user'
@@ -1110,6 +1107,7 @@ import Signature from '@/utils/ecc/src/signature'
 import { actObj } from '@/utils/act'
 import Icon from '@/components/Icon/index'
 import Comment from '@/components/comment/Comment.vue'
+import ShortPost from './ShortPost.vue'
 import { Loading } from 'element-ui'
 import { decrypt } from '@/utils/ascill'
 import { debounce } from 'lodash'
@@ -1120,13 +1118,14 @@ export default {
   components: {
     Icon,
     Comment,
-    Collapse
+    Collapse,
+    ShortPost
   },
   data() {
     return {
       searchUserColumn: [],
       articlePermlinkList: [],
-      articlePostType: '',
+      articlePostType: this.$t('home.public'),
       articleStyleObj: {},
       applyDialogVisible: false,
       radio: '',
@@ -1159,7 +1158,7 @@ export default {
       ],
       searchResult: [],
       articleList: [],
-      postContent: '',
+      // postContent: '',
       editorOption: {
         modules: {
           'emoji-toolbar': true,
@@ -1275,9 +1274,9 @@ export default {
         { label: this.$t('home.twelve_month'), value: 12 }
       ],
       subscribeMonth: 12,
-      TiLength: 0,
       pageListStart: {},
-      contentRefList: {}
+      contentRefList: {},
+      updateTimeout: null
     }
   },
   computed: {
@@ -1311,6 +1310,10 @@ export default {
   },
   methods: {
     decrypt,
+    uploadImg() {
+      this.$refs.upload.$el.click()
+      document.querySelector('.avatar-uploader-edit input').click()
+    },
     goLink() {
       this.$EventBus.$emit('changeTab', { name: 'auction' }, 2)
     },
@@ -1398,15 +1401,7 @@ export default {
         )
       }
     },
-    onEditorChange(e) {
-      e.quill.deleteText(300, 1)
 
-      if (this.postContent == '') {
-        this.TiLength = 0
-      } else {
-        this.TiLength = e.quill.getLength() - 1
-      }
-    },
     keepThreeNum(value) {
       let resValue = 0
       //小数点的位置
@@ -1735,9 +1730,6 @@ export default {
       this.loadHandler(e.file, (v) => {
         this.fileList = this.fileList.concat([v])
       })
-    },
-    onEditorReady() {
-      console.log(this.$refs.myQuillEditor.quill)
     },
 
     async removeOut() {
@@ -2208,7 +2200,15 @@ export default {
         v.isEditReply = false
       }
     },
+
     postArticle() {
+      // this.$router.push({
+      //   path: '/write',
+      //   query: {
+      //     selectedColumn: this.selectedColumn
+      //   }
+      // })
+
       console.log(this.selectedColumn)
       const userInfo = this.userInfo
       let flag = true
@@ -2229,8 +2229,9 @@ export default {
         return
       }
       this.showEditor = true
+
       this.$nextTick(() => {
-        this.$refs.myQuillEditor.quill.root.addEventListener(
+        this.$refs.short_post.$refs.myQuillEditor.quill.root.addEventListener(
           'paste',
           (evt) => {
             if (
@@ -2271,10 +2272,15 @@ export default {
         this.$message.error(this.$t('home.select_post_status_tip'))
         return
       }
-      if (!(this.postContent + imgHtml)) {
+      if (!(this.$refs.short_post.postText + imgHtml)) {
         this.$message.error(this.$t('home.post_content_tip'))
         return
       }
+
+      // if (!(this.postContent + imgHtml)) {
+      //   this.$message.error(this.$t('home.post_content_tip'))
+      //   return
+      // }
       // console.log(this.content, this.content.length)
       // console.log(imgHtml)
       const loading = Loading.service({
@@ -2282,7 +2288,7 @@ export default {
         spinner: 'el-icon-loading ElementLoading',
         background: 'rgba(0, 0, 0, 0.2)'
       })
-      // console.log(this.articlePostType)
+      console.log(this.$refs.short_post.postText)
       const res = await post({
         type: 'post',
         id: loginType === 'password' ? userInfo.user : userInfo.eth_account,
@@ -2293,7 +2299,7 @@ export default {
         permlink: '',
         title: this.titleText,
         public: this.articlePostType === this.$t('home.public') ? 'yes' : 'no',
-        body: this.postContent + imgHtml
+        body: this.$refs.short_post.postText + imgHtml
       })
 
       if (res && res.success === 'ok') {
@@ -2321,8 +2327,6 @@ export default {
         res.result.list = []
         res.result.isShowDetailDialog = false
 
-        // res.result.isPraised = false
-        // res.result.isFavorite = false
         if (this.favorites.length > 0) {
           this.favorites.forEach((ele) => {
             if (ele.permlink[1] === res.result.permlink) {
@@ -2335,29 +2339,19 @@ export default {
 
         console.log(res.result)
         this.articleList.unshift(res.result)
-
-        // setTimeout(() => {
-        //   if (this.selectedColumn) {
-        //     this.getArticlesByColumn(
-        //       this.selectedColumn || this.subscriptionsList.my[0] || ''
-        //     )
-        //   } else {
-        //     this.getArticlesByColumn('', '', 'all')
-        //   }
-
-        // }, 1000)
       } else {
         this.$message.error(this.$t('home.post_fail_tip'))
         this.closeEditor()
       }
-      this.TiLength = 0
+      this.$refs.short_post.textLength = 0
       if (loading) {
         loading.close()
       }
     },
     closeEditor() {
       this.showEditor = false
-      this.postContent = ''
+      this.$refs.short_post.resetText()
+      // this.postContent = ''
       this.titleText = ''
       this.fileList = []
     },
@@ -2471,13 +2465,20 @@ export default {
       deep: true,
       immediate: true
     },
-    postContent: {
+    // postContent: {
+    //   handler(newVal, oldVal) {},
+    //   deep: true,
+    //   immediate: true
+    // },
+    articleList: {
       handler(newVal, oldVal) {},
       deep: true,
       immediate: true
     },
-    articleList: {
-      handler(newVal, oldVal) {},
+    '$i18n.locale': {
+      handler(newVal, oldVal) {
+        this.articlePostType = this.$t('home.public')
+      },
       deep: true,
       immediate: true
     }
@@ -3276,7 +3277,6 @@ export default {
   height: 80px;
 }
 .create-topic-container .create-topic-panel .operation-icon {
-  margin-top: 20px;
   display: flex;
   justify-content: space-between;
   -webkit-user-select: none;
@@ -3331,7 +3331,7 @@ export default {
   // display: flex;
   position: absolute;
   right: 0;
-  top: 0;
+  top: 30px;
 }
 .upload-container .image-list-container {
   margin-top: 10px;
@@ -3352,15 +3352,7 @@ export default {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-.create-topic-container .create-topic-panel .operation-icon .right .text-range {
-  margin-right: 16px;
-  font-size: 12px;
-  color: #c5c6cb;
-  height: 24px;
-  line-height: 24px;
-  text-align: center;
-  margin-bottom: 10px;
-}
+
 .create-topic-container .create-topic-panel .operation-icon .right .submit-btn {
   min-width: 50px;
   height: 24px;

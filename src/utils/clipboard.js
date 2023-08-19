@@ -1,12 +1,12 @@
 import Clipboard from 'clipboard' //引入cliboard
 import {Message} from 'element-ui'
-import Vue from 'vue'
+import i18n from '@/language'
 function clipboardSuccess(msg) {
-    Message.success(msg || Vue.$t('clipboard.copy_success') )
+    Message.success(msg || i18n.t('clip_board.copy_success'))
 }
 
 function clipboardError(msg) {
-    Message.error(msg || Vue.$t('clipboard.copy_fail'))
+    Message.error(msg || i18n.t('clip_board.copy_fail'))
 }
 
 export default function handleClipboard(text, event, msg) {

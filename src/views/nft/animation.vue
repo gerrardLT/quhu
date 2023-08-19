@@ -3,7 +3,7 @@
     <div
       class="tips animate__animated animate__zoomIn animate__slow animate__delay-3s"
     >
-      {{ $t('animation.exchange') }}{{ cardName }}!
+      {{ $t('animation.synthesis') }}&nbsp;{{ cardName }}!
     </div>
     <canvas id="canvas"></canvas>
     <div

@@ -25,7 +25,11 @@
           <div class="title">
             {{ auctionDetail.title }}
           </div>
-          <div class="bid_tips" :title="$t('auction_detail.tips')" v-if="auctionDetail.effectiveness">
+          <div
+            class="bid_tips"
+            :title="$t('auction_detail.tips')"
+            v-if="auctionDetail.effectiveness"
+          >
             {{ $t('auction_detail.tips') }}
           </div>
           <div class="starting_price">
@@ -634,8 +638,8 @@ export default {
         .bid_tips {
           max-width: 500px;
           white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
+          // overflow: hidden;
+          // text-overflow: ellipsis;
           font-size: 12px;
           margin-bottom: 10px;
         }

@@ -27,7 +27,13 @@
           @click="connectWallet"
           @mouseover.native="handleMouseOver"
           class="connect_btn"
-          >{{ account || $t('nft.link_wallet') }}</el-button
+          >{{
+            (account
+              ? account.slice(0, 4) +
+                '...' +
+                account.slice(account.length - 4, account.length)
+              : '') || $t('nft.link_wallet')
+          }}</el-button
         >
         <div
           class="logMenu"
@@ -38,21 +44,8 @@
           <span @click="logOut">log out</span>
         </div>
       </div>
-      <!-- <div class="cart" @click="openCart">
-        <svg
-          :style="{
-            fill: '#087790',
-            width: '30px',
-            height: '30px',
-            marginRight: '5px'
-          }"
-        >
-          <use :xlink:href="'#icon-cart'" rel="external nofollow" />
-        </svg>
-      </div> -->
     </div>
-    <!-- <ThreeAnimation />  -->
-    <!-- <div class="mint" @click="postMint">mint</div> -->
+
     <main style="display: none">
       <!-- slider-area -->
       <section id="parallax">
@@ -415,6 +408,7 @@ export default {
     this.getBalance()
   },
   mounted() {
+    console.log(sessionStorage.getItem('walletAccount'))
     if (sessionStorage.getItem('walletAccount')) {
       this.account = sessionStorage.getItem('walletAccount')
     }
@@ -614,8 +608,8 @@ export default {
         background: 'rgba(0, 0, 0, 0.2)'
       })
       const res = await get_nft(params)
-      if (res.data[0].name === 'fail') {
-      } else if (res.data[0].name === '') {
+      if (res.data && res.data[0].name === 'fail') {
+      } else if (res.data && res.data[0].name === '') {
       } else {
         if (loading) {
           loading.close()

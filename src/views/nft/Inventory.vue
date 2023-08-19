@@ -15,8 +15,6 @@
             font-size: 14px;
             max-width: 500px;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
           "
           :title="
             $t('inventory.current_select') +
@@ -517,7 +515,7 @@ export default {
         })
         if (res && res.success === 'ok') {
           let text = ''
-          res.data.attributes.forEach((item) => {
+          res.data[0].attributes.forEach((item) => {
             if (item.trait_type === 'prize') {
               text += '、' + item.value
             }

@@ -28,20 +28,6 @@
                   : comment.body.body
               }}
             </div>
-            <!-- <el-popconfirm
-                title="确定要删除该评论吗？"
-                @confirm="deleteComment(index)"
-              >
-                <span
-                  slot="reference"
-                  class="deleteComment"
-                  v-show="
-                    item.username === $store.state.user.name ||
-                    roleType === 'admin'
-                  "
-                  ><i class="el-icon-delete" /> 删除</span
-                >
-              </el-popconfirm> -->
             <div
               class="reply-font"
               v-if="!comment.isEditReply"
@@ -59,10 +45,9 @@
             <el-input
               type="textarea"
               :autosize="{ minRows: 4, maxRows: 8 }"
-              placeholder="说点什么吧"
-              v-model="comment.reply"
+              :placeholder="$t('home.say_something')"
+              v-model.lazy="comment.reply"
             ></el-input>
-
             <div>
               <div style="margin: 10px 0">
                 <!-- <el-button @click="pBodyStatus(index)">Emoji表情</el-button> -->
@@ -71,7 +56,7 @@
                   style="float: right"
                   plain
                   type="primary"
-                  >发送</el-button
+                  >{{ $t('home.send') }}</el-button
                 >
               </div>
             </div>
@@ -135,7 +120,8 @@ export default {
       pBodyMap: { initComment: false },
       textareaMap: { initComment: '' },
       avatar: '',
-      momentObj: {}
+      momentObj: {},
+      updateTimeout: null
     }
   },
   components: {},
@@ -145,6 +131,17 @@ export default {
   },
   methods: {
     decrypt,
+    // input(v) {
+    //   console.log(v)
+    //   if (this.updateTimeout) {
+    //     clearTimeout(this.updateTimeout)
+    //   }
+
+    //   // 设置新的延迟更新，500毫秒后更新数据
+    //   this.updateTimeout = setTimeout(() => {
+    //     this.inputValue = v
+    //   }, 500)
+    // },
     transfromTimeZoom(v) {
       const dateStr = v
       const date = new Date(dateStr)
