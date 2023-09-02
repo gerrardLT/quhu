@@ -289,11 +289,7 @@
               <br />
               <div
                 class="css-b3pq5h"
-                v-if="
-                  activePool === $t('mining.usdt') &&
-                  currentPool.pool &&
-                  currentPool.pool.indexOf('locked') !== -1
-                "
+                v-if="activePool === $t('mining.usdt') && currentPool.pool"
               >
                 <div class="css-rtmgzp">
                   <div class="css-10nf7hq">

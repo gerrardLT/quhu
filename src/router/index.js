@@ -31,6 +31,8 @@ import Invite from '../views/my/Invite.vue'
 import MySpecial from '../views/my/MySpecial.vue'
 import Introduce from '../views/my/Introduce.vue'
 import Mining from '../views/mining/Mining.vue'
+import Except from '../views/except/except.vue'
+import Raffle from '../views/raffle.vue'
 import { getToken } from '@/utils/auth'
 
 Vue.use(VueRouter)
@@ -43,6 +45,14 @@ const routes = [
   {
     path: '/login',
     component: Login
+  },
+  {
+    path: '/except',
+    component: Except
+  },
+  {
+    path: '/raffle',
+    component: Raffle
   },
   {
     path: '/home',

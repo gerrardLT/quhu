@@ -58,38 +58,12 @@
             </div>
           </div>
         </div>
-        <!-- <div class="select_column">
-          <el-select
-            v-model="stakingValue"
-            clearable
-            placeholder="请选择"
-            size="medium"
-            @change="selectColumn"
-          >
-            <el-option
-              v-for="item in secondSelectList"
-              :key="item.pool"
-              :label="item.pool"
-              :value="item.pool"
-            >
-            </el-option>
-          </el-select>
-          <div class="category">
-            <div
-              v-for="item in nftCategory"
-              :key="item.id"
-              :class="{ item: true, choosed: activeCategory === item.id }"
-              @click="handleNftChoosed(item)"
-            >
-              {{ item.name }}
-            </div>
-          </div>
-        </div> -->
         <el-table
           :data="showMyLists"
           style="width: 100%"
           height="600"
           v-loading="tableLoading"
+          ref="myTable"
         >
           <el-table-column
             prop="pool"
@@ -154,6 +128,7 @@
             :label="$t('mining.renew')"
             v-if="myActivePool === $t('mining.usdt')"
             :key="8"
+            min-width="100"
           >
             <template slot-scope="scope">
               <el-switch
@@ -161,7 +136,7 @@
                 active-color="#13ce66"
                 inactive-color="#dcdfe6"
                 @change="changeRenew(scope.row)"
-                v-if="scope.row.pool.indexOf('locked') !== -1"
+                :title="scope.row.memo"
               >
               </el-switch>
             </template>
@@ -169,8 +144,10 @@
           <el-table-column
             prop="status"
             :label="$t('mining.status')"
-            width="180"
             :key="9"
+            fixed="right"
+            align="center"
+            min-width="120"
           >
             <template slot-scope="scope">
               <el-button
@@ -355,6 +332,29 @@ export default {
   },
   methods: {
     transformTime,
+    renderHeader(render, { column }) {
+      let label = column.label
+      return [
+        label,
+        // 第一个参数是标签名称，第二个参数是标签属性，第三个参数是标签内容
+        render(
+          'el-tooltip',
+          {
+            props: {
+              content: '1123123',
+              placement: 'top'
+            }
+          },
+          [
+            render('span', {
+              class: {
+                'el-icon-question': true
+              }
+            })
+          ]
+        )
+      ]
+    },
     openDualBack(v) {
       this.$confirm(
         this.$t('mining.confirm_redeem_tip'),
@@ -369,10 +369,10 @@ export default {
           this.dualBack(v)
         })
         .catch(() => {
-          this.$message({
-            type: 'info',
-            message: this.$t('mining.redeemed')
-          })
+          // this.$message({
+          //   type: 'info',
+          //   message: this.$t('mining.redeemed')
+          // })
         })
     },
     openCancelDualBack(v) {
@@ -621,7 +621,8 @@ export default {
         //     revenue: 0,
         //     status: 'ok',
         //     renew: 'yes',
-        //     quantity: 2
+        //     quantity: 2,
+        //     memo: '温馨提示'
         //   },
         //   {
         //     pool: 'usdt_pool',
@@ -683,6 +684,7 @@ export default {
           item.start_time = this.transformTime(Number(item.start_time))
         })
         this.showMyLists = this.myLists.data
+
         this.tableLoading = false
       }
     },
@@ -711,9 +713,17 @@ export default {
       this.myActivePool = v
       if (v === this.$t('mining.nft')) {
         this.showMyLists = this.myLists.data
+        this.$nextTick(() => {
+          console.log(this.$refs.myTable)
+          this.$refs.myTable.doLayout()
+        })
         console.log(this.showMyLists)
       } else {
         this.showMyLists = this.myLists.dual_data
+        this.$nextTick(() => {
+          console.log(this.$refs.myTable)
+          this.$refs.myTable.doLayout()
+        })
         console.log(this.showMyLists)
       }
     }, 500),
@@ -806,6 +816,14 @@ export default {
 </script>
 
 <style scoped lang="scss">
+::v-deep .table-fiexd {
+  .el-table__fixed-right {
+    height: 100% !important;
+  }
+  .el-table__fixed {
+    height: 100% !important;
+  }
+}
 ::v-deep .el-button--primary {
   color: #fff;
   background-color: $mainColor;

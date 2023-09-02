@@ -176,8 +176,8 @@ export default {
           label: 'ofc'
         }
         // {
-        //   value: 'busd',
-        //   label: 'busd'
+        //   value: 'usdt',
+        //   label: 'usdt'
         // },
         // {
         //   value: 'bnb',

@@ -1,26 +1,26 @@
-
 <template>
   <div>
     <div class="top" style="margin-right: 10px; margin-bottom: 20px">
       <div class="balance">
-        <svg :style="{
-      fill: '#087790',
-      width: '30px',
-      height: '30px',
-      marginRight: '15px'
-    }">
+        <svg
+          :style="{
+            fill: '#087790',
+            width: '30px',
+            height: '30px',
+            marginRight: '15px'
+          }"
+        >
           <use :xlink:href="'#icon-pay'" rel="external nofollow" />
         </svg>
         <span class="item">{{ balanceAmount.ofc }} ofc</span>
         <el-divider direction="vertical"></el-divider>
         <span class="item">{{ balanceAmount.poys }} poys</span>
         <el-divider direction="vertical"></el-divider>
-        <span class="item">{{ balanceAmount.busd }} busd</span>
+        <span class="item">{{ balanceAmount.usdt }} usdt</span>
         <el-divider direction="vertical"></el-divider>
         <span class="item">{{ balanceAmount.bnb }} bnb</span>
       </div>
     </div>
-
   </div>
 </template>
 

@@ -44,12 +44,12 @@ export default {
       },
       currencies: [
         { value: 'poys', label: 'POYS' },
-        { value: 'busd', label: 'BUSD' },
+        { value: 'usdt', label: 'USDT' },
         { value: 'ofc', label: 'OFC' }
       ],
       balances: {
         poys: 100,
-        busd: 200,
+        usdt: 200,
         ofc: 300
       }
     }
@@ -58,11 +58,11 @@ export default {
     exchange() {
       // 根据选择的币种计算兑换后的余额
       if (this.form.selectedCurrency === 'poys') {
-        this.form.balance = (this.balances.busd / 2) * this.form.quantity
-      } else if (this.form.selectedCurrency === 'busd') {
+        this.form.balance = (this.balances.usdt / 2) * this.form.quantity
+      } else if (this.form.selectedCurrency === 'usdt') {
         this.form.balance = this.balances.poys * this.form.quantity * 2
       } else if (this.form.selectedCurrency === 'ofc') {
-        this.form.balance = this.balances.busd * this.form.quantity
+        this.form.balance = this.balances.usdt * this.form.quantity
       }
       // 触发父组件的兑换事件
       this.$emit('exchange', this.form)

@@ -273,7 +273,7 @@
                 @change="changeFrom"
               >
                 <el-option label="poys" value="poys" />
-                <el-option label="busd" value="busd" />
+                <el-option label="usdt" value="usdt" />
               </el-select>
             </el-form-item>
           </div>
@@ -381,15 +381,15 @@ export default {
           label: 'ofc'
         },
         {
-          value: 'busd',
-          label: 'busd'
+          value: 'usdt',
+          label: 'usdt'
         }
       ],
       radio: 1,
       tradeForm: {
         exchangeAmount: 0,
         exchangeCurrency: 'poys',
-        convertCurrency: 'busd',
+        convertCurrency: 'usdt',
         convertAmount: 0
       },
       rules: {
@@ -410,7 +410,7 @@ export default {
       },
       currencyBalances: {
         poys: 10000,
-        busd: 20000
+        usdt: 20000
       },
       coinTradeVisible: false,
       withdrawalAmount: '',
@@ -470,6 +470,9 @@ export default {
         case 'busd':
           coin = 1
           break
+        case 'usdt':
+          coin = 1
+          break
       }
       return coin
     },
@@ -496,7 +499,7 @@ export default {
       })
       if (res && res.success === 'ok') {
         const arr = []
-        Object.keys(res.data.lock_token).forEach((key, i) => {
+        Object.keys(res.data.token_num).forEach((key, i) => {
           arr.push({
             name: key,
             balance: res.data.token_num[key],
@@ -531,7 +534,10 @@ export default {
         this.userInfo.token_num[this.tradeForm.exchangeCurrency]
       switch (this.tradeForm.exchangeCurrency) {
         case 'poys':
-          if (this.tradeForm.convertCurrency === 'busd') {
+          if (this.tradeForm.convertCurrency === 'usdt') {
+            this.tradeForm.convertAmount = this.tradeForm.exchangeAmount * 0.02
+          }
+          if (this.tradeForm.convertCurrency === 'usdt') {
             this.tradeForm.convertAmount = this.tradeForm.exchangeAmount * 0.02
           } else if (this.tradeForm.convertCurrency === 'ofc') {
             this.tradeForm.convertAmount = this.tradeForm.exchangeAmount * 10
@@ -540,6 +546,10 @@ export default {
 
         default:
           break
+      }
+      const reg = /^[1-9]\d*$/
+      if (reg.test(this.tradeForm.exchangeAmount)) {
+        this.validateAmount = false
       }
     },
     amountChange() {
@@ -551,13 +561,16 @@ export default {
       }
       switch (this.tradeForm.exchangeCurrency) {
         case 'poys':
-          if (this.tradeForm.convertCurrency === 'busd') {
+          if (this.tradeForm.convertCurrency === 'usdt') {
+            this.tradeForm.convertAmount = this.tradeForm.exchangeAmount * 0.02
+          }
+          if (this.tradeForm.convertCurrency === 'usdt') {
             this.tradeForm.convertAmount = this.tradeForm.exchangeAmount * 0.02
           } else if (this.tradeForm.convertCurrency === 'ofc') {
             this.tradeForm.convertAmount = this.tradeForm.exchangeAmount * 10
           }
           break
-        case 'busd':
+        case 'usdt':
           this.tradeForm.convertAmount = this.tradeForm.exchangeAmount * 100
           break
         default:
@@ -574,11 +587,19 @@ export default {
             label: 'ofc'
           },
           {
-            value: 'busd',
-            label: 'busd'
+            value: 'usdt',
+            label: 'usdt'
           }
         ]
-      } else if (v === 'busd') {
+      } else if (v === 'usdt') {
+        this.tradeForm.convertCurrency = 'ofc'
+        this.convertCurrencyArr = [
+          {
+            value: 'ofc',
+            label: 'ofc'
+          }
+        ]
+      } else if (v === 'usdt') {
         this.tradeForm.convertCurrency = 'ofc'
         this.convertCurrencyArr = [
           {
@@ -722,6 +743,13 @@ export default {
       if (loading) {
         loading.close()
       }
+    }
+  },
+  watch: {
+    validateAmount: {
+      handler(newVal, oldVal) {},
+      deep: true,
+      immediate: true
     }
   }
 }

@@ -154,6 +154,11 @@ if(res.code === 1000){
     type: 'warning',
     duration: 5 * 1000
   })
+        if(res.error ==='Token expired'){
+        setTimeout(() => {
+          store.dispatch('loginOutFalse')
+        }, 1000);
+      }
 }
 
 

@@ -16,7 +16,7 @@
         <el-divider direction="vertical"></el-divider>
         <span class="item">{{ balanceAmount.poys }} poys</span>
         <el-divider direction="vertical"></el-divider>
-        <span class="item">{{ balanceAmount.busd }} busd</span>
+        <span class="item">{{ balanceAmount.usdt }} usdt</span>
         <el-divider direction="vertical"></el-divider>
         <span class="item">{{ balanceAmount.bnb }} bnb</span>
       </div>

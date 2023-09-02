@@ -97,7 +97,7 @@ export default{
       },
       publish:{
         deposit_description:'押金说明',
-        deposit_description_tip:'单次拍卖锁定1000BUSD,拍卖结束后自动解锁',
+        deposit_description_tip:'单次拍卖锁定1000USDT,拍卖结束后自动解锁',
         title:'商品标题',
         input_title:'请输入商品标题',
         start_price:'起拍价',
@@ -265,7 +265,7 @@ export default{
         self:'自己',
         all:'所有人',
         column_picture:'专栏封面：',
-        column_rule:'专栏规则： 第一个专栏免费 第二个专栏20busd 第三个及以上80busd',
+        column_rule:'专栏规则： 第一个专栏免费 第二个专栏20usdt 第三个及以上80usdt',
         one_month:'1个月',
         three_month:'3个月',
         six_month:'6个月',
@@ -645,6 +645,11 @@ export default{
         input_number_tip: '请输入份数',
         isRenew: '是否自动续期',
         need_fees:'共需手续费'
+      },
+      except:{
+        tip1:'网站维护中...',
+        tip2:'为了让您更好的使用系统，我们正在对服务器进行升级，升级期间暂时无法访问。',
+        tip3:'给您带来的不便，敬请谅解！'
       }
 
      }

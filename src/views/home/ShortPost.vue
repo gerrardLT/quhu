@@ -18,7 +18,7 @@
       >
       </quill-editor>
     </div>
-    <div class="text-range">{{ textLength }}/300</div>
+    <div class="text-range">{{ textLength }}/200</div>
   </div>
 </template>
 
@@ -117,7 +117,7 @@ export default {
       this.postText = ''
     },
     onEditorChange(e) {
-      e.quill.deleteText(300, 1)
+      e.quill.deleteText(200, 1)
       if (this.postText == '') {
         this.$emit('change', 0)
       } else {
@@ -131,7 +131,7 @@ export default {
 
 <style scoped lang="scss">
 .short_post {
-  width: 100%;
+  width: calc(100% - 40px);
 }
 .quill-editor .ql-container {
   border: none;

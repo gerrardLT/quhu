@@ -9,7 +9,7 @@
 <template>
   <div class="main-content-container">
     <el-row class="tab">
-      <el-col :span="4" class="nav_container">
+      <el-col :span="3" class="nav_container">
         <div class="nav_left">
           <el-menu
             class="nav_menu"
@@ -116,13 +116,13 @@
         </div>
       </el-col>
       <el-col
-        :span="20"
+        :span="21"
         v-if="currentPath === '/write'"
         class="write_container"
       >
         <router-view></router-view>
       </el-col>
-      <el-col :span="15" v-else class="mid_container">
+      <el-col :span="16" v-else class="mid_container">
         <div class="mid_wrapper">
           <div class="post-container">
             <div @click="postArticle" class="post-topic-head">
@@ -1148,8 +1148,8 @@ export default {
           label: 'ofc'
         },
         {
-          value: 'busd',
-          label: 'busd'
+          value: 'usdt',
+          label: 'usdt'
         },
         {
           value: 'bnb',
@@ -2682,6 +2682,7 @@ export default {
   background: #4fbdd4;
 }
 .nav_container {
+  width: 10%;
   position: fixed;
   top: 90px;
 }

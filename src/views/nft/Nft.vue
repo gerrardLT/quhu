@@ -16,7 +16,7 @@
         <el-divider direction="vertical"></el-divider>
         <span class="item">{{ balanceAmount.poys }} poys</span>
         <el-divider direction="vertical"></el-divider>
-        <span class="item">{{ balanceAmount.busd }} busd</span>
+        <span class="item">{{ balanceAmount.usdt }} usdt</span>
         <el-divider direction="vertical"></el-divider>
         <span class="item">{{ balanceAmount.bnb }} bnb</span>
       </div>
@@ -354,7 +354,7 @@ export default {
         // },
         {
           id: 2,
-          value: '2BUSD+100OFC',
+          value: '2USDT+100OFC',
           label: this.$t('nft.rate') + '：100%'
         },
         {
@@ -364,12 +364,12 @@ export default {
         },
         {
           id: 4,
-          value: '2BUSD+0.01BNB',
+          value: '2USDT+0.01BNB',
           label: this.$t('nft.rate') + '：100%'
         },
         {
           id: 5,
-          value: '10POYS+2BUSD',
+          value: '10POYS+2USDT',
           label: this.$t('nft.rate') + '：100%'
         }
       ],
@@ -511,21 +511,21 @@ export default {
           coin1 = 'bnb'
           coin2 = ''
           break
-        case '2BUSD+100OFC':
-          coin1 = 'busd'
+        case '2USDT+100OFC':
+          coin1 = 'usdt'
           coin2 = 'ofc'
           break
         case '0.01BNB+100OFC':
           coin1 = 'bnb'
           coin2 = 'ofc'
           break
-        case '2BUSD+0.01BNB':
-          coin1 = 'busd'
+        case '2USDT+0.01BNB':
+          coin1 = 'usdt'
           coin2 = 'bnb'
           break
-        case '10POYS+2BUSD':
+        case '10POYS+2USDT':
           coin1 = 'poys'
-          coin2 = 'busd'
+          coin2 = 'usdt'
           break
         default:
           break
@@ -679,7 +679,7 @@ export default {
           // },
           {
             id: 2,
-            value: '2BUSD+100OFC',
+            value: '2USDT+100OFC',
             label: this.$t('nft.rate') + '：100%'
           },
           {
@@ -689,12 +689,12 @@ export default {
           },
           {
             id: 4,
-            value: '2BUSD+0.01BNB',
+            value: '2USDT+0.01BNB',
             label: this.$t('nft.rate') + '：100%'
           },
           {
             id: 5,
-            value: '10POYS+2BUSD',
+            value: '10POYS+2USDT',
             label: this.$t('nft.rate') + '：100%'
           }
         ]

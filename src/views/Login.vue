@@ -181,7 +181,7 @@ export default {
           this.$message.error(this.$t('login.password_tip'))
         } else {
           const loading = Loading.service({
-            text: this.$t('login.login_success'),
+            text: this.$t('message.loading'),
             spinner: 'el-icon-loading ElementLoading',
             background: 'rgba(0, 0, 0, 0.2)'
           })
