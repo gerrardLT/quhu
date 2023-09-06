@@ -1,6 +1,6 @@
 export default{
      tab: {
-      input_column_name: '请输入专栏名称',
+      input_column_name: '请输入专栏名称、用户名或者用户id',
       reply:'回复',
       say: '说点什么吧',
       home: '首页',

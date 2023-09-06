@@ -136,9 +136,19 @@
                 active-color="#13ce66"
                 inactive-color="#dcdfe6"
                 @change="changeRenew(scope.row)"
-                :title="scope.row.memo"
               >
               </el-switch>
+              &nbsp;
+              <el-tooltip placement="top" v-if="scope.row.memo">
+                <div slot="content">
+                  {{
+                    $i18n.locale === 'zh'
+                      ? scope.row.memo.zh
+                      : scope.row.memo.en
+                  }}
+                </div>
+                <i class="el-icon-question"></i>
+              </el-tooltip>
             </template>
           </el-table-column>
           <el-table-column
@@ -328,6 +338,7 @@ export default {
 
   created() {},
   mounted() {
+    console.log(this.$i18n.locale)
     this.getPool()
   },
   methods: {
@@ -622,7 +633,10 @@ export default {
         //     status: 'ok',
         //     renew: 'yes',
         //     quantity: 2,
-        //     memo: '温馨提示'
+        //     memo: {
+        //       zh: '123123213',
+        //       en: 'qwewqeqw'
+        //     }
         //   },
         //   {
         //     pool: 'usdt_pool',

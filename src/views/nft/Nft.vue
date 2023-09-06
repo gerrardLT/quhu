@@ -337,11 +337,11 @@ export default {
       imgUrl: '',
       srcList: [],
       mintTypes: [
-        {
-          id: 0,
-          value: '1BNB',
-          label: '100% ' + this.$t('nft.legendary_discount')
-        },
+        // {
+        //   id: 0,
+        //   value: '1BNB',
+        //   label: '100% ' + this.$t('nft.legendary_discount')
+        // },
         {
           id: 1,
           value: '3000OFC',
@@ -662,11 +662,11 @@ export default {
     '$i18n.locale': {
       handler(newVal, oldVal) {
         this.mintTypes = [
-          {
-            id: 0,
-            value: '1BNB',
-            label: '100% ' + this.$t('nft.legendary_discount')
-          },
+          // {
+          //   id: 0,
+          //   value: '1BNB',
+          //   label: '100% ' + this.$t('nft.legendary_discount')
+          // },
           {
             id: 1,
             value: '3000OFC',

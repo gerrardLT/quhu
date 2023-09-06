@@ -82,6 +82,7 @@ export default {
     translate() {
       this.lang = this.lang === 'zh' || this.lang === 'zh-CN' ? 'en' : 'zh'
       this.$i18n.locale = this.lang
+      localStorage.setItem('lang', this.lang)
     }
   },
   watch: {
@@ -109,6 +110,7 @@ export default {
   top: 30px;
   z-index: 1000;
 }
+
 /* ::v-deep .el-switch__label.is-active {
   color: #087790;
 } */
