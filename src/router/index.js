@@ -24,8 +24,9 @@ import Write from '../views/home/Write.vue'
 import Activation from '../views/my/Activation.vue'
 import Setting from '../views/my/Setting.vue'
 import Voucher from '../views/my/Voucher.vue'
+import Recharge from '../views/my/Recharge.vue'
 import Interact from '../views/my/Interact.vue'
-import Collect from '../views/my/Collect.vue'
+import Search from '../views/my/Search.vue'
 import About from '../views/my/About.vue'
 import Invite from '../views/my/Invite.vue'
 import MySpecial from '../views/my/MySpecial.vue'
@@ -119,7 +120,11 @@ const routes = [
       {name: 'about', path: '/about', component: About,
       meta: { isTabPage: true }},
       {name: 'introduce', path: '/introduce', component: Introduce,
-      meta: { isTabPage: true }}
+      meta: { isTabPage: true }},
+      {name: 'recharge', path: '/recharge', component: Recharge,
+      meta: { isTabPage: true }},
+      {name: 'search', path: '/search', component: Search,
+      meta: { isTabPage: true }}   
     ]
   },
   {

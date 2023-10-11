@@ -95,6 +95,12 @@ export default {
           icon: 'yqm',
           title: this.$t('my.invite'),
           url: '/invite'
+        },
+        {
+          id: 6,
+          icon: 'reward',
+          title: this.$t('my.reward'),
+          url: '/search'
         }
       ]
     }
@@ -138,6 +144,12 @@ export default {
             icon: 'yqm',
             title: this.$t('my.invite'),
             url: '/invite'
+          },
+          {
+            id: 6,
+            icon: 'reward',
+            title: this.$t('my.reward'),
+            url: '/search'
           }
         ]
       },

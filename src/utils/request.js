@@ -160,29 +160,6 @@ if(res.code === 1000){
         }, 1000);
       }
 }
-
-
-    // if (res.code === -1) { // 默认-1  只有为-1时才做轻提示
-    //   Message({
-    //     message: res.error,
-    //     type: 'warning',
-    //     duration: 5 * 1000
-    //   })
-
-    //   if(res.error ==='Token expired'){
-    //     setTimeout(() => {
-    //       store.dispatch('loginOutFalse')
-    //     }, 1000);
-    //   }
-    // }
-    // if (res.code === 500) { // 默认-1  只有为-1时才做轻提示
-    //   const message = '服务端错误'
-    //   Message({
-    //     message,
-    //     type: 'warning',
-    //     duration: 5 * 1000
-    //   })
-    // }
     return Promise.reject(res).catch(() => { })
   }
 },

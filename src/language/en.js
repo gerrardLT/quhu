@@ -338,7 +338,8 @@ export default{
      activation:'Activation',
      setting:'Setting',
      invite:'Invite',
-     help:'Message'
+     help:'Message',
+     reward:'reward check'
    },
    setting:{
      base_info:'Basic',
@@ -572,6 +573,7 @@ export default{
     status: 'Status',
     redeem_tip: 'Enter redemption address (BSC chain)',
     redeem: 'Redeem',
+    redeem_early:'Redeem Earlier',
     query: 'Query',
     confirm_redeem: 'Confirm Redeem',
     hash_tip: 'Enter transaction hash',
@@ -627,9 +629,9 @@ export default{
     every: 'Every',
     mining: 'Mining',
     purchase_amount: 'Subscription Quantity',
-    renew: 'Auto Subscription',
-    renew_success_tip: 'Auto Subscription Successful',
-    cancel_renew_success_tip: 'Auto Subscription Canceled Successfully',
+    renew: 'Redeem',
+    renew_success_tip: 'Successfully enabled, automatically redeemed on the day of income distribution',
+    cancel_renew_success_tip: 'Automatic Redemption Cancelled',
     cancel_back: 'Cancel Redemption',
     cancel_back_tip: 'Redemption Canceled Successfully',
     address: 'Address',
@@ -649,5 +651,22 @@ except:{
   tip1:'Maintenancing!',
   tip2:'to use better, we are upgrading the server, temporarily inaccessible during the upgrade.',
   tip3:'Sorry for the inconvenience!'
+},
+recharge:{
+  choose_coin: 'Coin',
+  choose_net: 'Chain',
+  address: 'Recharge Address',
+  min_recharge:'Minimum Deposit Dmount',
+  upwards:'>',
+  tip1:'15 network confirmations will be required to receive the account',
+  tip2:'Unlocking is expected to require 15 network confirmations',
+  tip3:'Contract address:',
+  tip4:'Please do not recharge NFT to this address'
+ },
+ search:{
+  reward_text:'you have',
+  input_placeholder:'address',
+  search_tip:'check success!',
+  success_tip:'Received, please check your wallet'
 }
   }

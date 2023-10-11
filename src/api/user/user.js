@@ -139,3 +139,20 @@ export async function notifications (data) {
   })
 }
 
+// 查询空投数量
+export async function airdrop (data) {
+  return request({
+    url: '/airdrop',
+    method: 'post',
+    data
+  })
+}
+
+// 空投claim
+export async function claim (data) {
+  return request({
+    url: '/airdrop/claim',
+    method: 'post',
+    data
+  })
+}

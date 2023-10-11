@@ -156,8 +156,7 @@
             :label="$t('mining.status')"
             :key="9"
             fixed="right"
-            align="center"
-            min-width="120"
+            min-width="150"
           >
             <template slot-scope="scope">
               <el-button
@@ -175,7 +174,7 @@
                 "
                 type="primary"
                 @click="openDualBack(scope.row)"
-                >{{ $t('mining.redeem') }}</el-button
+                >{{ $t('mining.redeem_early') }}</el-button
               >
               <el-button
                 v-else-if="scope.row.status === 'back'"
@@ -191,9 +190,20 @@
                 @click="openCancelDualBack(scope.row)"
                 >{{ $t('mining.cancel_back') }}</el-button
               >
-              <el-button v-else type="primary" @click="openQuery(scope)">{{
+              <el-button v-else type="danger" @click="openQuery(scope)">{{
                 $t('mining.query')
               }}</el-button>
+              &nbsp;
+              <el-tooltip placement="top" v-if="scope.row.memo2">
+                <div slot="content">
+                  {{
+                    $i18n.locale === 'zh'
+                      ? scope.row.memo2.zh
+                      : scope.row.memo2.en
+                  }}
+                </div>
+                <i class="el-icon-question"></i>
+              </el-tooltip>
             </template>
           </el-table-column>
         </el-table>
@@ -449,7 +459,7 @@ export default {
         token: getToken(),
         pool: v.pool,
         ids: v.id,
-        renew: v.renew ? 'yes' : 'no'
+        renew: v.renew ? 'no' : 'yes'
       })
       if (res && res.success === 'ok') {
         if (v.renew) {
@@ -630,12 +640,16 @@ export default {
         //     APR: '20-26%',
         //     bonus_time: '1,16',
         //     revenue: 0,
-        //     status: 'ok',
+        //     status: '123',
         //     renew: 'yes',
         //     quantity: 2,
         //     memo: {
         //       zh: '123123213',
         //       en: 'qwewqeqw'
+        //     },
+        //     memo2: {
+        //       zh: '123123',
+        //       en: 'sssss'
         //     }
         //   },
         //   {
@@ -648,7 +662,11 @@ export default {
         //     revenue: 0,
         //     status: 'ok',
         //     renew: 'yes',
-        //     quantity: 1
+        //     quantity: 1,
+        //     memo2: {
+        //       zh: '123123',
+        //       en: 'sssss'
+        //     }
         //   },
         //   {
         //     pool: 'locked_usdt_pool',
@@ -660,7 +678,11 @@ export default {
         //     revenue: 0,
         //     status: 'ok',
         //     renew: 'yes',
-        //     quantity: 2
+        //     quantity: 2,
+        //     memo2: {
+        //       zh: '123123',
+        //       en: 'sssss'
+        //     }
         //   },
         //   {
         //     pool: 'locked_eth_pool',
@@ -672,7 +694,11 @@ export default {
         //     revenue: 0,
         //     status: 'back',
         //     renew: 'yes',
-        //     quantity: 1
+        //     quantity: 1,
+        //     memo2: {
+        //       zh: '123123',
+        //       en: 'sssss'
+        //     }
         //   },
         //   {
         //     pool: 'locked_btc_pool',
@@ -684,7 +710,11 @@ export default {
         //     revenue: 0,
         //     status: 'backing',
         //     renew: 'yes',
-        //     quantity: 1
+        //     quantity: 1,
+        //     memo2: {
+        //       zh: '123123',
+        //       en: 'sssss'
+        //     }
         //   }
         // ]
         this.myLists.dual_data.forEach((item) => {
@@ -692,7 +722,7 @@ export default {
             item.bonus_time = this.transformTime(Number(item.bonus_time))
           }
           item.start_time = this.transformTime(Number(item.start_time))
-          item.renew = item.renew === 'yes' ? true : false
+          item.renew = item.renew === 'yes' ? false : true
         })
         this.myLists.data.forEach((item) => {
           item.start_time = this.transformTime(Number(item.start_time))

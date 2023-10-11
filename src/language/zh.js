@@ -338,7 +338,8 @@ export default{
         activation:'活跃度',
         setting:'用户设置',
         invite:'邀请好友',
-        help:'我的消息'
+        help:'我的消息',
+        reward:'奖励查询'
       },
       setting:{
         base_info:'基本信息',
@@ -572,6 +573,7 @@ export default{
         status:'状态',
         redeem_tip:'请填入赎回地址（bsc链）',
         redeem:'赎回',
+        redeem_early:'提前赎回',
         query:'查询',
         confirm_redeem:'确认赎回',
         hash_tip:'请填入交易hash',
@@ -628,9 +630,9 @@ export default{
         every:'每',
         mining:'挖矿',
         purchase_amount:'存入份数',
-        renew:'自动续期',
-        renew_success_tip:'自动续期成功',
-        cancel_renew_success_tip:'取消自动续期成功',
+        renew:'赎回',
+        renew_success_tip:'启用成功，收益发放日自动赎回',
+        cancel_renew_success_tip:'已取消自动赎回',
         cancel_back:'取消赎回',
         cancel_back_tip:'取消赎回成功',
         address:'地址',
@@ -650,6 +652,22 @@ export default{
         tip1:'网站维护中...',
         tip2:'为了让您更好的使用系统，我们正在对服务器进行升级，升级期间暂时无法访问。',
         tip3:'给您带来的不便，敬请谅解！'
+      },
+      recharge:{
+       choose_coin: '选择币种',
+       choose_net: '选择网络',
+       address: '充值地址',
+       min_recharge:'最小充币数量',
+       upwards:'大于',
+       tip1:'到账预计需要15次网络确认',
+       tip2:'解锁预计需要15次网络确认',
+       tip3:'合约地址:',
+       tip4:'请不要往该地址充值NFT'
+      },
+      search:{
+        reward_text:'您当前奖励为：',
+        input_placeholder:'请输入查询地址',
+        search_tip:'查询成功！',
+        success_tip:'已领取，请至钱包查看'
       }
-
      }

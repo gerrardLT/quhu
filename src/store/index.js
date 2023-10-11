@@ -11,6 +11,7 @@ import Vuex from 'vuex'
 import router from '@/router'
 import user from './modules/user'
 import MD5 from 'MD5'
+import {Message} from 'element-ui'
 import { getUser, changeUser } from '@/api/user/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { Loading } from 'element-ui'
@@ -28,7 +29,7 @@ const store = new Vuex.Store({
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))
       state.userInfo = Object.assign({}, userInfo, data)
       localStorage.setItem('quhu-userInfo', JSON.stringify(state.userInfo))
-      this.$message.success(i18n.t('message.change_success'))
+      Message.success(i18n.t('message.change_success'))
     },
     SET_USERINFO (state, data) {
       const userInfo = Object.assign(state.userInfo, data)

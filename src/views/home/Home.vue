@@ -645,18 +645,20 @@
                       $t('home.feel_nice')
                     }}</span>
                   </div>
-                  <el-input
-                    v-show="item.isEditReply"
-                    :placeholder="$t('home.content_tip')"
-                    v-model="item.reply"
-                    class="reply_input"
-                  >
-                    <el-button
-                      slot="append"
+                  <div class="reply_container" v-show="item.isEditReply">
+                    <input
+                      :placeholder="$t('home.content_tip')"
+                      v-model.lazy="item.reply"
+                      class="reply_input el-textarea__inner"
+                    />
+                    <div
+                      class="el-input-group__append"
                       @click="submitReply(item, index, 'articleReply')"
-                      >{{ $t('home.reply') }}</el-button
                     >
-                  </el-input>
+                      {{ $t('home.reply') }}
+                    </div>
+                  </div>
+
                   <div class="comment-item-container"></div>
                 </div>
               </div>
@@ -2562,6 +2564,9 @@ export default {
   // text-align: center;
   padding: 10px 10px;
 }
+.reply_container {
+  display: flex;
+}
 .short-square {
   padding-left: 20px;
   position: relative;
@@ -2785,10 +2790,18 @@ export default {
 .reply {
   cursor: pointer;
 }
+::v-deep .el-input-group__append {
+  padding: 0 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
 ::v-deep .reply_input {
   width: calc(100% - 76px);
-  padding-left: 30px;
+  padding-left: 10px;
   padding-right: 20px;
+  border-radius: 0;
 }
 .topic-detail::-webkit-scrollbar {
   display: none;
