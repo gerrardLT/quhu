@@ -3,21 +3,14 @@
     <div class="user_info">
       <el-col :span="3" class="left_container">
         <div class="nav_left">
-          <router-link
-            :to="item.url"
-            v-for="(item, i) in navList"
-            :key="i"
-            class="nav_item"
-          >
-            <svg
-              :style="{
+          <router-link :to="item.url" v-for="(item, i) in navList" :key="i" class="nav_item">
+            <svg :style="{
                 fill: '#087790',
                 width: '15px',
                 height: '15px',
                 marginRight: '5px',
                 verticalAlign: '-1px'
-              }"
-            >
+              }">
               <use :xlink:href="'#icon-' + item.icon" rel="external nofollow" />
             </svg>
             <span :title="item.title"> {{ item.title }} </span>
@@ -27,7 +20,7 @@
       </el-col>
 
       <el-col :span="21" class="right_container">
-        <el-page-header v-if="!isMainPage" @back="goBack" class="back">
+        <el-page-header v-if="!isMainPage" @back="goBack">
         </el-page-header>
         <router-view></router-view>
       </el-col>
