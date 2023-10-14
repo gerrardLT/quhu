@@ -2,14 +2,12 @@
   <div class="wallet">
     <div class="top" style="margin-right: 10px; margin-bottom: 20px">
       <div class="balance">
-        <svg
-          :style="{
+        <svg :style="{
             fill: '#087790',
             width: '30px',
             height: '30px',
             marginRight: '15px'
-          }"
-        >
+          }">
           <use :xlink:href="'#icon-pay'" rel="external nofollow" />
         </svg>
         <span class="item">{{ balanceAmount.ofc }} ofc</span>
@@ -21,26 +19,14 @@
         <span class="item">{{ balanceAmount.bnb }} bnb</span>
       </div>
       <div class="connect">
-        <el-button
-          type="info"
-          round
-          @click="connectWallet"
-          @mouseover.native="handleMouseOver"
-          class="connect_btn"
-          >{{
+        <el-button type="info" round @click="connectWallet" @mouseover.native="handleMouseOver" class="connect_btn">{{
             (account
               ? account.slice(0, 4) +
                 '...' +
                 account.slice(account.length - 4, account.length)
               : '') || $t('nft.link_wallet')
-          }}</el-button
-        >
-        <div
-          class="logMenu"
-          v-show="showMenu"
-          @mouseover="handleMouseOver"
-          @mouseout="handleMouseOut"
-        >
+          }}</el-button>
+        <div class="logMenu" v-show="showMenu" @mouseover="handleMouseOver" @mouseout="handleMouseOut">
           <span @click="logOut">log out</span>
         </div>
       </div>
@@ -86,7 +72,9 @@ export default {
     if (sessionStorage.getItem('walletAccount')) {
       this.account = sessionStorage.getItem('walletAccount')
     }
-    window.ethereum.on('accountsChanged', this.handleAccountsChanged)
+    if (window.ethereum) {
+      window.ethereum.on('accountsChanged', this.handleAccountsChanged)
+    }
   },
   methods: {
     handleMouseOver() {

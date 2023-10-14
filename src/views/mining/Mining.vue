@@ -3,140 +3,56 @@
     <Wallet :balance-amount="balance" @changeBalance="changeBalance"></Wallet>
     <h1 class="title">{{ $t('mining.title') }}</h1>
     <el-tabs v-model="activeTabName" @tab-click="handleTabClick" class="tabs">
-      <el-tab-pane
-        :label="$t('mining.staking_and_mining')"
-        :name="$t('mining.staking_and_mining')"
-        class="stake_and_mining"
-      >
+      <el-tab-pane :label="$t('mining.staking_and_mining')" :name="$t('mining.staking_and_mining')" class="stake_and_mining">
         <el-button type="danger" class="log" @click="openStakeFailQuery">{{
           $t('mining.stake_fail')
         }}</el-button>
         <div class="select_column">
           <div class="mining_pool_list">
-            <div
-              v-for="item in poolTypeList"
-              :key="item"
-              :class="{ item: true, choosed: activePool === item }"
-              @click="handlePoolTypeChoosed(item)"
-            >
+            <div v-for="item in poolTypeList" :key="item" :class="{ item: true, choosed: activePool === item }" @click="handlePoolTypeChoosed(item)">
               {{ item }}
             </div>
           </div>
         </div>
-        <Table
-          :active-pool="activePool"
-          :list="poolList"
-          :balance-amount="balance"
-          @refreshList="refresh"
-          v-loading="nftLoading"
-        ></Table>
+        <Table :active-pool="activePool" :list="poolList" :balance-amount="balance" @refreshList="refresh" v-loading="nftLoading"></Table>
       </el-tab-pane>
-      <el-tab-pane
-        :label="$t('mining.my_stack')"
-        :name="$t('mining.my_stack')"
-        class="my_stack"
-      >
-        <el-button
-          type="danger"
-          v-show="!tableLoading"
-          class="log"
-          @click="openStakeFailQuery"
-          >{{ $t('mining.stake_fail') }}</el-button
-        >
+      <el-tab-pane :label="$t('mining.my_stack')" :name="$t('mining.my_stack')" class="my_stack">
+        <el-button type="danger" v-show="!tableLoading" class="log" @click="openStakeFailQuery">{{ $t('mining.stake_fail') }}</el-button>
         <div class="total_num">
           {{ $t('mining.total_num') }}:{{ showMyLists && showMyLists.length }}
         </div>
         <div class="select_column">
           <div class="mining_pool_list">
-            <div
-              v-for="item in poolTypeList"
-              :key="item"
-              :class="{ item: true, choosed: myActivePool === item }"
-              @click="handleMyPoolTypeChoosed(item)"
-            >
+            <div v-for="item in poolTypeList" :key="item" :class="{ item: true, choosed: myActivePool === item }" @click="handleMyPoolTypeChoosed(item)">
               {{ item }}
             </div>
           </div>
         </div>
-        <el-table
-          :data="showMyLists"
-          style="width: 100%"
-          height="600"
-          v-loading="tableLoading"
-          ref="myTable"
-        >
-          <el-table-column
-            prop="pool"
-            :label="$t('mining.pool')"
-            width="180"
-            :key="1"
-          >
+        <el-table :data="showMyLists" style="width: 100%" height="600" v-loading="tableLoading" ref="myTable">
+          <el-table-column prop="pool" :label="$t('mining.pool')" width="180" :key="1">
           </el-table-column>
-          <el-table-column
-            prop="order_id"
-            :label="$t('mining.order_id')"
-            width="120"
-            :key="2"
-            v-if="myActivePool === $t('mining.usdt')"
-          >
+          <el-table-column prop="order_id" :label="$t('mining.order_id')" width="120" :key="2" v-if="myActivePool !== $t('mining.nft')">
           </el-table-column>
-          <el-table-column
-            v-if="myActivePool === $t('mining.nft')"
-            prop="nft_id"
-            :label="$t('mining.nft_id')"
-            width="180"
-            :key="3"
-          >
+          <el-table-column v-if="myActivePool === $t('mining.nft')" prop="nft_id" :label="$t('mining.nft_id')" width="180" :key="3">
           </el-table-column>
-          <el-table-column
-            prop="start_time"
-            :label="$t('mining.start_time')"
-            width="180"
-            :key="4"
-          >
+          <el-table-column prop="start_time" :label="$t('mining.start_time')" width="180" :key="4">
           </el-table-column>
-          <el-table-column
-            prop="APR"
-            :label="$t('mining.APR')"
-            width="150"
-            :key="5"
-          >
+          <el-table-column prop="APR" :label="$t('mining.APR')" width="150" :key="5">
           </el-table-column>
-          <el-table-column
-            prop="bonus_time"
-            :label="$t('mining.bonus_time')"
-            width="180"
-          >
+          <el-table-column prop="bonus_time" :label="$t('mining.bonus_time')" width="180" v-if="myActivePool !== $t('mining.current')">
           </el-table-column>
-          <el-table-column
-            prop="quantity"
-            :label="$t('mining.current_quantity')"
-            width="150"
-            v-if="myActivePool === $t('mining.usdt')"
-            :key="6"
-          >
+          <el-table-column prop="quantity" :label="$t('mining.current_quantity')" width="150" v-if="myActivePool !== $t('mining.nft')" :key="6">
           </el-table-column>
-          <el-table-column
-            prop="revenue"
-            :label="$t('mining.revenue')"
-            width="150"
-            :key="7"
-          >
+          <el-table-column prop="revenue" :label="$t('mining.revenue')" width="150" :key="7">
           </el-table-column>
-          <el-table-column
-            prop="renew"
-            :label="$t('mining.renew')"
-            v-if="myActivePool === $t('mining.usdt')"
-            :key="8"
-            min-width="100"
-          >
+          <el-table-column prop="unclaimed" :label="$t('mining.unclaimed')" width="200" :key="8" v-if="myActivePool === $t('mining.current')">
             <template slot-scope="scope">
-              <el-switch
-                v-model="scope.row.renew"
-                active-color="#13ce66"
-                inactive-color="#dcdfe6"
-                @change="changeRenew(scope.row)"
-              >
+              <el-button :type="scope.row.status === 'back'?'info':'primary'" @click="claim(scope.row)">{{ scope.row.unclaimed }}{{ scope.row.unclaimed? $t('mining.claim_tip'):''}}</el-button>
+            </template>
+          </el-table-column>
+          <el-table-column prop="renew" :label="$t('mining.renew')" v-if="myActivePool === $t('mining.usdt')" :key="9" min-width="100">
+            <template slot-scope="scope">
+              <el-switch v-model="scope.row.renew" active-color="#13ce66" inactive-color="#dcdfe6" @change="changeRenew(scope.row)">
               </el-switch>
               &nbsp;
               <el-tooltip placement="top" v-if="scope.row.memo">
@@ -151,60 +67,38 @@
               </el-tooltip>
             </template>
           </el-table-column>
-          <el-table-column
-            prop="status"
-            :label="$t('mining.status')"
-            :key="9"
-            fixed="right"
-            align="center"
-            min-width="120"
-          >
+          <el-table-column prop="status" :label="$t('mining.status')" :key="10" fixed="right" min-width="150">
             <template slot-scope="scope">
-              <el-button
-                v-if="
+              <el-button v-if="
                   scope.row.status === 'ok' && myActivePool === $t('mining.nft')
-                "
-                type="primary"
-                @click="openRedeemDialog(scope)"
-                >{{ $t('mining.redeem') }}</el-button
-              >
-              <el-button
-                v-else-if="
+                " type="primary" @click="openRedeemDialog(scope)">{{ $t('mining.redeem') }}</el-button>
+              <el-button v-else-if="
                   scope.row.status === 'ok' &&
-                  myActivePool === $t('mining.usdt')
-                "
-                type="primary"
-                @click="openDualBack(scope.row)"
-                >{{ $t('mining.redeem') }}</el-button
-              >
-              <el-button
-                v-else-if="scope.row.status === 'back'"
-                disabled
-                plain
-                type="info"
-                >{{ $t('mining.redeemed') }}</el-button
-              >
+                  myActivePool !== $t('mining.nft')
+                " type="primary" @click="openDualBack(scope.row)">{{ myActivePool === $t('mining.usdt')? $t('mining.redeem_early'):$t('mining.redeem') }}</el-button>
+              <el-button v-else-if="scope.row.status === 'back'" disabled plain type="info">{{ $t('mining.redeemed') }}</el-button>
 
-              <el-button
-                v-else-if="scope.row.status === 'backing'"
-                type="danger"
-                @click="openCancelDualBack(scope.row)"
-                >{{ $t('mining.cancel_back') }}</el-button
-              >
-              <el-button v-else type="primary" @click="openQuery(scope)">{{
+              <el-button v-else-if="scope.row.status === 'backing'" type="danger" @click="openCancelDualBack(scope.row)">{{ $t('mining.cancel_back') }}</el-button>
+              <el-button v-else type="danger" @click="openQuery(scope)">{{
                 $t('mining.query')
               }}</el-button>
+              &nbsp;
+              <el-tooltip placement="top" v-if="scope.row.memo2">
+                <div slot="content">
+                  {{
+                    $i18n.locale === 'zh'
+                      ? scope.row.memo2.zh
+                      : scope.row.memo2.en
+                  }}
+                </div>
+                <i class="el-icon-question"></i>
+              </el-tooltip>
             </template>
           </el-table-column>
         </el-table>
       </el-tab-pane>
     </el-tabs>
-    <el-dialog
-      :title="$t('mining.redeem_tip')"
-      :visible.sync="redeemVisible"
-      width="30%"
-      :before-close="handleRedeemClose"
-    >
+    <el-dialog :title="$t('mining.redeem_tip')" :visible.sync="redeemVisible" width="30%" :before-close="handleRedeemClose">
       <el-input class="redeem" v-model="redeemAddress"></el-input>
       <span slot="footer" class="dialog-footer">
         <el-button type="primary" @click="redeem">{{
@@ -212,12 +106,7 @@
         }}</el-button>
       </span>
     </el-dialog>
-    <el-dialog
-      :title="$t('mining.hash_tip')"
-      :visible.sync="queryVisible"
-      width="30%"
-      :before-close="handleQueryClose"
-    >
+    <el-dialog :title="$t('mining.hash_tip')" :visible.sync="queryVisible" width="30%" :before-close="handleQueryClose">
       <el-input v-model="queryHash"></el-input>
       <span slot="footer" class="dialog-footer">
         <el-button type="primary" @click="query">{{
@@ -225,34 +114,17 @@
         }}</el-button>
       </span>
     </el-dialog>
-    <el-dialog
-      :title="$t('mining.restake')"
-      :visible.sync="stakeFailQueryVisible"
-      width="30%"
-      :before-close="handleStakeFailClose"
-    >
+    <el-dialog :title="$t('mining.restake')" :visible.sync="stakeFailQueryVisible" width="30%" :before-close="handleStakeFailClose">
       <div style="margin-bottom: 10px">
-        {{ $t('mining.address') }}：<br /><el-input
-          v-model="stakeFailObj.address"
-        ></el-input>
+        {{ $t('mining.address') }}：<br /><el-input v-model="stakeFailObj.address"></el-input>
       </div>
       <div style="margin-bottom: 10px">
-        {{ $t('mining.nft_number') }}：<br /><el-input
-          v-model="stakeFailObj.nft_id"
-        ></el-input>
+        {{ $t('mining.nft_number') }}：<br /><el-input v-model="stakeFailObj.nft_id"></el-input>
       </div>
       <div style="margin-bottom: 10px" class="pool_select">
         {{ $t('mining.pool_name') }}：<br />
-        <el-select
-          v-model="stakeFailObj.pool"
-          :placeholder="$t('mining.pool_select')"
-        >
-          <el-option
-            v-for="item in poolList"
-            :key="item.pool"
-            :label="item.pool"
-            :value="item.pool"
-          >
+        <el-select v-model="stakeFailObj.pool" :placeholder="$t('mining.pool_select')">
+          <el-option v-for="item in poolList" :key="item.pool" :label="item.pool" :value="item.pool">
           </el-option>
         </el-select>
       </div>
@@ -278,7 +150,10 @@ import {
   dual_pool,
   dual_back,
   cancel_back,
-  dual_renew
+  dual_renew,
+  current_pool,
+  current_back,
+  current_claim
 } from '@/api/mining/mining'
 import { getToken } from '@/utils/auth'
 import { debounce } from 'lodash'
@@ -297,7 +172,11 @@ export default {
       showNftLists: [],
       myLists: [],
       showMyLists: [],
-      poolTypeList: [this.$t('mining.nft'), this.$t('mining.usdt')],
+      poolTypeList: [
+        this.$t('mining.nft'),
+        this.$t('mining.usdt'),
+        this.$t('mining.current')
+      ],
       tableLoading: false,
       activeTabName: this.$t('mining.staking_and_mining'),
       stakingValue: 'nft',
@@ -337,12 +216,47 @@ export default {
   },
 
   created() {},
-  mounted() {
-    console.log(this.$i18n.locale)
-    this.getPool()
+  async mounted() {
+    const query = this.$route.query
+    await this.getPool()
+    if (query.referer === 'benifit') {
+      this.handlePoolTypeChoosed(this.$t('mining.current'))
+    }
   },
   methods: {
     transformTime,
+    async claim(v) {
+      console.log(v)
+      if (v.unclaimed > 0) {
+        const res = await current_claim({
+          id:
+            this.loginType === 'eth'
+              ? this.userInfo.eth_account
+              : this.userInfo.user,
+          token: getToken(),
+          pool: v.pool,
+          ids: v.id
+        })
+        if (res && res.success === 'ok') {
+          this.$message.success(this.$t('mining.claim_success_tip'))
+        }
+      }
+    },
+    async currentBack(v) {
+      const res = await current_back({
+        id:
+          this.loginType === 'eth'
+            ? this.userInfo.eth_account
+            : this.userInfo.user,
+        token: getToken(),
+        pool: v.pool,
+        ids: v.id
+      })
+      if (res && res.success === 'ok') {
+        this.$message.success(this.$t('mining.redeem_success_tip'))
+        this.getMyStake()
+      }
+    },
     renderHeader(render, { column }) {
       let label = column.label
       return [
@@ -377,7 +291,11 @@ export default {
         }
       )
         .then(() => {
-          this.dualBack(v)
+          if (v.pool.indexOf('current') !== -1) {
+            this.currentBack(v)
+          } else {
+            this.dualBack(v)
+          }
         })
         .catch(() => {
           // this.$message({
@@ -424,6 +342,7 @@ export default {
       })
       if (res && res.success === 'ok') {
         this.$message.success(this.$t('mining.redeem_success_tip'))
+        this.getMyStake()
       }
     },
     async cancelBack(v) {
@@ -449,7 +368,7 @@ export default {
         token: getToken(),
         pool: v.pool,
         ids: v.id,
-        renew: v.renew ? 'yes' : 'no'
+        renew: v.renew ? 'no' : 'yes'
       })
       if (res && res.success === 'ok') {
         if (v.renew) {
@@ -520,8 +439,10 @@ export default {
     refresh(type) {
       if (type === this.$t('mining.nft')) {
         this.getPool()
-      } else {
+      } else if (type === this.$t('mining.usdt')) {
         this.getDualPool()
+      } else {
+        this.getCurrentPool()
       }
     },
     handleQueryClose() {
@@ -609,7 +530,7 @@ export default {
     changeBalance(v) {
       this.balance = v
     },
-    async getMyStake() {
+    async getMyStake(type) {
       this.tableLoading = true
       const res = await my_mining({
         id:
@@ -620,22 +541,24 @@ export default {
       })
       if (res && res.success === 'ok') {
         this.myLists = res
-
-        // this.myLists.dual_data = [
+        // this.myLists.current_data = [
         //   {
         //     pool: 'usdt_pool',
         //     order_id: 'q4742fbc1',
         //     id: 1525622927,
         //     start_time: 1692288000,
         //     APR: '20-26%',
-        //     bonus_time: '1,16',
         //     revenue: 0,
-        //     status: 'ok',
+        //     status: '123',
         //     renew: 'yes',
         //     quantity: 2,
         //     memo: {
         //       zh: '123123213',
         //       en: 'qwewqeqw'
+        //     },
+        //     memo2: {
+        //       zh: '123123',
+        //       en: 'sssss'
         //     }
         //   },
         //   {
@@ -644,11 +567,14 @@ export default {
         //     id: 9761433499,
         //     start_time: 1692288000,
         //     APR: '20-26%',
-        //     bonus_time: '1,16',
         //     revenue: 0,
         //     status: 'ok',
         //     renew: 'yes',
-        //     quantity: 1
+        //     quantity: 1,
+        //     memo2: {
+        //       zh: '123123',
+        //       en: 'sssss'
+        //     }
         //   },
         //   {
         //     pool: 'locked_usdt_pool',
@@ -656,11 +582,14 @@ export default {
         //     id: 4018259456,
         //     start_time: 1692288000,
         //     APR: '35-45%',
-        //     bonus_time: 1700236800,
         //     revenue: 0,
         //     status: 'ok',
         //     renew: 'yes',
-        //     quantity: 2
+        //     quantity: 2,
+        //     memo2: {
+        //       zh: '123123',
+        //       en: 'sssss'
+        //     }
         //   },
         //   {
         //     pool: 'locked_eth_pool',
@@ -668,11 +597,14 @@ export default {
         //     id: 8311986161,
         //     start_time: 1692288000,
         //     APR: '23-33%',
-        //     bonus_time: 1700236800,
         //     revenue: 0,
         //     status: 'back',
         //     renew: 'yes',
-        //     quantity: 1
+        //     quantity: 1,
+        //     memo2: {
+        //       zh: '123123',
+        //       en: 'sssss'
+        //     }
         //   },
         //   {
         //     pool: 'locked_btc_pool',
@@ -680,11 +612,14 @@ export default {
         //     id: 3042267695,
         //     start_time: 1692288000,
         //     APR: '23-33%',
-        //     bonus_time: 1700236800,
         //     revenue: 0,
         //     status: 'backing',
         //     renew: 'yes',
-        //     quantity: 1
+        //     quantity: 1,
+        //     memo2: {
+        //       zh: '123123',
+        //       en: 'sssss'
+        //     }
         //   }
         // ]
         this.myLists.dual_data.forEach((item) => {
@@ -692,12 +627,25 @@ export default {
             item.bonus_time = this.transformTime(Number(item.bonus_time))
           }
           item.start_time = this.transformTime(Number(item.start_time))
-          item.renew = item.renew === 'yes' ? true : false
+          item.renew = item.renew === 'yes' ? false : true
         })
         this.myLists.data.forEach((item) => {
           item.start_time = this.transformTime(Number(item.start_time))
         })
-        this.showMyLists = this.myLists.data
+        this.myLists.current_data.forEach((item) => {
+          if (typeof item.bonus_time !== 'string') {
+            item.bonus_time = this.transformTime(Number(item.bonus_time))
+          }
+          item.start_time = this.transformTime(Number(item.start_time))
+          item.renew = item.renew === 'yes' ? false : true
+        })
+        if (type === this.$t('mining.nft')) {
+          this.showMyLists = this.myLists.data
+        } else if (type === this.$t('mining.usdt')) {
+          this.showMyLists = this.myLists.dual_data
+        } else {
+          this.showMyLists = this.myLists.current_data
+        }
 
         this.tableLoading = false
       }
@@ -706,8 +654,10 @@ export default {
       if (this.activeTabName === this.$t('mining.staking_and_mining')) {
         if (this.activePool === this.$t('mining.nft')) {
           this.getPool()
-        } else {
+        } else if (this.activePool === this.$t('mining.usdt')) {
           this.getDualPool()
+        } else {
+          this.getCurrentPool()
         }
       }
       if (this.activeTabName === this.$t('mining.my_stack')) {
@@ -719,8 +669,10 @@ export default {
       this.activePool = v
       if (v === this.$t('mining.nft')) {
         this.getPool()
-      } else {
+      } else if (v === this.$t('mining.usdt')) {
         this.getDualPool()
+      } else {
+        this.getCurrentPool()
       }
     }, 500),
     handleMyPoolTypeChoosed: debounce(function (v) {
@@ -728,17 +680,18 @@ export default {
       if (v === this.$t('mining.nft')) {
         this.showMyLists = this.myLists.data
         this.$nextTick(() => {
-          console.log(this.$refs.myTable)
           this.$refs.myTable.doLayout()
         })
-        console.log(this.showMyLists)
-      } else {
+      } else if (v === this.$t('mining.usdt')) {
         this.showMyLists = this.myLists.dual_data
         this.$nextTick(() => {
-          console.log(this.$refs.myTable)
           this.$refs.myTable.doLayout()
         })
-        console.log(this.showMyLists)
+      } else {
+        this.showMyLists = this.myLists.current_data
+        this.$nextTick(() => {
+          this.$refs.myTable.doLayout()
+        })
       }
     }, 500),
     async getDualPool() {
@@ -813,13 +766,33 @@ export default {
         // ]
       }
       this.nftLoading = false
+    },
+    async getCurrentPool() {
+      this.nftLoading = true
+      const res = await current_pool()
+      if (res && res.success === 'ok') {
+        const arr = []
+        res.data.forEach((ele) => {
+          arr.push({
+            ...ele,
+            transaction: ele.fees,
+            description: ''
+          })
+        })
+        this.poolList = arr
+      }
+      this.nftLoading = false
     }
   },
   watch: {
     '$i18n.locale': {
       handler(newVal, oldVal) {
         this.activeTabName = this.$t('mining.staking_and_mining')
-        this.poolTypeList = [this.$t('mining.nft'), this.$t('mining.usdt')]
+        this.poolTypeList = [
+          this.$t('mining.nft'),
+          this.$t('mining.usdt'),
+          this.$t('mining.current')
+        ]
         this.activePool = this.$t('mining.nft')
       },
       deep: true,

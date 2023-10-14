@@ -2,7 +2,7 @@
  * @Author: gerrardlt 305690790@qq.com
  * @Date: 2023-01-15 01:58:41
  * @LastEditors: gerrardlt 305690790@qq.com
- * @LastEditTime: 2023-01-30 11:03:32
+ * @LastEditTime: 2023-10-14 09:26:29
  * @FilePath: \quhu\src\utils\request.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -143,7 +143,10 @@ service.interceptors.response.use((response) => {
       1059:'transaction_failed',
       1060:'error_method',
       1061:'nft_id_error',
-      1062:'card_error'
+      1062:'card_error',
+      1063:'coupon_error',
+      1064:'already_claim',
+      1065:'coupon_expire'
     };
 
 if(res.code === 1000){
@@ -160,29 +163,6 @@ if(res.code === 1000){
         }, 1000);
       }
 }
-
-
-    // if (res.code === -1) { // 默认-1  只有为-1时才做轻提示
-    //   Message({
-    //     message: res.error,
-    //     type: 'warning',
-    //     duration: 5 * 1000
-    //   })
-
-    //   if(res.error ==='Token expired'){
-    //     setTimeout(() => {
-    //       store.dispatch('loginOutFalse')
-    //     }, 1000);
-    //   }
-    // }
-    // if (res.code === 500) { // 默认-1  只有为-1时才做轻提示
-    //   const message = '服务端错误'
-    //   Message({
-    //     message,
-    //     type: 'warning',
-    //     duration: 5 * 1000
-    //   })
-    // }
     return Promise.reject(res).catch(() => { })
   }
 },

@@ -35,11 +35,7 @@
           </div>
           <div class="css-12m5e3x"></div>
         </div>
-        <div
-          class="table-body css-ltu2j2"
-          v-for="(item, index) in list"
-          :key="item.id"
-        >
+        <div class="table-body css-ltu2j2" v-for="(item, index) in list" :key="item.id">
           <div class="css-1jjjm6k">
             <div data-bn-type="text" class="css-1bjebg1">{{ index + 1 }}</div>
           </div>
@@ -53,11 +49,7 @@
             <div class="css-whuilf">
               <div class="css-u5tz8w">
                 <div class="css-1763n9c">
-                  <div
-                    data-bn-type="text"
-                    style="white-space: nowrap"
-                    class="css-1ds83c4"
-                  >
+                  <div data-bn-type="text" style="white-space: nowrap" class="css-1ds83c4">
                     {{ item.APR }}
                   </div>
                 </div>
@@ -69,11 +61,7 @@
             <div class="css-whuilf">
               <div class="css-u5tz8w">
                 <div class="css-1763n9c">
-                  <div
-                    data-bn-type="text"
-                    style="white-space: nowrap"
-                    class="css-1ds83c4"
-                  >
+                  <div data-bn-type="text" style="white-space: nowrap" class="css-1ds83c4">
                     {{ item.cycle }}
                   </div>
                 </div>
@@ -97,37 +85,18 @@
           </div>
         </div>
       </div>
-      <el-dialog
-        :title="
+      <el-dialog :title="
           activePool === $t('mining.nft')
             ? $t('mining.stake')
             : $t('mining.mining')
-        "
-        :visible.sync="stakeVisible"
-        :modal-append-to-body="false"
-        width="50%"
-        :before-close="handleStakeClose"
-        :destroy-on-close="true"
-        :fullscreen="false"
-      >
-        <div
-          class="stake_dialog"
-          v-loading="dialogLoading"
-          :element-loading-text="$t('mining.loading_text')"
-        >
+        " :visible.sync="stakeVisible" :modal-append-to-body="false" width="50%" :before-close="handleStakeClose" :destroy-on-close="true" :fullscreen="false">
+        <div class="stake_dialog" v-loading="dialogLoading" :element-loading-text="$t('mining.loading_text')">
           <div class="left_container">
-            <!-- <div class="value common">
-              <div style="margin-bottom: 5px">{{ $t('mining.value') }}：</div>
-              <div class="text-color fs14">{{ currentPool.value }}</div>
-            </div> -->
-            <div
-              class="mint_total common"
-              v-if="
+            <div class="mint_total common" v-if="
                 currentPool.mint_total &&
                 currentPool.pool &&
                 currentPool.pool.indexOf('ofc_') !== -1
-              "
-            >
+              ">
               <div style="margin-bottom: 5px">
                 {{ $t('mining.mint_total') }}：
               </div>
@@ -135,14 +104,11 @@
                 {{ formatNumberToWestern(currentPool.mint_total) }}
               </div>
             </div>
-            <div
-              class="now_mint common"
-              v-if="
+            <div class="now_mint common" v-if="
                 currentPool.now_mint &&
                 currentPool.pool &&
                 currentPool.pool.indexOf('ofc_') !== -1
-              "
-            >
+              ">
               <div style="margin-bottom: 5px">
                 {{ $t('mining.now_mint') }}：
               </div>
@@ -163,10 +129,7 @@
                 {{ formatNumberToWestern(currentPool.total) }}
               </div>
             </div>
-            <div
-              class="total common"
-              v-if="currentPool.total && activePool === $t('mining.usdt')"
-            >
+            <div class="total common" v-if="currentPool.total && activePool !== $t('mining.nft')">
               <div style="margin-bottom: 5px">{{ $t('mining.total') }}：</div>
               <div class="text-color fs14">{{ currentPool.total }}</div>
             </div>
@@ -241,26 +204,16 @@
               <!-- {{ $t('mining.dividend_policy') }}：
           <br />
           <br /> -->
-              <div
-                class="select_amount"
-                v-if="activePool === $t('mining.usdt')"
-              >
-                <span style="display: inline-block; margin-bottom: 5px"
-                  >{{ $t('mining.purchase_amount') }} ：</span
-                >
-                <el-input
-                  v-model="amount"
-                  :placeholder="this.$t('mining.input_number_tip')"
-                ></el-input>
-                <div
-                  style="
+              <div class="select_amount" v-if="activePool !== $t('mining.nft')">
+                <span style="display: inline-block; margin-bottom: 5px">{{ $t('mining.purchase_amount') }} ：</span>
+                <el-input type="number" @keydown.native="e=>e.returnValue=(['e','E','-','+'].includes(e.key))?false:e.returnValue" v-model="amount" :placeholder="this.$t('mining.input_number_tip')"></el-input>
+                <div style="
                     width: 100%;
                     text-align: right;
                     margin-top: 10px;
                     color: rgb(112, 122, 138);
                     font-size: 12px;
-                  "
-                >
+                  ">
                   {{ $t('mining.need_fees') }}：{{
                     currentPool.transaction &&
                     Number(currentPool.transaction.split(' ')[0]) *
@@ -272,25 +225,16 @@
               </div>
               <br />
               <div style="color: rgb(112, 122, 138); margin-bottom: 5px">
-                {{ $t('mining.estimated_annualized') }} ：<span
-                  style="color: #087790"
-                  >{{ currentPool.APR }}</span
-                >
+                {{ $t('mining.estimated_annualized') }} ：<span style="color: #087790">{{ currentPool.APR }}</span>
               </div>
               <br />
-              <div
-                style="color: rgb(112, 122, 138); margin-bottom: 5px"
-                v-if="currentPool.Average_APR"
-              >
+              <div style="color: rgb(112, 122, 138); margin-bottom: 5px" v-if="currentPool.Average_APR">
                 {{ $t('mining.Average_APR') }} ：<span style="color: #087790">{{
                   currentPool.Average_APR
                 }}</span>
               </div>
               <br />
-              <div
-                class="css-b3pq5h"
-                v-if="activePool === $t('mining.usdt') && currentPool.pool"
-              >
+              <div class="css-b3pq5h" v-if="activePool === $t('mining.usdt') && currentPool.pool">
                 <div class="css-rtmgzp">
                   <div class="css-10nf7hq">
                     <div data-bn-type="text" class="css-q9r0e3">
@@ -298,47 +242,46 @@
                     </div>
                   </div>
                 </div>
-                <el-switch
-                  v-model="renewal"
-                  active-color="#13ce66"
-                  inactive-color="#dcdfe6"
-                >
+                <el-switch v-model="renewal" active-color="#13ce66" inactive-color="#dcdfe6">
                 </el-switch>
               </div>
               <!-- <div class="description">
             {{ currentPool.description }}
           </div> -->
 
-              <div
-                class="nftList common"
-                style="margin-top: 50px"
-                v-if="currentPool.nftList && currentPool.nftList.length > 0"
-              >
+              <div class="couponList common" style="margin-top: 50px" v-if="currentPool.couponList && currentPool.couponList.length > 0">
+                <div style="margin-bottom: 5px">
+                  {{ $t('mining.coupon_list') }}：
+                </div>
+                <div class="text-color fs14 list_items">
+                  <div :class="{
+                      coupon_list_item: true,
+                      choosed_coupon: choosedCouponNumber === item.ticket_number
+                    }" v-for="item in currentPool.couponList" :key="item.ticket_number" @click="chooseCoupon(item)">
+                    <span>{{item.value}}</span>
+                  </div>
+                </div>
+                <div style="margin-top: 20px">
+                  {{ $t('mining.currently_selected') }}{{$t('mining.denomination')}} &nbsp;<span style="color: crimson">{{ choosedCouponValue }} </span>
+                </div>
+              </div>
+
+              <div class="nftList common" style="margin-top: 50px" v-if="currentPool.nftList && currentPool.nftList.length > 0">
                 <div style="margin-bottom: 5px">
                   {{ $t('mining.nft_list') }}：
                 </div>
                 <div class="text-color fs14 list_items">
-                  <div
-                    :class="{
+                  <div :class="{
                       list_item: true,
                       choosed_nft: choosedNftId === item.nft_id
-                    }"
-                    v-for="item in currentPool.nftList"
-                    :key="item.nft_id"
-                    @click="chooseNft(item)"
-                  >
+                    }" v-for="item in currentPool.nftList" :key="item.nft_id" @click="chooseNft(item)">
                     <img :src="item.image" alt="" />
                   </div>
                 </div>
                 <div style="margin-top: 20px">
-                  {{ $t('mining.currently_selected') }} &nbsp;<span
-                    style="color: crimson"
-                    >{{ choosedNft.name }} </span
-                  >&nbsp;<span v-if="choosedNft.value"
-                    >{{ $t('mining.nominal_value') }}：{{
+                  {{ $t('mining.currently_selected') }} &nbsp;<span style="color: crimson">{{ choosedNft.name }} </span>&nbsp;<span v-if="choosedNft.value">{{ $t('mining.nominal_value') }}：{{
                       choosedNft.value
-                    }}</span
-                  >
+                    }}</span>
                 </div>
               </div>
             </div>
@@ -350,22 +293,19 @@
           </div>
         </div>
 
-        <span
-          slot="footer"
-          class="dialog-footer"
-          v-if="activePool === $t('mining.nft')"
-        >
+        <span slot="footer" class="dialog-footer" v-if="activePool === $t('mining.nft')">
           <el-button v-if="choosedNftId" type="primary" @click="stake">
-            {{ $t('mining.confirm_stake') }}</el-button
-          >
+            {{ $t('mining.confirm_stake') }}</el-button>
           <el-button v-else type="info" plain disabled>
-            {{ $t('mining.confirm_stake') }}</el-button
-          >
+            {{ $t('mining.confirm_stake') }}</el-button>
+        </span>
+        <span slot="footer" class="dialog-footer" v-if="activePool === $t('mining.current')">
+          <el-button type="primary" @click="deposit">
+            {{ $t('mining.deposit') }}</el-button>
         </span>
         <span slot="footer" class="dialog-footer" v-else>
           <el-button type="primary" @click="purchase">
-            {{ $t('mining.deposit') }}</el-button
-          >
+            {{ $t('mining.deposit') }}</el-button>
           <!-- <el-button v-else type="info" plain disabled>
             {{ $t('mining.purchase') }}</el-button
           > -->
@@ -376,9 +316,10 @@
 </template>
 
 <script>
-import { nft_lock, dual_lock } from '@/api/mining/mining'
+import { nft_lock, dual_lock, current_lock } from '@/api/mining/mining'
 import { get_nft } from '@/api/nft/nft'
 import { getToken } from '@/utils/auth'
+import { coupon } from '@/api/user/user'
 import { transformTime } from '@/utils/tool'
 const NFT = require('@/utils/nft.json')
 export default {
@@ -406,6 +347,9 @@ export default {
       currentPool: {},
       dialogLoading: false,
       choosedNftId: '',
+      choosedCouponValue: 0,
+      choosedCouponNumber: '',
+      couponList: [],
       choosedNft: {},
       nonce: 0,
       sign: '',
@@ -434,6 +378,24 @@ export default {
   mounted() {},
   methods: {
     transformTime,
+    async getCoupon(v) {
+      this.dialogLoading = true
+      const res = await coupon({
+        id:
+          this.loginType === 'eth'
+            ? this.userInfo.eth_account
+            : this.userInfo.user,
+        token: getToken()
+      })
+      this.dialogLoading = false
+      if (res && res.success === 'ok') {
+        this.currentPool = v
+        this.currentPool.couponList = res.data.ok.sort((a, b) => {
+          return b.value - a.value
+        })
+        this.chooseCoupon(this.currentPool.couponList[0])
+      }
+    },
     formatNumberToWestern(number) {
       if (number) {
         return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
@@ -442,6 +404,59 @@ export default {
     chooseNft(item) {
       this.choosedNftId = item.nft_id
       this.choosedNft = item
+    },
+    chooseCoupon(item) {
+      console.log(item)
+      let transaction = ''
+      if (item.value < 500) {
+        transaction = '500 ofc'
+      } else if (item.value >= 500 && item.value < 2000) {
+        transaction = '2000 ofc'
+      } else {
+        transaction = '5000 ofc'
+      }
+      this.choosedCouponNumber = item.ticket_number
+      this.choosedCouponValue = item.value
+      this.currentPool.transaction = transaction
+      this.currentPool.price = item.value + 'u'
+    },
+    async deposit() {
+      if (
+        this.balanceAmount.ofc >
+        Number(this.currentPool.transaction.split('ofc')[0])
+      ) {
+        const reg = /^[1-9]\d*$/
+        if (!reg.test(this.amount)) {
+          this.$message.warning(this.$t('auction_detail.input_number'))
+          return
+        }
+        this.dialogLoading = true
+        const params = {
+          id:
+            this.loginType === 'eth'
+              ? this.userInfo.eth_account
+              : this.userInfo.user,
+          token: getToken(),
+          pool: this.currentPool.pool,
+          quantity: Number(this.amount)
+        }
+        if (this.choosedCouponNumber) {
+          params.coupon = this.choosedCouponNumber
+        }
+        const res = await current_lock()
+
+        this.dialogLoading = false
+        if (res && res.success === 'ok') {
+          this.$message.success(this.$t('mining.stake_success_tip'))
+        }
+        this.currentPool = {}
+        this.stakeVisible = false
+        this.amount = 0
+        this.coupon = ''
+        this.$emit('refreshList')
+      } else {
+        this.$message.error(this.$t('mining.ofc_tip'))
+      }
     },
     async purchase() {
       if (
@@ -476,6 +491,7 @@ export default {
         this.$message.error(this.$t('mining.ofc_tip'))
       }
     },
+
     stake() {
       if (
         this.balanceAmount.ofc >
@@ -721,8 +737,10 @@ export default {
       console.log(v)
       if (this.activePool === this.$t('mining.nft')) {
         this.getCard(v)
-      } else {
+      } else if (this.activePool === this.$t('mining.usdt')) {
         this.currentPool = v
+      } else {
+        this.getCoupon(v)
       }
     },
     handleStakeClose() {
@@ -732,12 +750,24 @@ export default {
       this.stakeVisible = false
       this.amount = 0
       this.renewal = false
+      this.dialogLoading = false
     }
   }
 }
 </script>
 
 <style scoped lang="scss">
+::v-deep .el-input input::-webkit-outer-spin-button,
+::v-deep.el-input input::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+}
+::v-deep.el-input input[type='number'] {
+  -moz-appearance: textfield;
+}
+::v-deep.el-input .el-input__inner {
+  line-height: 1px !important;
+}
+
 .mining_table {
   .content {
     .css-15owl46 {
@@ -1016,6 +1046,20 @@ export default {
         overflow-y: auto;
         .choosed_nft {
           border: 2px solid rgb(240, 76, 11) !important;
+        }
+        .choosed_coupon {
+          border: 2px solid rgb(240, 76, 11) !important;
+        }
+        .coupon_list_item {
+          width: 60px;
+          height: 40px;
+          border: 2px solid $mainColor;
+          border-radius: 5px;
+          margin-right: 10px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          cursor: pointer;
         }
         .list_item {
           width: 50px;

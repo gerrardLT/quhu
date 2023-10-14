@@ -88,6 +88,18 @@ export default {
           icon: 'yqm',
           title: this.$t('my.invite'),
           url: '/invite'
+        },
+        {
+          id: 6,
+          icon: 'reward_search',
+          title: this.$t('my.reward'),
+          url: '/search'
+        },
+        {
+          id: 7,
+          icon: 'reward',
+          title: this.$t('my.benifit'),
+          url: '/benifit'
         }
       ]
     }
@@ -131,6 +143,18 @@ export default {
             icon: 'yqm',
             title: this.$t('my.invite'),
             url: '/invite'
+          },
+          {
+            id: 6,
+            icon: 'reward_search',
+            title: this.$t('my.reward'),
+            url: '/search'
+          },
+          {
+            id: 7,
+            icon: 'reward',
+            title: this.$t('my.benifit'),
+            url: '/benifit'
           }
         ]
       },

@@ -27,10 +27,11 @@
         $t('voucher.query_tip')
       }}</span>
     </div>
-    <div v-show="isShowAddress" class="address-container">
+    <!-- <div v-show="isShowAddress" class="address-container">
+
       <span>{{ $t('voucher.to_address') }}：{{ address }}</span>
       <i class="el-icon-copy-document" @click="copy(address, $event)"></i>
-    </div>
+    </div> -->
     <div class="coin-list">
       <div class="coin-header">
         <div class="coin-title">{{ $t('voucher.coin_property') }}</div>
@@ -57,7 +58,7 @@
         :data="tableData"
         stripe
         style="width: 100%"
-        height="300"
+        height="500"
         v-loading="tableLoading"
       >
         <el-table-column
@@ -424,7 +425,7 @@ export default {
       pagesize: 10,
       search: '',
       address: '',
-      isShowAddress: false,
+      // isShowAddress: false,
       tradeLoading: false,
       tableLoading: false,
       searchLoading: false,
@@ -472,6 +473,12 @@ export default {
           break
         case 'usdt':
           coin = 1
+          break
+        case 'eth':
+          coin = 0.00006
+          break
+        case 'btc':
+          coin = 0.000004
           break
       }
       return coin
@@ -695,11 +702,12 @@ export default {
       this.tableLoading = false
     },
     showAddress() {
-      const address = JSON.parse(
-        localStorage.getItem('quhu-userInfo')
-      ).deposit_address
-      this.address = address
-      this.isShowAddress = true
+      // const address = JSON.parse(
+      //   localStorage.getItem('quhu-userInfo')
+      // ).deposit_address
+      // this.address = address
+      // this.isShowAddress = true
+      this.$router.push('./recharge')
     },
     copy(key, e) {
       clipboard(key, e)
@@ -926,7 +934,7 @@ export default {
 .coin-item {
   background-color: #fff;
   width: 100%;
-  height: 100px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -943,12 +951,12 @@ export default {
 .coin-name {
   flex: 1;
   text-align: center;
-  line-height: 100px;
+  line-height: 50px;
 }
 .balance {
   flex: 1;
   text-align: center;
-  line-height: 100px;
+  line-height: 50px;
 }
 .operation {
   display: flex;

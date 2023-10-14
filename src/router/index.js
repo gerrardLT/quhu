@@ -2,7 +2,7 @@
  * @Author: gerrardlt 305690790@qq.com
  * @Date: 2023-01-12 14:01:22
  * @LastEditors: gerrardlt 305690790@qq.com
- * @LastEditTime: 2023-10-11 14:15:34
+ * @LastEditTime: 2023-10-12 13:13:11
  * @FilePath: \quhu\src\router\index.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -24,8 +24,9 @@ import Write from '../views/home/Write.vue'
 import Activation from '../views/my/Activation.vue'
 import Setting from '../views/my/Setting.vue'
 import Voucher from '../views/my/Voucher.vue'
+import Recharge from '../views/my/Recharge.vue'
 import Interact from '../views/my/Interact.vue'
-import Collect from '../views/my/Collect.vue'
+import Search from '../views/my/Search.vue'
 import About from '../views/my/About.vue'
 import Invite from '../views/my/Invite.vue'
 import MySpecial from '../views/my/MySpecial.vue'
@@ -59,9 +60,11 @@ const routes = [
     path: '/home',
     component: Home,
     meta: { isTabPage: true },
-    children: [ 
-      {name: 'write', path: '/write', component: Write,
-      meta: { isTabPage: true }}
+    children: [
+      {
+        name: 'write', path: '/write', component: Write,
+        meta: { isTabPage: true }
+      }
     ]
   },
   {
@@ -78,9 +81,11 @@ const routes = [
     path: '/nft',
     component: Nft,
     meta: { isTabPage: true },
-    children: [ 
-      {name: 'inventory', path: '/inventory', component: Inventory,
-      meta: { isTabPage: true }}
+    children: [
+      {
+        name: 'inventory', path: '/inventory', component: Inventory,
+        meta: { isTabPage: true }
+      }
     ]
   },
   {
@@ -92,37 +97,67 @@ const routes = [
     path: '/auction',
     component: Auction,
     meta: { isTabPage: true },
-    children: [ 
-      {name: 'myauction', path: '/myauction', component: MyAuction,
-      meta: { isTabPage: true }},
-      {name: 'auctiondetail', path: '/auctiondetail', component: AuctionDetail,
-      meta: { isTabPage: true }},
-      {name: 'Publish', path: '/publish', component: Publish,
-      meta: { isTabPage: true }}
+    children: [
+      {
+        name: 'myauction', path: '/myauction', component: MyAuction,
+        meta: { isTabPage: true }
+      },
+      {
+        name: 'auctiondetail', path: '/auctiondetail', component: AuctionDetail,
+        meta: { isTabPage: true }
+      },
+      {
+        name: 'Publish', path: '/publish', component: Publish,
+        meta: { isTabPage: true }
+      }
     ]
   },
   {
-    name:'my',
+    name: 'my',
     path: '/my',
     component: My,
     meta: { isTabPage: true },
-    children: [ 
-      {name: 'activation', path: '/activation', component: Activation,
-      meta: { isTabPage: true }}, 
-      {name: 'setting', path: '/setting', component: Setting,
-      meta: { isTabPage: true }},
-      {name: 'voucher', path: '/voucher', component: Voucher,
-      meta: { isTabPage: true }},
-      {name: 'invite', path: '/invite', component: Invite,
-      meta: { isTabPage: true }},
-      {name: 'interact', path: '/interact', component: Interact,
-      meta: { isTabPage: true }},
-      {name: 'about', path: '/about', component: About,
-      meta: { isTabPage: true }},
-      {name: 'introduce', path: '/introduce', component: Introduce,
-      meta: { isTabPage: true }},
-      {name: 'benifit', path: '/benifit', component: Benifit,
-      meta: { isTabPage: true }}
+    children: [
+      {
+        name: 'activation', path: '/activation', component: Activation,
+        meta: { isTabPage: true }
+      },
+      {
+        name: 'setting', path: '/setting', component: Setting,
+        meta: { isTabPage: true }
+      },
+      {
+        name: 'voucher', path: '/voucher', component: Voucher,
+        meta: { isTabPage: true }
+      },
+      {
+        name: 'invite', path: '/invite', component: Invite,
+        meta: { isTabPage: true }
+      },
+      {
+        name: 'interact', path: '/interact', component: Interact,
+        meta: { isTabPage: true }
+      },
+      {
+        name: 'about', path: '/about', component: About,
+        meta: { isTabPage: true }
+      },
+      {
+        name: 'introduce', path: '/introduce', component: Introduce,
+        meta: { isTabPage: true }
+      },
+      {
+        name: 'benifit', path: '/benifit', component: Benifit,
+        meta: { isTabPage: true }
+      },
+      {
+        name: 'recharge', path: '/recharge', component: Recharge,
+        meta: { isTabPage: true }
+      },
+      {
+        name: 'search', path: '/search', component: Search,
+        meta: { isTabPage: true }
+      }
     ]
   },
   {
@@ -136,7 +171,7 @@ const routes = [
 ]
 
 const router = new VueRouter({
-  mode:'history',
+  mode: 'history',
   routes
 })
 
@@ -151,7 +186,7 @@ router.beforeEach((to, from, next) => {
     Vue.prototype.$isTabPage = false
   }
 
-// console.log(window._axiosPromiseArr)
+  // console.log(window._axiosPromiseArr)
   window._axiosPromiseArr.forEach((ele, index) => {
     ele.cancel()
     delete window._axiosPromiseArr[index]
