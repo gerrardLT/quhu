@@ -2,13 +2,13 @@
  * @Author: gerrardlt 305690790@qq.com
  * @Date: 2023-10-11 14:11:13
  * @LastEditors: gerrardlt 305690790@qq.com
- * @LastEditTime: 2023-10-14 09:56:56
+ * @LastEditTime: 2023-10-14 12:37:02
  * @FilePath: \quhu\src\views\my\Benifit.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
   <div class="benifit_container">
-    <div class="benifit_lists" v-loading="loading">
+    <div class="benifit_lists" v-loading="loading" v-if="benifitLists.length >0">
       <el-select class="sort" v-model="sortType" clearable :placeholder="$t('benifit.choose_sort')" @change="changeSort" v-show="visibility">
         <el-option v-for="item in sortList" :key="item.value" :label="item.label" :value="item.value">
         </el-option>
@@ -27,7 +27,9 @@
         </div>
       </div>
     </div>
+    <el-empty v-else :description="$t('auction_detail.no_data')"></el-empty>
   </div>
+
 </template>
 
 <script>
@@ -130,8 +132,8 @@ export default {
     goStack() {
       this.$router.push({
         path: '/mining',
-        query:{
-          referer:'benifit'
+        query: {
+          referer: 'benifit'
         }
       })
     }

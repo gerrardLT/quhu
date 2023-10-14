@@ -571,6 +571,7 @@ export default {
     denomination: 'denomination',
     unclaimed: 'Pending earnings to be claimed',
     claim_tip: '（claim）',
+    deposit_amount: 'amount',
     claim_success_tip: 'Claimed successfully',
     title: 'Onlyfun Mining',
     pool: 'Pool',

@@ -133,14 +133,14 @@
               <div style="margin-bottom: 5px">{{ $t('mining.total') }}：</div>
               <div class="text-color fs14">{{ currentPool.total }}</div>
             </div>
-            <div class="total_limit common" v-if="currentPool.total_limit">
+            <div class="total_limit common" v-if="currentPool.total_limit && activePool !== $t('mining.current')">
               <div style="margin-bottom: 5px">
                 {{ $t('mining.total_limit') }}：
               </div>
               <div class="text-color fs14">{{ currentPool.total_limit }}</div>
             </div>
 
-            <div class="per_value common" v-if="currentPool.price">
+            <div class="per_value common" v-if="currentPool.price && activePool !== $t('mining.current')">
               <div style="margin-bottom: 5px">{{ $t('mining.price') }}：</div>
               <div class="text-color fs14">{{ currentPool.price }}</div>
             </div>
@@ -205,8 +205,8 @@
           <br />
           <br /> -->
               <div class="select_amount" v-if="activePool !== $t('mining.nft')">
-                <span style="display: inline-block; margin-bottom: 5px">{{ $t('mining.purchase_amount') }} ：</span>
-                <el-input type="number" @keydown.native="e=>e.returnValue=(['e','E','-','+'].includes(e.key))?false:e.returnValue" v-model="amount" :placeholder="this.$t('mining.input_number_tip')"></el-input>
+                <span style="display: inline-block; margin-bottom: 5px"> {{ activePool === $t('mining.current')?$t('mining.deposit_amount'): $t('mining.purchase_amount') }} ：</span>
+                <el-input type="number" @input="inputNumber" @keydown.native="e=>e.returnValue=(['e','E','-','+'].includes(e.key))?false:e.returnValue" v-model="amount" :placeholder="this.$t('mining.input_number_tip')"></el-input>
                 <div style="
                     width: 100%;
                     text-align: right;
@@ -214,8 +214,10 @@
                     color: rgb(112, 122, 138);
                     font-size: 12px;
                   ">
-                  {{ $t('mining.need_fees') }}：{{
-                    currentPool.transaction &&
+                  {{  $t('mining.need_fees') }}：{{
+                   activePool === $t('mining.current')?
+                   currentPool.transaction:
+                   currentPool.transaction &&
                     Number(currentPool.transaction.split(' ')[0]) *
                       Number(amount) +
                       ' ' +
@@ -378,6 +380,19 @@ export default {
   mounted() {},
   methods: {
     transformTime,
+    inputNumber(v) {
+      this.choosedCouponNumber = ''
+      this.choosedCouponValue = 0
+      let transaction = ''
+      if (Number(v) < 500) {
+        transaction = '500 ofc'
+      } else if (Number(v) >= 500 && Number(v) < 2000) {
+        transaction = '2000 ofc'
+      } else {
+        transaction = '5000 ofc'
+      }
+      this.currentPool.transaction = transaction
+    },
     async getCoupon(v) {
       this.dialogLoading = true
       const res = await coupon({
@@ -393,7 +408,12 @@ export default {
         this.currentPool.couponList = res.data.ok.sort((a, b) => {
           return b.value - a.value
         })
-        this.chooseCoupon(this.currentPool.couponList[0])
+        if (
+          this.currentPool.couponList &&
+          this.currentPool.couponList.length > 0
+        ) {
+          this.chooseCoupon(this.currentPool.couponList[0])
+        }
       }
     },
     formatNumberToWestern(number) {
@@ -415,8 +435,10 @@ export default {
       } else {
         transaction = '5000 ofc'
       }
+
       this.choosedCouponNumber = item.ticket_number
       this.choosedCouponValue = item.value
+      this.amount = this.choosedCouponValue
       this.currentPool.transaction = transaction
       this.currentPool.price = item.value + 'u'
     },
@@ -426,9 +448,16 @@ export default {
         Number(this.currentPool.transaction.split('ofc')[0])
       ) {
         const reg = /^[1-9]\d*$/
+
         if (!reg.test(this.amount)) {
-          this.$message.warning(this.$t('auction_detail.input_number'))
-          return
+          if (
+            this.currentPool.couponList &&
+            this.currentPool.couponList.length > 0
+          ) {
+          } else {
+            this.$message.warning(this.$t('auction_detail.input_number'))
+            return
+          }
         }
         this.dialogLoading = true
         const params = {
@@ -443,7 +472,7 @@ export default {
         if (this.choosedCouponNumber) {
           params.coupon = this.choosedCouponNumber
         }
-        const res = await current_lock()
+        const res = await current_lock(params)
 
         this.dialogLoading = false
         if (res && res.success === 'ok') {

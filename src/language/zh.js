@@ -571,6 +571,7 @@ export default {
     denomination: '面额',
     unclaimed: '待领取收益',
     claim_tip: '（点击领取）',
+    deposit_amount: '存入usdt数量',
     claim_success_tip: '领取成功',
     title: 'onlyfun挖矿',
     pool: '池子',
