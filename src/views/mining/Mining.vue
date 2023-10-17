@@ -254,7 +254,7 @@ export default {
       })
       if (res && res.success === 'ok') {
         this.$message.success(this.$t('mining.redeem_success_tip'))
-        this.getMyStake()
+        this.getMyStake(this.$t('mining.current'))
       }
     },
     renderHeader(render, { column }) {
@@ -342,7 +342,7 @@ export default {
       })
       if (res && res.success === 'ok') {
         this.$message.success(this.$t('mining.redeem_success_tip'))
-        this.getMyStake()
+        this.getMyStake(this.$t('mining.usdt'))
       }
     },
     async cancelBack(v) {
@@ -639,6 +639,7 @@ export default {
           item.start_time = this.transformTime(Number(item.start_time))
           item.renew = item.renew === 'yes' ? false : true
         })
+        console.log(type)
         if (type === this.$t('mining.nft')) {
           this.showMyLists = this.myLists.data
         } else if (type === this.$t('mining.usdt')) {
@@ -662,7 +663,7 @@ export default {
       }
       if (this.activeTabName === this.$t('mining.my_stack')) {
         this.myActivePool = this.$t('mining.nft')
-        this.getMyStake()
+        this.getMyStake(this.$t('mining.nft'))
       }
     }, 500),
     handlePoolTypeChoosed: debounce(function (v) {
