@@ -568,6 +568,7 @@ export default {
     usdt: 'crypto Pool',
     current: 'current Pool',
     coupon_list: 'Trial fund or Experience credit',
+    day:'days',
     denomination: 'denomination',
     unclaimed: 'Pending earnings to be claimed',
     claim_tip: '（claim）',

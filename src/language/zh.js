@@ -568,6 +568,7 @@ export default {
     usdt: '双币矿池',
     current: '活期矿池',
     coupon_list: '体验金',
+    day:'天',
     denomination: '面额',
     unclaimed: '待领取收益',
     claim_tip: '（点击领取）',

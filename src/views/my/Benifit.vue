@@ -17,7 +17,7 @@
         <div class="left">
           <img src="../../assets/coupon.png" alt="">
           <div class="intro">
-            <div class="title">usdt_pool{{$t('mining.coupon_list')}}</div>
+            <div class="title">usdt_pool {{item.limit}}{{$t('mining.day')}}{{$t('mining.coupon_list')}}</div>
             <div class="date">{{$t('benifit.expire_time')}}：{{item.expire_time}}</div>
           </div>
         </div>
