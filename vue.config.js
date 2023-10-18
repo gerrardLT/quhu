@@ -17,7 +17,7 @@ const resolve = (dir) => path.join(__dirname, '.', dir)
 // const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  productionSourceMap: false,
+  productionSourceMap: process.env.NODE_ENV === 'production'?false:true,
   publicPath: './',
   outputDir: 'dist',
   assetsDir: 'assets',
@@ -98,6 +98,13 @@ module.exports = {
     config
       .plugin('html')
       .tap(args => {
+        // try {
+        //   console.log(args)
+        //   throw new Error('123')
+        // } catch (error) {
+        //   throw new Error(error)
+        // }
+       
         args[0].title = 'onlyfun'
         return args
       })
@@ -109,9 +116,7 @@ module.exports = {
       .plugin('Quill')
       .use(webpack.ProvidePlugin, [{
         'window.Quill': 'quill'
-        // 或
-        // 'window.Quill': 'quill/dist/quill.js',
-        // 'Quill': 'quill/dist/quill.js'
+
       }])
 
     //   config.set('externals', {
@@ -188,12 +193,6 @@ module.exports = {
           minRatio: 0.8
         })
       );
-
-      // config.plugins.push(
-      //   new HtmlWebpackPlugin({
-      //     title: 'onlyfun'
-      //   })
-      // );
 
       Object.assign(config, {
         optimization

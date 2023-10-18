@@ -305,7 +305,7 @@
           <el-button type="primary" @click="deposit">
             {{ $t('mining.deposit') }}</el-button>
         </span>
-        <span slot="footer" class="dialog-footer" v-else>
+        <span slot="footer" class="dialog-footer" v-if="activePool === $t('mining.usdt')">
           <el-button type="primary" @click="purchase">
             {{ $t('mining.deposit') }}</el-button>
           <!-- <el-button v-else type="info" plain disabled>
@@ -703,8 +703,8 @@ export default {
 
       if (ids) {
         let result = await this.getNft(ids)
-
-        if (result && result.length > 0) {
+        console.log(result)
+        if (result) {
           let arr = []
           if (item.pool === 'legendary_pool') {
             result.forEach((ele, index) => {
@@ -758,6 +758,8 @@ export default {
             this.currentPool.nftList[0].nft_id
           this.choosedNft = this.currentPool.nftList[0]
           this.dialogLoading = false
+        }else {
+
         }
       }
     },
