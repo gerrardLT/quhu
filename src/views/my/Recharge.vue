@@ -1,6 +1,6 @@
 <template>
   <div class="recharge_container">
-    <el-page-header @back="goBack"> </el-page-header>
+    <!-- <el-page-header @back="goBack"> </el-page-header> -->
     <div class="content">
       <el-steps direction="vertical">
         <el-step :title="$t('recharge.choose_coin')">
@@ -81,12 +81,13 @@ import clipboard from '@/utils/clipboard'
 export default {
   data() {
     return {
-      payTypes: ['poys', 'ofc', 'usdt', 'bnb', 'btc', 'eth'],
+      payTypes: ['poys','op', 'ofc', 'usdt', 'bnb', 'btc', 'eth'],
       netTypes: ['BNB Smart Chain(BEP20)'],
       currency: '',
       net: 'BNB Smart Chain(BEP20)',
-      tokens: {
+      tokens: {  
         poys: ['f2a86', '0x20707c071e841ab879532b450b69079e667f2a86'],
+        op: ['00042', '0x4200000000000000000000000000000000000042'],
         usdt: ['97955', '0x55d398326f99059ff775485246999027b3197955'],
         ofc: ['93dd9', '0xee902a8df3f6cdb9f2f95536ed84a4e725793dd9'],
         eth: ['933F8', '0x2170Ed0880ac9A755fd29B2688956BD959F933F8'],
@@ -99,7 +100,8 @@ export default {
         ofc: '1',
         eth: '0.0000001',
         btc: '0.0000001',
-        bnb: '0.000001'
+        bnb: '0.000001',
+        op:'0.01'
       },
       show: false
       //   tokens:{

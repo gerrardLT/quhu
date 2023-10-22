@@ -373,7 +373,7 @@ export default {
         self.$store.dispatch('updateUser', {
           // user_name: self.baseInfoForm.nickName,
           user: self.baseInfoForm.user,
-          password: '',
+          password: MD5(self.baseInfoForm.password),
           sign: res
         })
       }

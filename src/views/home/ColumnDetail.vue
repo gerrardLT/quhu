@@ -369,7 +369,7 @@ export default {
       confirmVisible: false,
       actionUrl: '',
       showIntro: false,
-      payTypes: ['poys', 'ofc', 'usdt', 'bnb'],
+      payTypes: ['poys','op', 'ofc', 'usdt', 'bnb'],
       detail_info: {
         subscriptions_name: '',
         master: '',

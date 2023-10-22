@@ -166,3 +166,12 @@ export async function coupon (data) {
     data
   })
 }
+
+// 获取邀请人数
+export async function get_invite (data) {
+  return request({
+    url: '/get_invite',
+    method: 'post',
+    data
+  })
+}

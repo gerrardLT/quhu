@@ -989,18 +989,30 @@
       width="60%"
       :before-close="handleSubscriptionsClose"
     >
-      <el-input
+    <input
+                    type="text"
+                    v-model.lazy="subscriptionsInfo.name"
+                    :placeholder="$t('home.title_tip')"
+                    class="el-textarea__inner"
+                    style="height:40px"
+                  />
+      <!-- <el-input
         :placeholder="$t('home.column_name_tip')"
-        v-model="subscriptionsInfo.name"
+        v-model.lazy="subscriptionsInfo.name"
       >
-      </el-input>
+      </el-input> -->
       <div class="margin-top-10 sub_price">
-        <el-input
+        <!-- <el-input
           :placeholder="$t('home.column_price_tip')"
           v-model="subscriptionsInfo.price"
         >
-        </el-input>
-
+        </el-input> -->
+        <input
+                    type="text"
+                    :placeholder="$t('home.column_price_tip')"
+          v-model.lazy="subscriptionsInfo.price"
+                    class=" el-textarea__inner"
+                  />
         <el-select
           class="price_select"
           v-model="subscriptionsInfo.currency"
@@ -1019,14 +1031,19 @@
       <div class="price_tips">
         {{ $t('home.price_tip') }}
       </div>
-      <el-input
+      <!-- <el-input
         class="margin-top-10"
         type="textarea"
         :rows="2"
         :placeholder="$t('home.intro_tip')"
         v-model="subscriptionsInfo.introduction"
       >
-      </el-input>
+      </el-input> -->
+      <textarea
+                            class="el-textarea__inner margin-top-10"
+                            v-model.lazy="subscriptionsInfo.introduction"
+                            :placeholder="$t('home.intro_tip')"
+                          ></textarea>
       <div style="margin-top: 20px">
         <div style="margin-bottom: 10px">{{ $t('home.auth_tip') }}</div>
         <el-radio v-model="subscriptionsInfo.radio" label="self">{{

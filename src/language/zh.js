@@ -331,7 +331,14 @@ export default {
   invite: {
     invite_link: '邀请链接',
     copy_invite_link: '复制邀请链接',
-    copy_success: '复制成功！'
+    copy_success: '复制成功！',
+    invite_report:'邀请记录',
+    id:'编号',
+    user_name:'用户名',
+    avatar:'头像',
+    steem_id:'steem_id',
+    mint:'已mint数量',
+    invited_number:'已邀请：'
   },
   my: {
     my_wallet: '我的钱包',
