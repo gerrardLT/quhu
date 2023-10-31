@@ -31,15 +31,28 @@
                 ></el-input>
               </el-form-item>
               <el-form-item
+                :label="$t('my.eth')"
+                prop="eth_account"
+                style="width: 400px"
+                v-if="userInfo.eth_account!=='none' || userInfo.eth_account!==''"
+              >
+                <el-input
+                  v-model="baseInfoForm.eth_account"
+                  disabled
+                ></el-input>
+              </el-form-item>
+              <el-form-item
                 :label="$t('setting.password')"
                 prop="password"
                 style="width: 400px"
+                v-if="!(userInfo.eth_account!=='none' && userInfo.user!=='none')"
               >
                 <el-input
                   v-model="baseInfoForm.password"
                   clearable
                   type="password"
                   show-password
+
                 ></el-input>
               </el-form-item>
               <el-form-item class="save_btn">
@@ -50,7 +63,7 @@
                   @click="save"
                   >{{ $t('setting.save') }}</el-button
                 >
-                <el-button type="primary" @click="bindEthAccount">{{
+                <el-button type="primary" @click="bindEthAccount" v-if="userInfo.eth_account==='none' || userInfo.eth_account===''">{{
                   $t('setting.bind_eth')
                 }}</el-button>
               </el-form-item>
@@ -172,6 +185,7 @@ export default {
           JSON.parse(localStorage.getItem('quhu-userInfo')).user === 'none'
             ? ''
             : JSON.parse(localStorage.getItem('quhu-userInfo')).user,
+            eth_account:JSON.parse(localStorage.getItem('quhu-userInfo')).eth_account,
         password: ''
       },
       safeInfoForm: {
@@ -373,7 +387,7 @@ export default {
         self.$store.dispatch('updateUser', {
           // user_name: self.baseInfoForm.nickName,
           user: self.baseInfoForm.user,
-          password: MD5(self.baseInfoForm.password),
+          password: self.baseInfoForm.password,
           sign: res
         })
       }
@@ -396,7 +410,7 @@ export default {
         this.$store.dispatch('updateUser', {
           // user_name: self.baseInfoForm.nickName,
           user: self.baseInfoForm.user,
-          password: MD5(self.baseInfoForm.password)
+          password: self.baseInfoForm.password
         })
         this.baseInfoForm = {
           password: ''
@@ -427,8 +441,9 @@ export default {
               eth_account: account[0],
               sign: res
             })
-            if (res && res.success === 'ok') {
+            if (result && result.success === 'ok') {
               self.$message.success(self.$t('setting.bind_success'))
+              location.reload()
             }
             if (loading) {
               loading.close()
@@ -472,6 +487,14 @@ export default {
   display: flex;
   justify-content: center;
   padding-top: 50px;
+  position: relative;
+  .bind_eth_account{
+      position: absolute;
+      color: $mainColor;
+      right: 20px;
+      top: 10px;
+      cursor:default;
+    }
   .login_out {
     width: 800px;
     height: 350px;

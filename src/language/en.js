@@ -331,7 +331,14 @@ export default {
   invite: {
     invite_link: 'Invitation Link',
     copy_invite_link: 'Copy Link',
-    copy_success: 'Success!'
+    copy_success: 'Success!',
+    invite_report:'Invitation record',
+    id:'Id',
+    user_name:'User name',
+    avatar:'Avatar',
+    steem_id:'Steem_id',
+    mint:'Mint quantity',
+    invited_number:'Invited:'
   },
   my: {
     my_wallet: 'Wallet',
@@ -340,7 +347,8 @@ export default {
     invite: 'Invite',
     help: 'Message',
     reward: 'reward check',
-    benifit: 'Welfare'
+    benifit: 'Welfare',
+    eth:'eth'
   },
   setting: {
     base_info: 'Basic',

@@ -77,6 +77,7 @@ const store = new Vuex.Store({
       const params = loginType === 'eth' ? {
         id: userInfo.eth_account,
         token: getToken(),
+        password: MD5(d.password),
         sign: d.sign,
         data: changeInfo
       } : {

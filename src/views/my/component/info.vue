@@ -1,6 +1,7 @@
 <template>
   <div>
     <div class="right_top">
+    
       <div class="user_avatar">
         <el-upload
           :action="actionUrl"
@@ -478,12 +479,13 @@ export default {
     // width: 100%;
     height: 200px;
     background-color: #bfd2d2;
-    // opacity: 0.26;
+    position: relative;
     border-radius: 8px;
     margin-bottom: 10px;
     display: flex;
     flex-direction: column;
     align-items: center;
+
   }
 }
 .user_avatar {

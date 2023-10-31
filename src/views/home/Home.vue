@@ -1334,7 +1334,7 @@ export default {
       document.querySelector('.avatar-uploader-edit input').click()
     },
     goLink() {
-      this.$EventBus.$emit('changeTab', { name: 'auction' }, 2)
+      this.$EventBus.$emit('changeTab', { name: 'auction' }, 3)
     },
     async getUserColumn(name) {
       this.searchUserColumn = []

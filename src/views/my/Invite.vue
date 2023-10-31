@@ -16,7 +16,7 @@
     <el-button type="danger" round @click="copy($event)">{{
       $t('invite.copy_invite_link')
     }}</el-button>
-        <div style="margin-top: 20px;">
+        <div style="margin-top: 20px">
       <div class="invite_title"><div> {{ $t('invite.invite_report') }}</div><div> {{ $t('invite.invited_number')+invitations }}</div></div>
       <el-table
         :data="inviteList"
@@ -27,7 +27,7 @@
         <el-table-column
           prop="id"
           :label="$t('invite.id')"
-          width="150"
+          width="100"
         >
         </el-table-column>
         <el-table-column
@@ -38,11 +38,11 @@
         </el-table-column>
         <el-table-column prop="steem_id" :label="$t('invite.steem_id')" width="150">
         </el-table-column>
-        <el-table-column prop="avatar" :label="$t('invite.avatar')" width="150">
+        <!-- <el-table-column prop="avatar" :label="$t('invite.avatar')" width="150">
           <template slot-scope="scope">
               <img style="width: 50px;height: 50px;" :src="scope.row.avatar" alt="">
             </template>
-        </el-table-column>
+        </el-table-column> -->
 
         <el-table-column prop="mint" :label="$t('invite.mint')">
         </el-table-column>

@@ -347,7 +347,8 @@ export default {
     invite: '邀请好友',
     help: '我的消息',
     reward: '奖励查询',
-    benifit: '福利中心'
+    benifit: '福利中心',
+    eth:'eth账号'
   },
   setting: {
     base_info: '基本信息',
