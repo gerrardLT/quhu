@@ -41,7 +41,29 @@ export default {
   watch: {
     value: function (newVal) {
       this.selectedValue = newVal
-    }
+    },
+    '$i18n.locale': {
+      handler(newVal, oldVal) {
+        // console.log(this.value)
+        if(newVal ==='en'){
+          if(this.value ==='分享' || this.value ==='Share'){
+          this.selectedValue = 'Share'
+        }
+        if(this.value ==='邀请' || this.value ==='Invite'){
+          this.selectedValue = 'Invite'
+        }
+        }else {
+          if(this.value ==='分享' || this.value ==='Share'){
+          this.selectedValue = '分享'
+        }
+        if(this.value ==='邀请' || this.value ==='Invite'){
+          this.selectedValue = '邀请'
+        }
+        }
+      },
+      deep: true,
+      immediate: true
+    },
   },
   methods: {
     toggleDropdown() {
@@ -55,7 +77,7 @@ export default {
     }
   },
   mounted() {
-    this.selectedValue = this.value || this.options[0]
+    this.selectedValue =  this.value || this.$t('column_detail.share')
   }
 }
 </script>

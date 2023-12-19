@@ -179,7 +179,7 @@ export default {
 }
 .user_page {
   width: 100%;
-  height: 100vh;
+  min-height: 1254px;
   background: #f5f5f5 !important;
 }
 
@@ -196,7 +196,7 @@ export default {
   top: calc(50% - 8px);
 }
 ::v-deep .nav_left {
-  height: 950px;
+  height: 1100px;
   border-radius: 8px;
   border: 1px solid #bbbbbb;
   min-width: 150px;

@@ -15,6 +15,41 @@ export async function getUser (data) {
     data
   })
 }
+export async function getOtherUser (data) {
+  return request({
+    url: '/get_user',
+    method: 'post',
+    data
+  })
+}
+export async function follow (data) {
+  return request({
+    url: '/follow',
+    method: 'post',
+    data
+  })
+}
+export async function unfollow (data) {
+  return request({
+    url: '/unfollow',
+    method: 'post',
+    data
+  })
+}
+export async function following (data) {
+  return request({
+    url: '/following',
+    method: 'post',
+    data
+  })
+}
+export async function follower (data) {
+  return request({
+    url: '/follower',
+    method: 'post',
+    data
+  })
+}
 
 export async function changePwd (data) {
   return request({

@@ -1,9 +1,12 @@
 <template>
-  <div>敬请期待！</div>
+  <div class="information_container">
+
+  </div>
 </template>
 
 <script>
 export default {
+  name: '',
   data() {
     return {}
   },
@@ -13,4 +16,4 @@ export default {
 }
 </script>
 
-<style scoped></style>
+<style scoped lang="scss"></style>

@@ -20,7 +20,10 @@ import axios from 'axios'
 import Web3 from 'web3'
 import ElementUI from 'element-ui'
 import i18n from './language'
+import EventBus from '@/utils/bus';
 import 'element-ui/lib/theme-chalk/index.css'
+
+// import './assets/css/eleFormat.css'
 // 引入quill-editor编辑器
 import VueQuillEditor from 'vue-quill-editor'
 import 'quill/dist/quill.core.css'
@@ -31,6 +34,8 @@ import 'quill-emoji/dist/quill-emoji.css'
 import * as Quill from 'quill'
 import ImageResize from 'quill-image-resize-module'
 import preview from 'vue-photo-preview'
+import LoadingPlugin from '@/components/loading/loadingPlugin.js'
+import Switch from '@/components/switch/index.js'
 import 'vue-photo-preview/dist/skin.css'
 import 'animate.css';
 import "swiper/swiper.min.css"
@@ -49,6 +54,12 @@ Vue.use(ElementUI)
 
 Vue.use(preview)
 
+Vue.use(LoadingPlugin)
+
+Vue.use(Switch)
+
+Vue.use(EventBus);
+
 Vue.prototype.Web3 = Web3
 
 Vue.prototype.$http = axios
@@ -56,8 +67,6 @@ Vue.prototype.$http = axios
 Vue.prototype.$store = store
 
 Vue.config.productionTip = false
-
-Vue.prototype.$EventBus = new Vue();
 
 Vue.filter('dateFormat', function (originVal) {
   const dt = new Date(originVal)

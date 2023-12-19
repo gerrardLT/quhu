@@ -24,8 +24,9 @@ module.exports = {
   devServer: {
     proxy: {
       '/abc': {
-        // target: 'http://45.77.114.109:668',
+        // target: 'http://45.77.114.109:669',
         target: 'https://api.onlyfun.city',
+        // target: 'https://node.onlyfun.city/api',
         // target: 'https://re.steem.vip/api',
         changeOrigin: true,
         pathRewrite: {
@@ -33,7 +34,9 @@ module.exports = {
         }
       },
       '/steem': {
-        target: 'https://app.onlyfun.city/api',
+        // target: 'https://app.onlyfun.city/api',
+        target: 'https://node.onlyfun.city/api',
+        // target: 'http://45.77.114.109:669',
         // target: 'https://api.justyy.com',
         changeOrigin: true,
         pathRewrite: {

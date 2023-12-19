@@ -10,19 +10,32 @@
   <div id="app" ref="app">
     <!-- 路由占位符 -->
     <router-view> </router-view>
-    <Tabs v-if="isTabP"></Tabs>
-    <el-switch
+    <Tabs v-if="isTabP">
+    </Tabs>
+    <only-switch
+      v-show="showSwitch"
+      ref="language"
       class="language"
       v-model="langValue"
       :active-text="active_text"
       :inactive-text="inactive_text"
       @change="translate"
     />
+    <!-- <el-switch
+      v-show="showSwitch"
+      ref="language"
+      class="language"
+      v-model="langValue"
+      :active-text="active_text"
+      :inactive-text="inactive_text"
+      @change="translate"
+    /> -->
   </div>
 </template>
 
 <script>
 import Tabs from '@/components/tabs/Tabs'
+
 export default {
   components: {
     Tabs
@@ -49,13 +62,15 @@ export default {
     if (!this.isTabP) {
       this.$refs.app.style.paddingTop = 0
     }
+    window.addEventListener('scroll', this.scroll)
   },
   data() {
     return {
       langValue: false,
       lang: '',
       active_text: '',
-      inactive_text: ''
+      inactive_text: '',
+      showSwitch: true
     }
   },
   computed: {
@@ -64,6 +79,15 @@ export default {
     }
   },
   methods: {
+    scroll(){
+      const scrollTop =
+          document.documentElement.scrollTop || document.body.scrollTop
+          if(scrollTop>50){
+            this.showSwitch =false
+          }else {
+            this.showSwitch =true
+          }
+    },
     setSwitch() {
       this.active_text =
         navigator.language === 'zh' || navigator.language === 'zh-CN'
@@ -103,15 +127,21 @@ export default {
 }
 </script>
 
-<style>
-.language {
-  position: absolute;
-  right: 20px;
-  top: 30px;
-  z-index: 1000;
+<style scoped lang="scss">
+#app {
+  background-color: #edf5ff;
 }
 
-/* ::v-deep .el-switch__label.is-active {
-  color: #087790;
-} */
+  .language {
+  position: fixed;
+  right: 10px;
+  top: 20px;
+  z-index: 1000;
+  font-size: 12px;
+}
+
+::v-deep .el-switch__label.is-active{
+  color: #a6c5d4;
+}
+
 </style>

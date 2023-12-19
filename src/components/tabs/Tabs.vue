@@ -12,18 +12,17 @@ e
     <div class="Nav_wrap">
       <div
         class="woo-panel-main woo-panel-bottom Nav_panel"
-        style="border-color: #f9f9f9; background-color: #fff"
       >
         <div class="woo-box-flex woo-box-alignCenter Nav_main">
           <el-col :span="4" class="nav_logo">
             <div class="woo-box-flex woo-box-alignCenter Nav_left">
               <a href="/" aria-label="quhu" class="Nav_logoWrap">
-                <img src="../../assets/quhu-white.png" alt="" />
+                <img src="../../assets/logo.png" alt="" />
               </a>
             </div>
           </el-col>
 
-          <el-col :span="14">
+          <el-col :span="15">
             <div class="Nav_mid">
               <div
                 class="tab"
@@ -61,6 +60,7 @@ e
               <el-autocomplete
                 class="searchBar"
                 clearable
+                highlight-first-item
                 v-model="searchValue"
                 :fetch-suggestions="querySearch"
                 :placeholder="$t('tab.input_column_name')"
@@ -68,7 +68,21 @@ e
                 :popper-append-to-body="false"
                 popper-class="complete_list"
               >
-                <i class="el-icon-search el-input__icon" slot="suffix"> </i>
+              <svg
+                    :style="{
+                      width: '20px',
+                      height: '20px',
+                      marginTop:'10px',
+                      position: 'absolute',
+                      right:'0'
+                    }"
+                    slot="suffix"
+                  >
+                    <use
+                      :xlink:href="'#icon-' + 'search_multiple'"
+                      rel="external nofollow"
+                    />
+                  </svg>
                 <template slot-scope="{ item }">
                   <div class="name">{{ item.value }}</div>
                 </template>
@@ -89,7 +103,7 @@ export default {
   name: 'Tabs',
   components: {},
   created() {
-    this.$EventBus.$on('changeTab', (v, index, query) => {
+    this.$bus.$on('changeTab', (v, index, query) => {
       this.tabClick(v, index, query)
     })
   },
@@ -99,7 +113,6 @@ export default {
     window.addEventListener(
       'popstate',
       function (e) {
-        console.log(e)
         const path1 = e.currentTarget.location.pathname
         // self.toggleStyle(self.nameList.indexOf(path))
         // console.log(self.nameList, path1.replace('/', ''))
@@ -117,7 +130,7 @@ export default {
         : sessionStorage.getItem('tabName')
     }
     this.toggleStyle(this.nameList.indexOf(path))
-    // this.$eventBus.$off('changeTab')
+    // this.$bus.$off('changeTab')
   },
   // beforeRouteEnter(to, from, next) {
   //   console.log(to, from)
@@ -253,6 +266,22 @@ export default {
     right: 10px;
   }
 }
+::v-deep .Nav_right .el-input__inner{
+  border-radius: 30px;
+  background-color: #f0f1f4;
+}
+::v-deep .Nav_right .el-input__inner:hover{
+  border: 1px solid rgba(0,0,0,0.4);
+}
+::v-deep .Nav_right .el-input__inner:focus{
+  outline: none;
+  border: 0.5px solid rgba(0,0,0,0.4);
+  box-shadow: -3px -3px 0px rgba(0,0,0,0.8);
+}
+::v-deep .el-input .el-input__clear{
+  position: absolute;
+  right: 20px;
+}
 ::v-deep .el-input__inner {
   border-radius: 30px;
 }
@@ -264,7 +293,6 @@ export default {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
 }
-
 .Nav_wrap {
   position: fixed;
   z-index: 888;
@@ -288,6 +316,8 @@ export default {
   background-position: 50%;
   background-size: contain;
   background-image: none;
+  border-color: $whiteBgColor; 
+  background-color: $whiteBgColor;
 }
 .woo-panel-bottom {
   border-bottom: 1px solid #f9f9f9;
@@ -322,8 +352,8 @@ export default {
   display: inline-block;
   cursor: pointer;
   img {
-    width: 180px;
-    height: 72px;
+    width: 200px;
+    height: 84px;
   }
 }
 .Nav_logo {
@@ -338,6 +368,7 @@ export default {
   z-index: 998;
   height: 100%;
   min-width: 500px;
+  padding-left: 20px;
 }
 .svg_container {
   margin-top: 10px;
@@ -357,7 +388,7 @@ export default {
 }
 .Nav_right {
   width: 100%;
-  padding-left: 20px;
+  padding-left: 30px;
   .login_btn {
     width: 60px;
     height: 30px;

@@ -64,7 +64,7 @@ export default {
   },
   created() {
     this.getBalance()
-    this.$EventBus.$on('connect', () => {
+    this.$bus.$on('connect', () => {
       this.connectWallet()
     })
   },

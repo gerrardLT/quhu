@@ -10,7 +10,7 @@
               v-model="currency"
               clearable
               :placeholder="$t('column_detail.select_coin')"
-              @change="$forceUpdate()"
+              @change="changeCurrency"
             >
               <el-option
                 v-for="item in payTypes"
@@ -27,10 +27,8 @@
             <el-select
               class="coin_select"
               v-model="net"
-              clearable
-              disabled
               :placeholder="$t('column_detail.select_coin')"
-              @change="$forceUpdate()"
+              @change="changeNet"
             >
               <el-option
                 v-for="item in netTypes"
@@ -82,17 +80,18 @@ export default {
   data() {
     return {
       payTypes: ['poys','op', 'ofc', 'usdt', 'bnb', 'btc', 'eth'],
-      netTypes: ['BNB Smart Chain(BEP20)'],
+      netTypes: ['BNB Smart Chain(BEP20)','Optimism'],
       currency: '',
       net: 'BNB Smart Chain(BEP20)',
       tokens: {  
         poys: ['f2a86', '0x20707c071e841ab879532b450b69079e667f2a86'],
         op: ['00042', '0x4200000000000000000000000000000000000042'],
         usdt: ['97955', '0x55d398326f99059ff775485246999027b3197955'],
-        ofc: ['93dd9', '0xee902a8df3f6cdb9f2f95536ed84a4e725793dd9'],
+        ofc: ['bbae3', '0xbed9b291e976e47c9b32c1fb6e05549ce8abbae3'],
         eth: ['933F8', '0x2170Ed0880ac9A755fd29B2688956BD959F933F8'],
         btc: ['ead9c', '0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c'],
         bnb: ['', '']
+        
       },
       min_coin: {
         poys: '1',
@@ -121,6 +120,30 @@ export default {
   created() {},
   mounted() {},
   methods: {
+    changeNet(v){
+      console.log(v)
+      if(this.currency ==='usdt' && v === 'Optimism'){
+        this.tokens.usdt = ['58e58', '0x94b008aa00579c1307b0ef2c499ad98a8ce58e58']
+      }
+
+      if(this.currency ==='usdt' && v === 'BNB Smart Chain(BEP20)'){
+        this.tokens.usdt = ['97955', '0x55d398326f99059ff775485246999027b3197955']
+      }
+      this.$forceUpdate()
+    },
+    changeCurrency(v){
+      if(v === 'op'){
+        this.net= 'Optimism'
+        this.netTypes =  ['Optimism']
+      }else if(v === 'usdt'){
+        this.netTypes =  ['BNB Smart Chain(BEP20)','Optimism']
+        this.net = 'BNB Smart Chain(BEP20)'
+      } else {
+        this.netTypes =  ['BNB Smart Chain(BEP20)']
+        this.net = 'BNB Smart Chain(BEP20)'
+      }
+      this.$forceUpdate()
+    },
     goBack() {
       this.$router.go(-1)
     },

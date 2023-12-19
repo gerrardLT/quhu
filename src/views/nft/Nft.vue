@@ -291,7 +291,7 @@
         <el-button @click="dialogMintVisible = false">{{
           $t('nft.cancel')
         }}</el-button>
-        <el-button type="primary" @click="postMint">{{
+        <el-button type="primary" :disabled="isPosting" @click="postMint">{{
           $t('nft.confirm')
         }}</el-button>
       </span>
@@ -320,12 +320,12 @@ import { mint, get_nft } from '@/api/nft/nft'
 import { balance } from '@/api/user/user'
 import { Loading } from 'element-ui'
 import baseUrl from '@/config/baseUrl'
-// import '@/views/nft/css/style.css'
+import { debounce } from 'lodash'
+
 export default {
   name: 'Nft',
   components: {
-    // ThreeAnimation,
-    // Slick
+
   },
   data() {
     return {
@@ -336,6 +336,7 @@ export default {
       mintCoin: '',
       imgUrl: '',
       srcList: [],
+      isPosting:false,
       mintTypes: [
         // {
         //   id: 0,
@@ -499,6 +500,7 @@ export default {
       this.dialogMintVisible = true
     },
     async mint() {
+     
       let coin1 = ''
       let coin2 = ''
 
@@ -555,16 +557,18 @@ export default {
         }, 2000)
       }
       this.mintCoin = ''
+      this.isPosting  = false
       this.dialogMintVisible = false
     },
-    async postMint() {
+    postMint:debounce(async function() {
       if (this.mintCoin === '') {
         this.$message.warning(this.$t('nft.choose_mint'))
         return
       }
       await this.getMetaData()
-    },
+    },500),
     async getMetaData() {
+      this.isPosting =true
       const self = this
       if (window.ethereum) {
         if (typeof window.ethereum.isMetaMask === 'undefined') {
@@ -602,18 +606,12 @@ export default {
       }
     },
     async getNft(params) {
-      const loading = Loading.service({
-        text: this.$t('message.loading'),
-        spinner: 'el-icon-loading ElementLoading',
-        background: 'rgba(0, 0, 0, 0.2)'
-      })
+      this.$loading.show()
       const res = await get_nft(params)
       if (res.data && res.data[0].name === 'fail') {
       } else if (res.data && res.data[0].name === '') {
       } else {
-        if (loading) {
-          loading.close()
-        }
+        this.$loading.hide()
         clearInterval(this.interval)
         this.imgUrl = res.data[0].image
         this.srcList = [this.imgUrl]
@@ -733,6 +731,7 @@ export default {
   width: 100%;
   height: 100%;
   padding-top: 20px;
+  background-color: #f6f9f9;
 }
 ::v-deep .el-button--info {
   max-width: 150px;
@@ -749,6 +748,7 @@ export default {
   align-items: center;
   justify-content: flex-end;
   margin-top: 20px;
+
   .connect {
     margin-left: 20px;
     margin-right: 20px;

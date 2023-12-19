@@ -359,11 +359,7 @@ export default {
         params.permlink = [query.author, query.permlink]
       }
       console.log(params)
-      const loading = Loading.service({
-        text: this.$t('message.loading'),
-        spinner: 'el-icon-loading ElementLoading',
-        background: 'rgba(0, 0, 0, 0.2)'
-      })
+      this.$loading.show()
       const res = await auction_post(params)
       if (res && res.success === 'ok') {
         this.$message.success(this.$t('publish.publish_success'))
@@ -374,9 +370,7 @@ export default {
           }
         })
       }
-      if (loading) {
-        loading.close()
-      }
+      this.$loading.hide()
     },
     getCurrentDateTimestamp(currentDate) {
       let year = currentDate.getFullYear()

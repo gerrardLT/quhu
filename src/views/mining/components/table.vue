@@ -323,6 +323,7 @@ import { get_nft } from '@/api/nft/nft'
 import { getToken } from '@/utils/auth'
 import { coupon } from '@/api/user/user'
 import { transformTime } from '@/utils/tool'
+import { debounce } from 'lodash'
 const NFT = require('@/utils/nft.json')
 export default {
   props: {
@@ -381,17 +382,19 @@ export default {
   methods: {
     transformTime,
     inputNumber(v) {
-      this.choosedCouponNumber = ''
-      this.choosedCouponValue = 0
-      let transaction = ''
-      if (Number(v) < 500) {
-        transaction = '500 ofc'
-      } else if (Number(v) >= 500 && Number(v) < 2000) {
-        transaction = '2000 ofc'
-      } else {
-        transaction = '5000 ofc'
+      if(this.activePool ===this.$t('mining.current')){
+          this.choosedCouponNumber = ''
+          this.choosedCouponValue = 0
+          let transaction = ''
+          if (Number(v) < 500) {
+            transaction = '500 ofc'
+          } else if (Number(v) >= 500 && Number(v) < 2000) {
+            transaction = '2000 ofc'
+          } else {
+            transaction = '5000 ofc'
+          }
+          this.currentPool.transaction = transaction
       }
-      this.currentPool.transaction = transaction
     },
     async getCoupon(v) {
       this.dialogLoading = true
@@ -426,7 +429,6 @@ export default {
       this.choosedNft = item
     },
     chooseCoupon(item) {
-      console.log(item)
       let transaction = ''
       if (item.value < 500) {
         transaction = '500 ofc'
@@ -442,7 +444,7 @@ export default {
       this.currentPool.transaction = transaction
       this.currentPool.price = item.value + 'u'
     },
-    async deposit() {
+    deposit:debounce(async function() {
       if (
         this.balanceAmount.ofc >
         Number(this.currentPool.transaction.split('ofc')[0])
@@ -486,8 +488,8 @@ export default {
       } else {
         this.$message.error(this.$t('mining.ofc_tip'))
       }
-    },
-    async purchase() {
+    },500),
+    purchase: debounce(async function() {
       if (
         this.balanceAmount.ofc >
         Number(this.currentPool.transaction.split('ofc')[0])
@@ -515,13 +517,13 @@ export default {
         this.dialogLoading = false
         this.amount = 0
         this.renewal = false
-        this.$emit('refreshList')
+        this.$emit('refreshList',this.$t('mining.usdt'))
       } else {
         this.$message.error(this.$t('mining.ofc_tip'))
       }
-    },
+    },500)  ,
 
-    stake() {
+    stake: debounce(function() {
       if (
         this.balanceAmount.ofc >
         Number(this.currentPool.transaction.split('ofc')[0])
@@ -549,12 +551,12 @@ export default {
           this.currentPool = {}
           this.stakeVisible = false
           this.dialogLoading = false
-          this.$emit('refreshList')
+          this.$emit('refreshList',this.$t('mining.nft'))
         })
       } else {
         this.$message.error(this.$t('mining.ofc_tip'))
       }
-    },
+    },500),
     async callContractMethod(callback) {
       // 调用合约上的方法
       /**
@@ -678,7 +680,7 @@ export default {
         console.log(res)
 
         if (res[0]) {
-          this.$EventBus.$emit('connect')
+          this.$bus.$emit('connect')
           const nftIds = await contract.methods.getOwnerNFTs(res[0]).call()
 
           return nftIds

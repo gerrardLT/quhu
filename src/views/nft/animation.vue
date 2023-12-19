@@ -32,10 +32,10 @@ import {
   RawShaderMaterial,
   Scene,
   WebGLRenderer
-} from 'Three'
-import { OrbitControls } from 'Three/examples/jsm/controls/OrbitControls'
-import GUI from 'Three/examples/jsm/libs/lil-gui.module.min.js'
-import { TWEEN } from 'Three/examples/jsm/libs/tween.module.min.js'
+} from 'three'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import GUI from 'three/examples/jsm/libs/lil-gui.module.min.js'
+import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js'
 const defaultImg = require(`../../assets/fox.jpg`)
 const imgClip = require(`../../assets/card.png`)
 export default {

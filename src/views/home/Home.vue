@@ -1,23 +1,32 @@
-<!--
- * @Author: gerrardlt 305690790@qq.com
- * @Date: 2023-01-12 14:01:22
- * @LastEditors: gerrardlt 305690790@qq.com
- * @LastEditTime: 2023-01-30 06:51:32
- * @FilePath: \quhu\src\views\special\Special.vue
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
--->
 <template>
   <div class="main-content-container">
-    <el-row class="tab">
-      <el-col :span="3" class="nav_container">
+    <div class="backtop" @click="scrolltoTop" v-show="isBottom" style="right: 30px; bottom: 50px;"><i class="el-icon-caret-top"></i></div>
+    <el-row
+      class="tab"
+      :style="
+        currentPath === '/write' ? { paddingTop: '0' } : { paddingTop: '10px' }
+      "
+    >
+      <el-col
+        :span="3"
+        class="nav_container"
+        :style="currentPath === '/write' ? { top: '100px' } : { top: '95px' }"
+      >
         <div class="nav_left">
+          <!-- <img
+            style="width: 100%; object-fit: cover"
+            src="../../assets/logo.png"
+            alt=""
+          /> -->
           <el-menu
             class="nav_menu"
+            :style="
+              currentPath === '/write'
+                ? { minHeight: '700px' }
+                : { minHeight: '0' }
+            "
             :default-active="activeMenuId"
-            :default-openeds="['1', '2']"
             @open="handleOpen"
-            @close="handleClose"
-            background-color="#fff"
             active-text-color="#4fbdd4"
           >
             <div
@@ -58,12 +67,6 @@
                 :index="'1-' + index"
                 @click="getArticlesByColumn(item, index)"
               >
-                <!-- <img
-                  :src="require(`../../assets/defaultAvatarUrl.png`)"
-                  width="18px"
-                  height="18px"
-                  alt=""
-                /> -->
                 {{ item }}</el-menu-item
               >
             </el-submenu>
@@ -116,7 +119,7 @@
         </div>
       </el-col>
       <el-col
-        :span="21"
+        :span="22"
         v-if="currentPath === '/write'"
         class="write_container"
       >
@@ -124,6 +127,26 @@
       </el-col>
       <el-col :span="16" v-else class="mid_container">
         <div class="mid_wrapper">
+          <div class="swiper" ref="swiper" v-show="currentPath === '/home'">
+            <el-carousel height="100px">
+              <el-carousel-item
+                v-for="item in advertisementList"
+                :key="item.title"
+              >
+                <router-link
+                  :to="{
+                    path: '/official_banner'
+                  }"
+                >
+                  <img
+                    class="advertise_image"
+                    style="width: 100%; object-fit: cover"
+                    :src="item.image"
+                    alt=""
+                /></router-link>
+              </el-carousel-item>
+            </el-carousel>
+          </div>
           <div class="post-container">
             <div @click="postArticle" class="post-topic-head">
               <div class="tip">{{ $t('home.post_article') }}</div>
@@ -219,15 +242,17 @@
               }}</el-button>
             </span>
           </el-dialog>
+
           <div
             v-if="
               selectedMenu === 'short-square'
                 ? true
                 : articleList.length > 0 && columnK
             "
-            v-loading="articleLoading"
+            class="article_list custom-loading-container"
           >
             <div
+              v-loading="articleLoading"
               v-for="(item, index) in articleList"
               :key="index"
               :ref="
@@ -313,37 +338,65 @@
                     </div>
                     <div class="header-container">
                       <div class="author">
-                        <el-popover placement="top" width="200" trigger="click">
+                        <el-popover placement="top" width="200" trigger="hover">
                           <div class="author-column-intro">
                             <img
                               class="author-column-img"
                               :src="item.body.avatar"
                               alt=""
                             />
-                            <div class="author-column-name">
+                            <div
+                              class="author-column-name"
+                              @click="goInfo(item)"
+                            >
                               {{ item.body.author }}
                             </div>
                             <div class="author-column-id">
-                              {{ $t('home.user_id') }}：{{ userInfo.steem_id }}
+                              {{ $t('home.user_id') }}：{{
+                                item.json_metadata.steem_id
+                              }}
                             </div>
                             <div class="author-column-special">
-                              <span v-if="searchUserColumn.length > 0"
+                              <span
+                                v-if="
+                                  currentUserInfo.data.article &&
+                                  currentUserInfo.data.article.length > 0
+                                "
                                 >{{ $t('home.his_column') }}：</span
                               >
 
-                              <span v-if="searchUserColumn.length > 0">
+                              <span
+                                v-if="
+                                  currentUserInfo.data.article &&
+                                  currentUserInfo.data.article.length > 0
+                                "
+                                v-loading="searchUserColumnLoading"
+                              >
                                 <span
                                   class="author-column-special-text"
-                                  v-for="(txt, k) in searchUserColumn"
-                                  :key="txt"
-                                  @click="handleSelect({ value: txt })"
+                                  v-for="(txt, k) in currentUserInfo.data
+                                    .article"
+                                  :key="txt.name"
+                                  @click="handleSelect({ value: txt.name })"
                                 >
-                                  {{ k === 0 ? txt : '、' + txt }}</span
+                                  {{
+                                    k === 0 ? txt.name : '、' + txt.name
+                                  }}</span
                                 >
                               </span>
 
                               <span style="color: #5d5d5d" v-else>{{
                                 $t('home.column_tip')
+                              }}</span>
+                            </div>
+                            <div class="follow">
+                              <span
+                                v-if="!currentUserInfo.follow"
+                                @click="togglefollow(item)"
+                                >{{ '+' + $t('home.follow') }}</span
+                              >
+                              <span v-else @click="togglefollow(item)">{{
+                                $t('home.unfollow')
                               }}</span>
                             </div>
                           </div>
@@ -352,7 +405,10 @@
                             class="avatar"
                             :src="item.body.avatar"
                             alt=""
-                            @click="getUserColumn(item.json_metadata.steem_id)"
+                            @click="goInfo(item)"
+                            @mouseenter="
+                              getOtherUserInfo(item.json_metadata.steem_id)
+                            "
                           />
                         </el-popover>
                         <!-- <img class="avatar" :src="item.body.avatar" alt="" /> -->
@@ -412,37 +468,61 @@
                   <div v-else>
                     <div class="header-container">
                       <div class="author">
-                        <el-popover placement="top" width="200" trigger="click">
+                        <el-popover placement="top" width="200" trigger="hover">
                           <div class="author-column-intro">
                             <img
                               class="author-column-img"
                               :src="item.body.avatar"
                               alt=""
                             />
-                            <div class="author-column-name">
+                            <div
+                              class="author-column-name"
+                              @click="goInfo(item)"
+                            >
                               {{ item.body.author }}
                             </div>
                             <div class="author-column-id">
-                              {{ $t('home.user_id') }}：{{ userInfo.steem_id }}
+                              {{ $t('home.user_id') }}：{{
+                                item.json_metadata.steem_id
+                              }}
                             </div>
                             <div class="author-column-special">
                               <span v-if="searchUserColumn.length > 0"
                                 >{{ $t('home.his_column') }}：</span
                               >
 
-                              <span v-if="searchUserColumn.length > 0">
+                              <span
+                                v-if="
+                                  currentUserInfo.data.article &&
+                                  currentUserInfo.data.article.length > 0
+                                "
+                                v-loading="searchUserColumnLoading"
+                              >
                                 <span
                                   class="author-column-special-text"
-                                  v-for="(txt, k) in searchUserColumn"
-                                  :key="txt"
-                                  @click="handleSelect({ value: txt })"
+                                  v-for="(txt, k) in currentUserInfo.data
+                                    .article"
+                                  :key="txt.name"
+                                  @click="handleSelect({ value: txt.name })"
                                 >
-                                  {{ k === 0 ? txt : '、' + txt }}</span
+                                  {{
+                                    k === 0 ? txt.name : '、' + txt.name
+                                  }}</span
                                 >
                               </span>
 
                               <span style="color: #5d5d5d" v-else>{{
                                 $t('home.column_tip')
+                              }}</span>
+                            </div>
+                            <div class="follow">
+                              <span
+                                v-if="!currentUserInfo.follow"
+                                @click="togglefollow(item)"
+                                >{{ '+' + $t('home.follow') }}</span
+                              >
+                              <span v-else @click="togglefollow(item)">{{
+                                $t('home.unfollow')
                               }}</span>
                             </div>
                           </div>
@@ -451,7 +531,10 @@
                             class="avatar"
                             :src="item.body.avatar"
                             alt=""
-                            @click="getUserColumn(item.json_metadata.steem_id)"
+                            @click="goInfo(item)"
+                            @mouseenter="
+                              getOtherUserInfo(item.json_metadata.steem_id)
+                            "
                           />
                         </el-popover>
                         <div class="info">
@@ -575,10 +658,22 @@
                         :title="$t('home.star')"
                         class="like-outer"
                         @click="praise(item, 'article')"
+                        @mouseenter="item.mouseActivePraise = true"
+                        @mouseleave="item.mouseActivePraise = false"
                       >
                         <Icon
                           name="praise"
-                          :color="item.isPraised ? '#fda956' : '#5D5D5D'"
+                          style="transition: all 0.1s linear"
+                          :class="{
+                            like_animation: item.isPraised
+                          }"
+                          :color="
+                            item.isPraised
+                              ? '#fda956'
+                              : item.mouseActivePraise
+                              ? '#087790'
+                              : 'grey'
+                          "
                         />
                         <span class="vote-num">{{ item.voteNum || '' }}</span>
                       </div>
@@ -586,16 +681,30 @@
                         :title="$t('home.comment')"
                         class="comment"
                         @click="editComment(item, index)"
+                        @mouseenter="item.mouseActiveComment = true"
+                        @mouseleave="item.mouseActiveComment = false"
                       >
-                        <Icon name="discuss" />
+                        <Icon
+                          style="transition: all 0.1s linear"
+                          name="discuss"
+                          :color="item.mouseActiveComment ? '#087790' : 'grey'"
+                        />
                       </div>
                       <div
                         v-if="!item.favorites"
                         :title="$t('home.favorite')"
                         class="subscribe"
                         @click="articleSet(item, index, 'collect')"
+                        @mouseenter="item.mouseActiveFavorites = true"
+                        @mouseleave="item.mouseActiveFavorites = false"
                       >
-                        <Icon name="collect" :color="'#5D5D5D'" />
+                        <Icon
+                          style="transition: all 0.1s linear"
+                          name="collect"
+                          :color="
+                            item.mouseActiveFavorites ? '#087790' : 'grey'
+                          "
+                        />
                       </div>
                       <div
                         v-else
@@ -605,9 +714,6 @@
                       >
                         <Icon name="collect" :color="'#fda956'" />
                       </div>
-                      <!-- <div title="分享" class="subscribe">
-                        <Icon name="share" />
-                      </div> -->
                     </div>
                     <a
                       class="steemLink"
@@ -620,16 +726,7 @@
                       target="blank"
                       >View on Blockbrowser</a
                     >
-                    <div class="details-container" @click="goDetail(item)">
-                      <div class="text">{{ $t('home.view_detail') }}</div>
-                      <div class="icon">
-                        <Icon name="arrowR" />
-                      </div>
-                    </div>
                   </div>
-                  <!-- :style="{
-                        color: people === userInfo.steem_id ? '#087790' : ''
-                      }" -->
                   <div
                     class="praisedPeople"
                     v-if="item.list && item.list.length > 0"
@@ -639,107 +736,23 @@
                       v-for="(people, num) in item.list"
                       :key="people"
                     >
-                      {{ people }}{{ num === item.list.length - 1 ? '' : '、' }}
+                      <span @click="goInfo(item)">{{ people }}</span>
+                      {{ num === item.list.length - 1 ? '' : '、' }}
                     </div>
-                    <span style="margin-left: 10px; color: #8b8e9d">{{
+                    <span style="margin-left: 10px; color: grey">{{
                       $t('home.feel_nice')
                     }}</span>
                   </div>
-                  <div class="reply_container" v-show="item.isEditReply">
-                    <input
-                      :placeholder="$t('home.content_tip')"
-                      v-model.lazy="item.reply"
-                      class="reply_input el-textarea__inner"
-                    />
-                    <div
-                      class="el-input-group__append"
-                      @click="submitReply(item, index, 'articleReply')"
-                    >
-                      {{ $t('home.reply') }}
-                    </div>
-                  </div>
 
-                  <div class="comment-item-container"></div>
-                </div>
-              </div>
-              <div
-                v-if="item.isShowDetailDialog"
-                id="topic-detail-container"
-                class="topic-detail"
-              >
-                <div class="content">
-                  <div class="topic-detail-panel">
-                    <div class="header-container">
-                      <div class="author">
-                        <img class="avatar" :src="currentDetail.body.avatar" />
-                        <div class="info">
-                          <div class="role owner">
-                            {{ currentDetail.body.author }}
-                          </div>
-                          <div class="date">
-                            {{ transfromTimeZoom(currentDetail.created) }}
-                          </div>
-                        </div>
-                      </div>
-                      <div @click="closeDetail(item)" class="close-icon">
-                        <Icon name="cancel" />
-                      </div>
-                    </div>
-
-                    <div class="">
-                      <div class="talk-content-container">
-                        <div class="content">
-                          <div>{{ currentDetail.title }}</div>
-                          <br />
-                          <div
-                            v-html="
-                              currentDetail.json_metadata.encrypted &&
-                              selectedMenu !== 'short-square'
-                                ? decrypt(currentDetail.body.body, columnK)
-                                : currentDetail.body.body
-                            "
-                          ></div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="operation-icon" style="margin-bottom: 20px">
-                      <div
-                        :title="$t('home.star')"
-                        class="like"
-                        @click="praise(currentDetail, 'detail')"
-                      >
-                        <Icon
-                          name="praise"
-                          :color="
-                            currentDetail.isPraised ? '#fda956' : '#5D5D5D'
-                          "
-                        />
-                        <span class="vote-num">{{
-                          currentDetail.voteNum || ''
-                        }}</span>
-                      </div>
-                      <div
-                        v-if="!currentDetail.isFavorite"
-                        :title="$t('home.favorite')"
-                        class="subscribe"
-                        @click="articleSet(item, index, 'collect')"
-                      >
-                        <Icon name="collect" :color="'#5D5D5D'" />
-                      </div>
-                      <div
-                        v-if="currentDetail.isFavorite"
-                        :title="$t('home.favorite')"
-                        class="subscribe"
-                        @click="articleSet(item, index, 'removeCollect')"
-                      >
-                        <Icon name="collect" :color="'#fda956'" />
-                      </div>
-                    </div>
-                    <div class="Comment" :style="{ width: '90%' }">
+                  <div
+                    v-if="item.isEditReply"
+                    class="comment-item-container"
+                    style="padding: 10px"
+                  >
+                    <div class="Comment" :style="{ width: '100%' }">
                       <div style="display: flex">
                         <el-avatar
-                          size="large"
+                          size="small"
                           :src="
                             userAvatar
                               ? userAvatar
@@ -749,36 +762,91 @@
                         />
                         <div style="flex: auto">
                           <textarea
+                            ref="myTextarea"
+                            @input="editorSuply"
                             class="el-textarea__inner"
+                            maxlength="200"
                             v-model.lazy="textareaConetent"
                             :placeholder="$t('home.say_something')"
-                            style="min-height: 96px"
+                            style="
+                              min-height: 30px;
+                              font-size: 16px;
+                              color: #2f3034;
+                              font-weight: 400;
+                              overflow-y: hidden;
+                              height: 34px;
+                              resize: none;
+                            "
                           ></textarea>
-                          <div>
+                          <div class="picker_container">
+                            <span
+                              class="iconfont icon-biaoqing"
+                              @click="toggleEmojione(item)"
+                            >
+                              <svg
+                                :style="{
+                                  width: '20px',
+                                  height: '20px',
+                                  marginRight: '15px'
+                                }"
+                              >
+                                <use
+                                  :xlink:href="'#icon-emoji'"
+                                  rel="external nofollow"
+                                />
+                              </svg>
+                            </span>
+                            <Picker
+                              v-show="item.showPicker"
+                              :data="emojiIndex"
+                              set="twitter"
+                              @select="showEmoji"
+                              class="my-picker"
+                            />
                             <div style="margin: 10px 0">
+                              <!-- <div class="text-range">{{ $refs.myTextarea[0] }}/200</div> -->
                               <el-button
                                 plain
                                 type="primary"
-                                @click="submitReply(item, index, 'ownReply')"
-                                style="float: right"
-                                >{{ $t('home.send') }}</el-button
+                                @click="
+                                  submitReply(
+                                    item,
+                                    item.currentDetail,
+                                    'ownReply'
+                                  )
+                                "
+                                class="suply_btn"
+                                style="
+                                  float: right;
+                                  width: 80px;
+                                  font-size: 14px;
+                                "
+                                size="small"
+                                >{{ $t('home.comment') }}</el-button
                               >
                             </div>
                           </div>
                         </div>
                       </div>
-                      <Comment
-                        class="comment-index"
-                        style="margin: 0 auto"
-                        v-for="(commentp, index) in currentDetail.commentList"
-                        :key="index"
-                        :comment="commentp"
-                        :commentindex="index"
-                        :submit="submitReply"
-                        :detail="currentDetail"
-                        :columnK="columnK"
-                        :selectedMenu="selectedMenu"
-                      ></Comment>
+                      <div
+                        v-loading="item.replyLoading"
+                        element-loading-spinner="el-icon-loading"
+                        element-loading-background="rgba(0, 0, 0, 0.8)"
+                      >
+                        <Comment
+                          class="comment-index"
+                          style="margin: 0 auto"
+                          v-for="(commentp, index) in item.currentDetail &&
+                          item.currentDetail.commentList"
+                          :key="index"
+                          :comment="commentp"
+                          :commentindex="index"
+                          :submit="submitReply"
+                          :detail="item.currentDetail"
+                          :columnK="columnK"
+                          :selectedMenu="selectedMenu"
+                        ></Comment>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -807,52 +875,30 @@
                 <div class="content-container">
                   <img class="avatar" :src="userAvatar" />
                   <ShortPost ref="short_post" @upload="uploadImg"></ShortPost>
-                  <!-- <div
-                    style="
-                      width: calc(100% - 40px);
-                      min-height: 110px;
-                      margin: 5px 0px;
-                      max-height: 497px;
-                    "
-                  >
-                    <quill-editor
-                      v-model="postContent"
-                      ref="myQuillEditor"
-                      :options="editorOption"
-                      class="quill-editor"
-                      spellcheck="false"
-                      @ready="onEditorReady()"
-                      @change="onEditorChange($event)"
-                    >
-                    </quill-editor>
-                  </div> -->
                 </div>
                 <div class="horizontal-line"></div>
               </div>
               <div class="upload-container">
-                <div class="operation-icon">
+                <div
+                  class="operation-icon"
+                  ref="operation_icon"
+                  @click="closeEmoji"
+                >
                   <div class="left" v-if="fileList.length !== 0">
                     <div
                       ref="imgList"
                       class="picture-list"
                       v-for="(item, i) in fileList"
                       :key="i"
-                      @mouseenter="showIcon(item)"
-                      @mouseleave="hideIcon(item)"
+                      v-loading="item.loading"
                     >
                       <img class="picList" :src="item.url" />
                       <i
-                        v-show="item.isShow"
                         class="delete-pic el-icon-close"
                         @click="deleteEditorImage(item, i)"
                       >
                       </i>
                     </div>
-                    <!-- <button  class="emoji"></button> -->
-                    <!-- <div  class="pic"></div>
-                <div  class="file"></div>
-                <div  class="video" hidden=""></div><button  class="tag"></button>
-                <div  class="scheduled"></div> -->
                   </div>
                   <div class="middle">
                     <el-select
@@ -875,9 +921,6 @@
                       {{ $t('home.publish') }}
                     </div>
                   </div>
-                </div>
-                <div style="color: #c0c0c0; font-size: 14px; text-align: right">
-                  {{ $t('home.publish_tip') }}
                 </div>
               </div>
             </div>
@@ -905,12 +948,12 @@
                   class="woo-box-flex woo-box-alignCenter"
                   @click="getHotColumns"
                 >
-                  <i class="el-icon-refresh" style="color: #a2a2a2"></i
+                  <i class="el-icon-refresh" style="color: #c0c0c0"></i
                   ><span
                     class="f12 clb"
                     style="
                       display: inline-block;
-                      color: #a2a2a2;
+                      color: #c0c0c0;
                       max-width: 50px;
                       white-space: nowrap;
                       overflow: hidden;
@@ -921,7 +964,7 @@
                 </div>
               </div>
               <div class="woo-divider-main woo-divider-x"></div>
-              <div v-if="hotColumns.length > 0">
+              <div v-if="hotColumns.length > 0" class="hot_container">
                 <div
                   class="wbpro-side-card7"
                   v-for="(hot, hotIndex) in hotColumns"
@@ -929,15 +972,37 @@
                 >
                   <div class="wbpro-side-panel">
                     <div class="con woo-box-flex woo-box-alignCenter">
+                      <div v-if="hotIndex === 0">
+                        <svg
+                          :style="{
+                            fill: '#EE9611',
+                            width: '20px',
+                            height: '20px',
+                            marginRight: '15px'
+                          }"
+                          :class="{
+                            'rank-top': [0, 1, 2].indexOf(hotIndex) !== -1,
+                            rank: true,
+                            top: true,
+                            f16: true
+                          }"
+                        >
+                          <use
+                            :xlink:href="'#icon-fire'"
+                            rel="external nofollow"
+                          />
+                        </svg>
+                      </div>
                       <div
                         :class="{
-                          'rank-top': [0, 1, 2].indexOf(hotIndex) !== -1,
+                          'rank-top': [1, 2, 3].indexOf(hotIndex) !== -1,
                           rank: true,
                           top: true,
                           f16: true
                         }"
+                        v-else
                       >
-                        {{ Number(hotIndex) + 1 }}
+                        {{ Number(hotIndex) }}
                       </div>
                       <div
                         :title="hot.value"
@@ -961,7 +1026,7 @@
               </div>
               <el-empty v-else :description="$t('home.no_data')"></el-empty>
               <div class="hot_auction" @click="goLink">
-                <svg
+                <!-- <svg
                   :style="{
                     fill: '#EE9611',
                     width: '25px',
@@ -970,7 +1035,13 @@
                   }"
                 >
                   <use :xlink:href="'#icon-ring1'" rel="external nofollow" />
-                </svg>
+                </svg> -->
+                <img
+                  src="../../assets/radio.png"
+                  style="width: 25px; height: 25px"
+                  alt=""
+                />
+
                 <span
                   class="hot_text animate__animated animate__heartBeat animate__slower"
                   >{{ $t('home.hot_auction') }}</span
@@ -981,7 +1052,9 @@
           </div>
         </div>
       </el-col>
+
     </el-row>
+
     <el-dialog
       :title="$t('home.create_column')"
       :visible.sync="dialogVisible"
@@ -989,30 +1062,21 @@
       width="60%"
       :before-close="handleSubscriptionsClose"
     >
-    <input
-                    type="text"
-                    v-model.lazy="subscriptionsInfo.name"
-                    :placeholder="$t('home.title_tip')"
-                    class="el-textarea__inner"
-                    style="height:40px"
-                  />
-      <!-- <el-input
-        :placeholder="$t('home.column_name_tip')"
+      <input
+        type="text"
         v-model.lazy="subscriptionsInfo.name"
-      >
-      </el-input> -->
+        :placeholder="$t('home.title_tip')"
+        class="el-textarea__inner"
+        style="height: 40px"
+      />
+
       <div class="margin-top-10 sub_price">
-        <!-- <el-input
-          :placeholder="$t('home.column_price_tip')"
-          v-model="subscriptionsInfo.price"
-        >
-        </el-input> -->
         <input
-                    type="text"
-                    :placeholder="$t('home.column_price_tip')"
+          type="text"
+          :placeholder="$t('home.column_price_tip')"
           v-model.lazy="subscriptionsInfo.price"
-                    class=" el-textarea__inner"
-                  />
+          class="el-textarea__inner"
+        />
         <el-select
           class="price_select"
           v-model="subscriptionsInfo.currency"
@@ -1031,19 +1095,49 @@
       <div class="price_tips">
         {{ $t('home.price_tip') }}
       </div>
-      <!-- <el-input
-        class="margin-top-10"
-        type="textarea"
-        :rows="2"
-        :placeholder="$t('home.intro_tip')"
-        v-model="subscriptionsInfo.introduction"
-      >
-      </el-input> -->
+
       <textarea
-                            class="el-textarea__inner margin-top-10"
-                            v-model.lazy="subscriptionsInfo.introduction"
-                            :placeholder="$t('home.intro_tip')"
-                          ></textarea>
+        class="el-textarea__inner margin-top-10"
+        v-model.lazy="subscriptionsInfo.introduction"
+        :placeholder="$t('home.intro_tip')"
+        style="resize: none;"
+      ></textarea>
+      <div class="tag_tips">
+        {{ $t('home.tag_tip') }}
+      </div>
+      <div class="tags" style="margin-top: 10px; display: flex">
+        <el-tag
+          effect="plain"
+          class="tag"
+          style="margin-left: 5px; min-width: 100px"
+          :type="tagTypes[i]"
+          v-for="(item, i) in tagList"
+          :key="i"
+          closable
+          :title="item"
+          @close="handleTagClose(item)"
+          >{{ item }}</el-tag
+        >
+
+        <input
+          type="text"
+          class="input-new-tag el-textarea__inner"
+          v-if="inputVisible"
+          v-model.lazy="inputValue"
+          maxlength="12"
+          ref="saveTagInput"
+          @keyup.enter="handleInputConfirm"
+          @blur="handleInputConfirm"
+        />
+        <el-button
+          v-else-if="tagList.length < 3"
+          class="button-new-tag"
+          size="small"
+          @click="showInput"
+          >{{ $t('info.add_label') }}</el-button
+        >
+      </div>
+
       <div style="margin-top: 20px">
         <div style="margin-bottom: 10px">{{ $t('home.auth_tip') }}</div>
         <el-radio v-model="subscriptionsInfo.radio" label="self">{{
@@ -1057,9 +1151,11 @@
         <div style="margin-bottom: 10px">{{ $t('home.column_picture') }}</div>
         <el-upload
           class="avatar-uploader"
+          :accept="'image/*'"
           :show-file-list="false"
           :action="actionUrl"
           :http-request="onUploadSubImgHandler"
+          v-loading="createAvatarLoading"
         >
           <img
             v-if="subscriptionsInfo.image"
@@ -1069,11 +1165,17 @@
           <i v-else class="el-icon-plus avatar-uploader-icon"></i>
         </el-upload>
       </div>
-
-      <span slot="footer" class="dialog-footer create-footer">
-        <div class="rule">
-          {{ $t('home.column_rule') }}
+      <div class="rule">
+        <div>{{ $t('home.column_rule_tip') }}：</div>
+        <div>
+          <div class="rule_item">{{ $t('home.column_rule1') }}</div>
+          <div class="rule_item">{{ $t('home.column_rule2')+'20 usdt' }}</div>
+          <div class="rule_item">{{ $t('home.column_rule3')+'80 usdt' }}</div>
         </div>
+          
+        </div>
+      <span slot="footer" class="dialog-footer create-footer">
+
         <el-button @click="handleSubscriptionsClose">{{
           $t('home.cancel')
         }}</el-button>
@@ -1088,6 +1190,7 @@
 
     <el-upload
       :action="actionUrl"
+      :accept="'image/*'"
       ref="upload"
       v-show="false"
       class="avatar-uploader-edit"
@@ -1110,14 +1213,13 @@ import {
   getArticles,
   getArticleDetail,
   vote,
-  getVote,
   hotColumn,
   goTop,
   collect,
   removeCollect
 } from '@/api/special/special'
-import MD5 from 'MD5'
-import { getUser } from '@/api/user/user'
+import MD5 from 'md5'
+import { getUser, follow, unfollow, getOtherUser } from '@/api/user/user'
 import { getToken } from '@/utils/auth'
 // import _ecc from '@/utils/ecc/index'
 import axios from 'axios'
@@ -1128,9 +1230,15 @@ import Icon from '@/components/Icon/index'
 import Comment from '@/components/comment/Comment.vue'
 import ShortPost from './ShortPost.vue'
 import { Loading } from 'element-ui'
-import { decrypt } from '@/utils/ascill'
+import { encrypt, decrypt } from '@/utils/ascill'
 import { debounce } from 'lodash'
 import Collapse from '@/utils/collapse'
+import { Picker, EmojiIndex } from 'emoji-mart-vue-fast'
+import data from 'emoji-mart-vue-fast/data/all.json'
+import 'emoji-mart-vue-fast/css/emoji-mart.css'
+import { wrapEmoji, emojiToHtml } from '@/utils/convertEmoji'
+let emojiIndex = new EmojiIndex(data)
+
 const defaultAvatar = require(`../../assets/defaultAvatarUrl.png`)
 
 export default {
@@ -1138,10 +1246,15 @@ export default {
     Icon,
     Comment,
     Collapse,
+    Picker,
     ShortPost
   },
   data() {
     return {
+      isBottom:false,
+      createAvatarLoading: false,
+      emojiIndex: emojiIndex,
+      emojisOutput: '',
       searchUserColumn: [],
       articlePermlinkList: [],
       articlePostType: this.$t('home.public'),
@@ -1175,9 +1288,12 @@ export default {
           label: 'bnb'
         }
       ],
+      inputVisible: false,
+      inputValue: '',
+      tagList: [],
+      tagTypes: ['success', 'warning', 'danger'],
       searchResult: [],
       articleList: [],
-      // postContent: '',
       editorOption: {
         modules: {
           'emoji-toolbar': true,
@@ -1261,7 +1377,6 @@ export default {
       },
       showEditor: false,
       titleText: '',
-      currentDetail: {},
       subscriptionsInfo: {
         name: '',
         price: '',
@@ -1283,6 +1398,7 @@ export default {
       activeMenuId: '',
       favorites: [],
       currentInfo: {},
+      currentUserInfo: { data: {} },
       columnK: 0,
       selectedMenu: '',
       subscribeTimeList: [
@@ -1295,7 +1411,14 @@ export default {
       subscribeMonth: 12,
       pageListStart: {},
       contentRefList: {},
-      updateTimeout: null
+      updateTimeout: null,
+      searchUserColumnLoading: false,
+      advertisementList: [
+        {
+          image:
+            'https://cdn.steemitimages.com/DQmf189yTK4HE9cFdVnQnTLKtnwrT9QvmR3AXcLXFFGch9d/banner.png'
+        }
+      ]
     }
   },
   computed: {
@@ -1308,10 +1431,13 @@ export default {
     },
     userInfo() {
       return JSON.parse(localStorage.getItem('quhu-userInfo'))
+    },
+    loginType() {
+      return localStorage.getItem('login-type')
     }
   },
   async created() {
-    this.$EventBus.$on('update-article', this.updateArticle)
+    this.$bus.$on('update-article', this.updateArticle)
     this.updateColumn()
     this.getHotColumns()
   },
@@ -1323,18 +1449,131 @@ export default {
     }
   },
   beforeDestroy() {
-    this.$EventBus.$off('update-article', this.updateArticle)
+    this.$bus.$off('update-article', this.updateArticle)
     window.removeEventListener('scroll', this.getArticlesData)
     clearTimeout('articleTimeout')
   },
   methods: {
     decrypt,
+    scrolltoTop(){
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    },
+    getOtherUserInfo: debounce(async function (steemId) {
+      this.searchUserColumnLoading = true
+      const id =
+        this.loginType === 'eth'
+          ? this.userInfo.eth_account
+          : this.userInfo.user
+      const res = await getOtherUser({
+        id,
+        steem_id: steemId,
+        token: getToken()
+      })
+
+      if (res && res.success === 'ok') {
+        this.currentUserInfo = res
+      }
+      this.searchUserColumnLoading = false
+    }, 500),
+    togglefollow: debounce(function (item) {
+      if (this.currentUserInfo.follow) {
+        this.unFollow(item)
+      } else {
+        this.follow(item)
+      }
+    }, 500),
+    async follow(v) {
+      const res = await follow({
+        id:
+          this.loginType === 'eth'
+            ? this.userInfo.eth_account
+            : this.userInfo.user,
+        token: getToken(),
+        steem_id: v.json_metadata.steem_id
+      })
+      if (res && res.success === 'ok') {
+        this.currentUserInfo.follow = !this.currentUserInfo.follow
+        this.$message.success(this.$t('home.follow_success_tip'))
+      }
+    },
+    async unFollow(v) {
+      const res = await unfollow({
+        id:
+          this.loginType === 'eth'
+            ? this.userInfo.eth_account
+            : this.userInfo.user,
+        token: getToken(),
+        steem_id: v.json_metadata.steem_id
+      })
+      if (res && res.success === 'ok') {
+        this.currentUserInfo.follow = !this.currentUserInfo.follow
+        this.$message.success(this.$t('home.follow_cancel_tip'))
+      }
+    },
+    showInput() {
+      this.inputVisible = true
+      this.$nextTick(() => {
+        console.log(this.$refs.saveTagInput)
+        this.$refs.saveTagInput.focus()
+      })
+    },
+    async handleInputConfirm() {
+      let inputValue = this.inputValue
+      // const reg = /^[\u4e00-\u9fa5_a-zA-Z0-9]+$/
+      // if (!reg.test(inputValue.trim())) {
+      //   this.$message.error(this.$t('info.nick_tip'))
+      //   return
+      // }
+      const arr = [inputValue]
+      if (inputValue) {
+        this.tagList = this.tagList.concat(arr)
+      }
+      this.inputVisible = false
+      this.inputValue = ''
+    },
+    async handleTagClose(tag) {
+      //   const arr = cloneDeep(this.tagList)
+      this.tagList.splice(this.tagList.indexOf(tag), 1)
+      this.$forceUpdate()
+    },
+    goInfo(v) {
+      console.log(v)
+      this.$router.push({
+        path: '/information',
+        query: {
+          id: v.body.author,
+          steemId: v.json_metadata.steem_id
+        }
+      })
+    },
+    showEmoji(emoji) {
+      this.textareaConetent += emoji.native
+    },
+    toggleEmojione(item) {
+      // this.showPicker = !this.showPicker;
+      item.showPicker = !item.showPicker
+    },
+    closeEmoji(event) {
+      const targetElement = event.target
+      console.log(targetElement.classList)
+      // 检查点击的元素是否是目标子元素
+      if (
+        targetElement.classList.contains('picList') ||
+        targetElement.classList.contains('delete-pic')
+      ) {
+      } else {
+        this.$refs.short_post.closeEmojione()
+      }
+    },
+    closeEmojione(item) {
+      item.showPicker = false
+    },
     uploadImg() {
       this.$refs.upload.$el.click()
       document.querySelector('.avatar-uploader-edit input').click()
     },
     goLink() {
-      this.$EventBus.$emit('changeTab', { name: 'auction' }, 3)
+      this.$bus.$emit('changeTab', { name: 'auction' }, 2)
     },
     async getUserColumn(name) {
       this.searchUserColumn = []
@@ -1488,7 +1727,7 @@ export default {
       }
       return tree
     },
-    async articleSet(v, i, type) {
+    articleSet: debounce(async function (v, i, type) {
       const userInfo = this.userInfo
       const token = getToken()
       const loginType = localStorage.getItem('login-type')
@@ -1551,11 +1790,13 @@ export default {
           if (res1 && res1.success === 'ok') {
             this.$message.success(this.$t('home.favorite_success'))
             v.favorites = true
-            this.articleList.forEach((item) => {
-              if (item.permlink === this.currentDetail.permlink) {
-                this.currentDetail.isFavorite = true
-              }
-            })
+            this.$forceUpdate()
+            // this.articleList.forEach((item) => {
+            //   if (item.permlink === v.currentDetail.permlink) {
+            //     v.currentDetail.isFavorite = true
+            //     this.$set(v.currentDetail,'favorites',true)
+            //   }
+            // })
           }
           break
         case 'removeCollect':
@@ -1568,22 +1809,24 @@ export default {
           if (result && result.success === 'ok') {
             this.$message.success(this.$t('home.cancel_favorite_success'))
             v.favorites = false
-            this.articleList.forEach((item) => {
-              if (item.permlink === this.currentDetail.permlink) {
-                this.currentDetail.isFavorite = false
-              }
-            })
+            this.$forceUpdate()
+            // this.articleList.forEach((item) => {
+            //   if (item.permlink === v.currentDetail.permlink) {
+            //     v.currentDetail.isFavorite = false
+            //   }
+            // })
           }
           break
         default:
           break
       }
-      // this.getArticlesByColumn(
-      //     this.selectedColumn || this.subscriptionsList.my[0] || ''
-      //   )
+    }, 500),
+    editorSuply(v) {
+      const textarea = this.$refs.myTextarea[0]
+      // textarea.style.height = 'auto'
+      textarea.style.height = textarea.scrollHeight + 'px'
     },
-
-    async getHotColumns() {
+    getHotColumns: debounce(async function () {
       const res = await hotColumn({})
       if (res && res.success === 'ok') {
         const arr = []
@@ -1595,8 +1838,8 @@ export default {
         })
         this.hotColumns = arr
       }
-    },
-    async praise(v, type) {
+    }, 500),
+    praise: debounce(async function (v, type) {
       // console.log(v)
       const userInfo = this.userInfo
       const token = getToken()
@@ -1630,7 +1873,7 @@ export default {
       } else {
         this.$message.success(this.$t('home.network_error_tip'))
       }
-    },
+    }, 500),
     showIcon(v) {
       v.isShow = true
     },
@@ -1675,21 +1918,32 @@ export default {
           fn(response)
         })
     },
-    async loadHandler(file, cb) {
+    async loadHandler(file, cb,type) {
       let dataUrl = ''
+
       if (file) {
         // console.log('** image being loaded.. ----->', file)
         let width = 0
         let height = 0
         const reader = new FileReader()
         reader.addEventListener('load', (theFile) => {
+          // console.log(theFile)
           let image = new Image()
           image.src = theFile.target.result
           image.onload = function () {
             width = this.width
             height = this.height
           }
-
+          const fileOption = {
+            url: '',
+            isShow: false,
+            width: width,
+            height: height,
+            loading: true
+          }
+          if(type!=='sub_img'){
+            cb(fileOption)
+          }
           dataUrl = reader.result
           const prefix = new Buffer('ImageSigningChallenge')
           const commaIdx = dataUrl.indexOf(',')
@@ -1704,6 +1958,7 @@ export default {
           const formData = new FormData()
           if (file) {
             formData.append('file', file)
+
             this.uploadDispatch(
               'https://steemitimages.com/' +
                 actObj.arr[Math.floor(Math.random() * actObj.arr.length)] +
@@ -1716,22 +1971,13 @@ export default {
                 if (res.status === 200) {
                   imageUrl = res.data.url
                 }
-                cb({
-                  url: imageUrl,
-                  isShow: false,
-                  width: width,
-                  height: height
-                })
-
-                // console.log(this.fileList)
-                // console.log(this.fileList)
-                // 获取光标所在位置
-                // let quill = this.$refs.myQuillEditor.quill
-                // let length = quill.getSelection().index
-                // 插入图片
-                // quill.insertEmbed(length, 'image', imageUrl)
-                // 调整光标到最后
-                // quill.setSelection(length + 1)
+                
+                fileOption.url = imageUrl
+                fileOption.loading = false
+                if(type==='sub_img'){
+                  cb(fileOption)
+                }
+                this.createAvatarLoading = false
               }
             )
           }
@@ -1740,14 +1986,18 @@ export default {
       }
     },
     async onUploadSubImgHandler(e) {
+      this.createAvatarLoading = true
       this.loadHandler(e.file, (v) => {
         this.subscriptionsInfo.image = v.url
-      })
+      },'sub_img')
     },
     async onUploadHandler(e) {
-      // console.log(e)
       this.loadHandler(e.file, (v) => {
-        this.fileList = this.fileList.concat([v])
+        if (this.fileList.length < 9) {
+          this.fileList = this.fileList.concat([v])
+        } else {
+          this.$message.warning(this.$t('home.max_upload'))
+        }
       })
     },
 
@@ -1780,9 +2030,10 @@ export default {
         }
       })
     },
-    editComment(item, index) {
+    editComment: debounce(function (item, index) {
       item.isEditReply = !item.isEditReply
-    },
+      this.goDetail(item)
+    }, 500),
     async updateColumn() {
       const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
@@ -1826,13 +2077,13 @@ export default {
         // 获取滚动容器的滚动高度
         const containerScrollHeight = document.body.scrollHeight
         const debounceLoad = debounce(self.loadMoreArticle)
-        // console.log(
-        //   'scrollTop : ' + scrollTop,
-        //   'containerHeight : ' + containerHeight,
-        //   'containerScrollHeight : ' + containerScrollHeight
-        // )
-        // 如果滚动到了底部且没有正在加载数据，则调用 loadMore 方法加载新的数据
-        // console.log(containerHeight + scrollTop, containerScrollHeight)
+        // console.log('containerScrollHeight==',containerScrollHeight,'containerHeight===',containerHeight,'scrollTop===',scrollTop)
+        if(scrollTop >2500){
+          self.isBottom = true
+        }else {
+          self.isBottom = false
+        }
+        
         if (containerHeight + scrollTop >= containerScrollHeight) {
           // 标记正在加载数据
           // console.log('调用了')
@@ -1851,6 +2102,9 @@ export default {
 
       res.isPraised = false
       res.isFavorite = false
+      res.mouseActiveComment = false
+      res.mouseActivePraise = false
+      res.mouseActiveFavorites = false
       console.log(this.favorites)
       if (this.favorites.length > 0) {
         this.favorites.forEach((ele) => {
@@ -1862,11 +2116,9 @@ export default {
         })
       }
 
-      // console.log(res)
       return res
     },
-    async getArticlesByColumn(v, i, type, loadType) {
-      // console.log(sessionStorage.getItem('selectedColumn'), v)
+    getArticlesByColumn: debounce(async function (v, i, type, loadType) {
       const isSameColumn = sessionStorage.getItem('selectedColumn') === v
       if (!isSameColumn || (isSameColumn && loadType !== 'load')) {
         this.pageListStart = {}
@@ -1909,6 +2161,7 @@ export default {
       const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
       let selectedMenu = '1-0'
+      // 记录菜单 与文章联动
       if (v) {
         this.selectedColumn = v
         if (this.subscriptionsList.my.indexOf(v) !== -1) {
@@ -1961,12 +2214,9 @@ export default {
         }
         const res = await getArticles(params)
 
+        // 处理文章数据
         if (res && res.result) {
           let formatRes = res.result && res.result.concat()
-
-          // console.log(formatRes)
-          // const otherInfoList = []
-          // const ids = []
           let arr = []
           let newRes = formatRes.filter((ele, index) => {
             if (this.subscriptionsList.my.indexOf(this.selectedColumn) !== -1) {
@@ -1985,10 +2235,13 @@ export default {
             element.reply = ''
             element.isArticleActive = true
             element.openOrFoldFlag = 'down_article'
-
+            element.showPicker = false
             element.isShowDetailDialog = false
-
+            element.replyLoading = false
             element.isPraised = element.voted
+            element.mouseActivePraise = false
+            element.mouseActiveComment = false
+            element.mouseActiveFavorites = false
             element.isFavorite = element.favorites
             // element.isFavorite = false
             element.voteNum = element.vote
@@ -2008,7 +2261,6 @@ export default {
               newRes.unshift(newRes.splice(index, 1)[0])
             }
             if (author === element.author && permlink === element.permlink) {
-              // console.log(this.articleRefs)
               element.isShowDetailDialog = false
               this.goDetail(
                 {
@@ -2019,7 +2271,7 @@ export default {
               )
             }
           })
-          // console.log(formatRes)
+          // console.log(newRes)
           newRes = arr.concat(newRes)
           if (formatRes.length >= 20) {
             this.pageListStart = {
@@ -2056,7 +2308,7 @@ export default {
         }, 100)
         this.articleLoading = false
       }
-    },
+    }, 500),
     createColumn() {
       this.dialogVisible = true
       this.activeMenuIndex = 1
@@ -2117,8 +2369,10 @@ export default {
         subscriptions_name: name,
         introduction: introduction,
         image: image,
-        price: price + currency
+        price: price + currency,
+        tags: this.tagList
       }
+      console.log(params)
       if (radio === 'all') {
         params.allow = 'all'
       }
@@ -2134,12 +2388,30 @@ export default {
       }
     },
     handleOpen(key, keyPath) {
-      // console.log(key, keyPath)
+      console.log(key, keyPath)
     },
-    handleClose(key, keyPath) {
-      // console.log(key, keyPath)
+    findObjectByPostId(array, postIdToFind, obj) {
+      for (let i = 0; i < array.length; i++) {
+        const currentObject = array[i]
+
+        if (currentObject.post_id === postIdToFind) {
+          currentObject.child.push(obj)
+        }
+
+        if (currentObject.child && currentObject.child.length > 0) {
+          const foundInChild = this.findObjectByPostId(
+            currentObject.child,
+            postIdToFind
+          )
+          if (foundInChild) {
+            return foundInChild
+          }
+        }
+      }
+
+      return null
     },
-    async submitReply(v, i, type) {
+    async submitReply(v, detail, type) {
       const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
       const {
@@ -2151,11 +2423,8 @@ export default {
         created,
         reply
       } = v
-      const loading = Loading.service({
-        text: this.$t('message.loading'),
-        spinner: 'el-icon-loading ElementLoading',
-        background: 'rgba(0, 0, 0, 0.2)'
-      })
+      this.$loading.show()
+
       const res = await post({
         type: 'comment',
         id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
@@ -2165,15 +2434,12 @@ export default {
         title: '',
         body: type === 'ownReply' ? this.textareaConetent : v.reply
       })
-      if (loading) {
-        loading.close()
-      }
+      this.$loading.hide()
       if (res && res.success === 'ok') {
         this.$message.success(this.$t('home.reply_success'))
-        console.log(this.currentDetail, this.selectedMenu, decrypt(body))
         if (type === 'ownReply') {
-          // console.log(new Date().toLocaleString(), body)
-          this.currentDetail.commentList.push({
+          if(v.currentDetail){
+            v.currentDetail.commentList.unshift({
             author: res.data.author,
             permlink: res.data.permlink,
             body: Object.assign({}, body, {
@@ -2188,10 +2454,35 @@ export default {
             reply: this.textareaConetent,
             child: []
           })
+          let commentList = v.currentDetail.commentList
+          this.$set(v.currentDetail, 'commentList', commentList)
+          this.textareaConetent = ''
+          v.showPicker = false
+          }else {
+            this.$message.error(this.$t('home.edit_comment_tip'))
+          }
+
         } else if (type === 'articleReply') {
           v.isEditReply = false
         } else {
-          v.child.push({
+          // this.findObjectByPostId(detail.commentList, v.post_id,{
+          //   author: res.data.author,
+          //   permlink: res.data.permlink,
+          //   body: Object.assign({}, body, {
+          //     body: v.reply,
+          //     avatar: this.userAvatar,
+          //     author: this.userInfo.user_name,
+          //     created: res.result.created
+          //   }),
+          //   parent_author: parent_author,
+          //   parent_permlink: parent_permlink,
+          //   created,
+          //   reply: v.reply,
+          //   child: []
+          // })
+          // console.log(detail.commentList)
+          // this.$set(detail,'commentList',detail.commentList)
+          v.child.unshift({
             author: res.data.author,
             permlink: res.data.permlink,
             body: Object.assign({}, body, {
@@ -2206,29 +2497,18 @@ export default {
             reply: v.reply,
             child: []
           })
+          let arr = v.child
+          v.child = arr
+          this.$set(v, 'child', arr)
         }
-
-        // v.reply = ''
       } else {
         this.$message.error(this.$t('home.post_fail_tip'))
         this.closeEditor()
+      }
 
-        // v.reply = ''
-      }
-      if (v) {
-        v.isEditReply = false
-      }
     },
 
     postArticle() {
-      // this.$router.push({
-      //   path: '/write',
-      //   query: {
-      //     selectedColumn: this.selectedColumn
-      //   }
-      // })
-
-      console.log(this.selectedColumn)
       const userInfo = this.userInfo
       let flag = true
       userInfo.article.forEach((item) => {
@@ -2260,6 +2540,7 @@ export default {
             ) {
               evt.preventDefault()
               const arr = []
+
               arr.forEach.call(evt.clipboardData.files, (file) => {
                 if (!file.type.match(/^image\/(gif|jpe?g|a?png|bmp)/i)) {
                   return
@@ -2272,7 +2553,7 @@ export default {
         )
       })
     },
-    async submit() {
+    submit: debounce(async function () {
       const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
       let imgHtml = ''
@@ -2281,10 +2562,10 @@ export default {
           this.fileList[0].url
         } width="300px" height="${
           (300 / this.fileList[0].width) * this.fileList[0].height
-        }" alt="" />`
+        }" style="cursor:pointer;" alt="" />`
       } else {
         this.fileList.forEach((item, i) => {
-          imgHtml += `<img src="${item.url}" preview=${this.fileList[0].url} style="object-fit:cover;background:#f5f6f7;margin-left:5px;margin-bottom:5px;" class="img-container" width="150px" height="150px" alt="" />`
+          imgHtml += `<img src="${item.url}" preview=${this.fileList[0].url} style="object-fit:cover;background:#f5f6f7;margin-left:5px;margin-bottom:5px;cursor:pointer;" class="img-container" width="150px" height="150px" alt="" />`
         })
       }
       if (!this.articlePostType) {
@@ -2296,18 +2577,8 @@ export default {
         return
       }
 
-      // if (!(this.postContent + imgHtml)) {
-      //   this.$message.error(this.$t('home.post_content_tip'))
-      //   return
-      // }
-      // console.log(this.content, this.content.length)
-      // console.log(imgHtml)
-      const loading = Loading.service({
-        text: this.$t('message.loading'),
-        spinner: 'el-icon-loading ElementLoading',
-        background: 'rgba(0, 0, 0, 0.2)'
-      })
-      console.log(this.$refs.short_post.postText)
+      this.$loading.show()
+
       const res = await post({
         type: 'post',
         id: loginType === 'password' ? userInfo.user : userInfo.eth_account,
@@ -2322,7 +2593,6 @@ export default {
       })
 
       if (res && res.success === 'ok') {
-        console.log(res.result, this.articleList)
         this.closeEditor()
 
         this.$message.success(this.$t('home.post_success'))
@@ -2339,6 +2609,9 @@ export default {
         res.result.isEditReply = false
         res.result.reply = ''
         res.result.isPraised = false
+        res.result.mouseActivePraise = false
+        res.result.mouseActiveComment = false
+        res.result.mouseActiveFavorites = false
         res.result.isFavorite = false
         res.result.favorites = false
         res.result.voteNum = 0
@@ -2356,17 +2629,23 @@ export default {
           })
         }
 
-        console.log(res.result)
+        
         this.articleList.unshift(res.result)
+        console.log(res)
+        this.goDetail(
+                {
+                  author:res.result.author,
+                  permlink:res.result.permlink
+                }
+              )
       } else {
         this.$message.error(this.$t('home.post_fail_tip'))
         this.closeEditor()
       }
       this.$refs.short_post.textLength = 0
-      if (loading) {
-        loading.close()
-      }
-    },
+      this.$loading.hide()
+      // window.location.reload()
+    }, 500),
     closeEditor() {
       this.showEditor = false
       this.$refs.short_post.resetText()
@@ -2379,30 +2658,20 @@ export default {
       val.isShowDetailDialog = false
     },
     async goDetail(val, ele) {
-      if (ele) {
-        setTimeout(() => {
-          // console.log(this.articleRefs['article' + ele.permlink])
-          // const el = this.articleRefs['article' + ele.permlink]
-          // const target = el.offsetTop
-          // el.scrollIntoView()
-        }, 500)
-      }
 
       const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
       const token = getToken()
+      val.replyLoading = true
       const res = await getArticleDetail({
         id: loginType === 'password' ? userInfo.user : userInfo.eth_account,
         jsonrpc: '2.0',
         method: 'bridge.get_discussion',
         params: { author: val.author, permlink: val.permlink }
       })
-      const votes = await getVote({
-        permlink: val.permlink,
-        steem_id: userInfo.steem_id
-      })
+
+      val.replyLoading = false
       const obj = res.result[val.author + '/' + val.permlink]
-      // const commentList = this.getReply(obj, res.result)
       let commentList = []
       const result = Object.assign(res.result, {})
       // 判断评论和正文
@@ -2417,39 +2686,18 @@ export default {
       }
       commentList.forEach((comment) => {
         comment.isShowReplyText = false
-        // comment.isEditReply = false
         comment.reply = ''
         comment.child = []
       })
       commentList = commentList.reverse()
-      // const commentTree = this.toTree(commentList, val.author)
-      // console.log(commentList[0].parent_author)
       const commentTree = this.buildTreeWithCycle(commentList, val.author)
       // console.log(commentTree)
       if (obj) {
         obj.body = this.eval(obj.body)
-        let isPraised = false
-        let voteNum = 0
-        let isFavorite = false
-        const vote = votes.data.forEach((item, i) => {
-          isPraised = item.voted
-          voteNum = item.vote
-          isFavorite = item.favorites
-        })
-        // isFavorite = formatFavorites.indexOf(val.permlink) !== -1
-        // console.log(isFavorite, formatFavorites, val.permlink)
-        obj.isPraised = isPraised
-        obj.voteNum = voteNum
-        obj.isFavorite = isFavorite
+
         obj.commentList = commentTree
-        this.currentDetail = obj
-        if (ele) {
-          ele.isShowDetailDialog = true
-        } else {
-          val.isShowDetailDialog = true
-        }
+        val.currentDetail = obj
       }
-      // console.log(val)
     },
     eval(fn) {
       const Fn = Function
@@ -2479,16 +2727,6 @@ export default {
     }
   },
   watch: {
-    'currentDetail.commentList': {
-      handler(newVal, oldVal) {},
-      deep: true,
-      immediate: true
-    },
-    // postContent: {
-    //   handler(newVal, oldVal) {},
-    //   deep: true,
-    //   immediate: true
-    // },
     articleList: {
       handler(newVal, oldVal) {},
       deep: true,
@@ -2497,6 +2735,49 @@ export default {
     '$i18n.locale': {
       handler(newVal, oldVal) {
         this.articlePostType = this.$t('home.public')
+      },
+      deep: true,
+      immediate: true
+    },
+    fileList: {
+      handler(newVal, oldVal) {
+        if (this.$refs.operation_icon) {
+          const operation_icon = this.$refs.operation_icon
+          const biaoqing = this.$refs.short_post.$refs.biaoqing
+          const ql_toolbar = document.querySelector('.short_post .ql-toolbar')
+          const middle = document.querySelector('.upload-container .middle')
+          const right = document.querySelector('.upload-container .right')
+          const my_picker = document.querySelector('.short_post .my-picker')
+          if (newVal.length === 0) {
+            operation_icon.style.height = '50px'
+            biaoqing.style.bottom = '-90px'
+            ql_toolbar.style.bottom = '-100px'
+            middle.style.top = '30px'
+            right.style.top = '30px'
+            my_picker.style.top = '225px'
+          } else if (newVal.length <= 3) {
+            operation_icon.style.height = '130px'
+            biaoqing.style.bottom = '-170px'
+            ql_toolbar.style.bottom = '-180px'
+            middle.style.top = '110px'
+            right.style.top = '110px'
+            my_picker.style.top = '305px'
+          } else if (newVal.length <= 6) {
+            operation_icon.style.height = '210px'
+            biaoqing.style.bottom = '-250px'
+            ql_toolbar.style.bottom = '-260px'
+            middle.style.top = '190px'
+            right.style.top = '190px'
+            my_picker.style.top = '385px'
+          } else if (newVal.length <= 9) {
+            operation_icon.style.height = '310px'
+            biaoqing.style.bottom = '-340px'
+            ql_toolbar.style.bottom = '-350px'
+            middle.style.top = '280px'
+            right.style.top = '280px'
+            my_picker.style.top = '475px'
+          }
+        }
       },
       deep: true,
       immediate: true
@@ -2522,13 +2803,13 @@ export default {
   }
   .main-content-container .mid_container .mid_wrapper {
     min-width: 400px !important;
-    margin-left: 100px !important;
+    margin-left: 120px !important;
     margin: 10px 300px 0 0;
   }
   .write_container {
-    margin-left: 110px !important;
+    margin-left: 10px !important;
   }
-  .create-footer > .rule {
+   .rule {
     font-size: 12px;
     max-width: 250px;
     white-space: wrap;
@@ -2543,11 +2824,72 @@ export default {
   //   height: 200% !important;
   // }
 }
+::v-deep .author-column-special .el-loading-spinner {
+  top: 20px;
+}
+::v-deep .author-column-special .el-loading-spinner .circular {
+  width: 20px;
+  height: 20px;
+}
+::v-deep .el-carousel--horizontal {
+  border-radius: 20px;
+}
+::v-deep .el-menu {
+  border-right: none;
+}
+::v-deep .el-button--primary.is-plain {
+  color: #fff;
+  background: #ffbf6b;
+  border: none;
+}
+::v-deep .el-button--primary.is-plain:focus,
+.el-button--primary.is-plain:hover {
+  color: #fff;
+}
+.picker_container {
+  display: flex;
+  position: relative;
+  justify-content: space-between;
+  align-items: center;
+  .my-picker {
+    position: absolute;
+    left: 0;
+    top: 40px;
+    z-index: 999;
+  }
+}
+.suply_btn {
+  width: 100px;
+  height: 30px;
+}
+.suply_btn:hover {
+  background-color: #f57f59;
+}
+.main-content-container {
+  .swiper {
+    // position: fixed;
+    width: 100%;
+    max-width: 1250px;
+    z-index: 800;
+    height: 100px;
+    margin-top: 5px;
+  }
+}
+.scale {
+  transform: scale(1.2);
+}
+.rotate {
+  transform: rotate(-10deg);
+}
+
+.tab {
+  padding: 170px 20px 0;
+}
 .deleteColor {
   color: #f57f59;
 }
 .write_container {
-  margin-left: 100px;
+  margin-left: 110px;
 }
 
 .subscribe_time {
@@ -2567,13 +2909,14 @@ export default {
   line-height: 56px;
 }
 .menu-style:hover {
-  background-color: rgb(204, 204, 204);
+  background-color: $bgcolor;
 }
 .menu-style * {
   vertical-align: middle;
 }
 .activeText {
   color: rgb(79, 189, 212);
+  background-color: #ecf5ff;
 }
 .square-title {
   font-size: 20px;
@@ -2581,12 +2924,10 @@ export default {
   // text-align: center;
   padding: 10px 10px;
 }
-.reply_container {
-  display: flex;
-}
 .short-square {
-  padding-left: 20px;
+  padding-left: 10px;
   position: relative;
+  color: #000;
   .talk-content-container {
     padding: 10px;
   }
@@ -2596,6 +2937,7 @@ export default {
     .info {
       .owner {
         font-size: 14px;
+        font-weight: bolder;
       }
       .date {
         margin: 0;
@@ -2603,13 +2945,17 @@ export default {
     }
   }
 }
-.create-footer {
-  position: relative;
   .rule {
-    position: absolute;
-    color: #c0c0c0;
+    display: flex;
+    margin-top: 40px;
+    color: $menuTextColor;
+    font-size: 14px;
+    .rule_item{
+      margin-bottom: 5px;
+
+    }
   }
-}
+
 ::v-deep .el-dropdown {
   position: absolute;
   right: 20px;
@@ -2619,6 +2965,14 @@ export default {
   margin-top: 10px;
   margin-bottom: 10px;
   color: #c0c0c0;
+}
+.tag_tips {
+  margin-top: 40px;
+  margin-bottom: 10px;
+}
+.avatar-uploader {
+  width: 120px;
+  height: 120px;
 }
 ::v-deep .avatar-uploader .el-upload {
   border: 1px dashed #d9d9d9;
@@ -2632,11 +2986,11 @@ export default {
   border-color: #409eff;
 }
 .avatar-uploader-icon {
-  font-size: 28px;
+  font-size: 24px;
   color: #8c939d;
-  width: 178px;
-  height: 178px;
-  line-height: 178px;
+  width: 120px;
+  height: 120px;
+  line-height: 120px;
   text-align: center;
 }
 .avatar-img {
@@ -2658,18 +3012,28 @@ export default {
 ::v-deep .el-submenu .el-menu-item {
   min-width: 100px;
 }
+::v-deep .el-submenu .el-menu-item:hover {
+  background-color: $bgcolor;
+}
+::v-deep .el-submenu__title:hover {
+  background-color: $bgcolor;
+}
+
 .recommend_container {
-  margin-left: 940px;
+  margin-left: 980px;
   position: fixed;
-  top: 90px;
+  top: 95px;
 }
 .recommend_wrapper {
-  min-height: 600px;
-  background-color: #fff;
+  min-height: calc(100vh - 110px);
+  background-color: $whiteBgColor;
   margin-left: 20px;
   width: 250px;
   position: relative;
   border-radius: 10px;
+  &:hover {
+    box-shadow: 0 0 30px 10px rgba(0, 0, 0, 0.1);
+  }
   .hot_auction {
     position: absolute;
     bottom: 20px;
@@ -2680,10 +3044,18 @@ export default {
     margin-top: 20px;
     align-items: center;
     .hot_text {
-      font-size: 18px;
+      font-size: 14px;
       font-weight: bold;
       width: auto;
       display: inline-block;
+      margin-left: 10px;
+      background-color: #ffbf6b;
+      color: #000;
+      text-align: center;
+      height: 26px;
+      line-height: 26px;
+      border-radius: 10px;
+      width: 160px;
       // animation: shake 4s ease-in-out infinite;
     }
   }
@@ -2704,10 +3076,14 @@ export default {
   background: #4fbdd4;
 }
 .nav_container {
-  width: 10%;
   position: fixed;
-  top: 90px;
+  top: 290px;
 }
+.nav_container:hover {
+  box-shadow: 0 0 30px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
 .nav_menu::-webkit-scrollbar {
   display: none;
 }
@@ -2725,14 +3101,17 @@ export default {
 }
 
 .nav_left {
+  background-color: $whiteBgColor;
   width: 100%;
+  border-radius: 20px;
+  min-width: 190px;
   /* display: flex;
   justify-content: center; */
   .nav_menu {
-    border-radius: 10px;
     width: 190px;
-    background: $bgcolor;
-    height: calc(100vh - 100px);
+    background: $whiteBgColor;
+    height: calc(100vh - 110px);
+    border-radius: 10px;
     overflow-y: scroll;
   }
   .short_article {
@@ -2756,9 +3135,13 @@ export default {
 .price_select {
   width: 150px;
   min-width: 50px;
+  margin-left: 10px;
 }
 .sub_price {
   display: flex;
+}
+::v-deep .el-loading-spinner i {
+  color: $mainColor;
 }
 ::v-deep .searchBar {
   padding: 20px;
@@ -2774,6 +3157,9 @@ export default {
     position: absolute;
     right: 10px;
   }
+}
+.comment-index {
+  padding-bottom: 10px;
 }
 .margin-top-10 {
   margin-top: 10px;
@@ -2802,23 +3188,15 @@ export default {
   align-items: center;
   height: 16px;
   font-size: 14px;
-  color: #c5c6cb;
+  color: #fff;
 }
 .reply {
   cursor: pointer;
 }
-::v-deep .el-input-group__append {
-  padding: 0 30px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-}
 ::v-deep .reply_input {
   width: calc(100% - 76px);
-  padding-left: 10px;
+  padding-left: 30px;
   padding-right: 20px;
-  border-radius: 0;
 }
 .topic-detail::-webkit-scrollbar {
   display: none;
@@ -2878,8 +3256,10 @@ export default {
   height: 50px;
 }
 .author-column-name {
+  color: $mainColor;
   text-align: center;
   margin-bottom: 10px;
+  cursor: pointer;
 }
 .author-column-id {
   text-align: center;
@@ -2891,6 +3271,29 @@ export default {
   // white-space: nowrap;
   text-overflow: ellipsis;
 }
+.follow {
+  margin-top: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 30px;
+}
+.follow span {
+  background-color: #ff8200;
+  display: inline-block;
+  text-align: center;
+  width: 80px;
+  height: 30px;
+  line-height: 30px;
+  border-radius: 20px;
+  font-size: 14px;
+  color: #fff;
+  cursor: pointer;
+}
+.follow span:hover {
+  background-color: #ff5900;
+}
 .author-column-special-text {
   color: #4fbdd4;
   cursor: pointer;
@@ -2898,7 +3301,7 @@ export default {
 .operation-icon {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   .like {
     display: flex;
     margin-right: 20px !important;
@@ -2914,20 +3317,12 @@ export default {
     align-items: center;
     vertical-align: middle;
     margin-right: 20px;
-    // width: 25px !important;
     .vote-num {
       display: inline-block;
       margin-left: 5px;
       color: #fda956;
     }
   }
-}
-.topic-detail-panel .operation-icon div {
-  width: auto;
-  height: 21px;
-  margin-right: 30px;
-  cursor: pointer;
-  position: relative;
 }
 
 .main-content-container {
@@ -2937,19 +3332,46 @@ export default {
   margin-top: 20px;
 }
 .mid_container {
-  width: 100% !important;
+  // padding-top: 30px;
+  // width: 100% !important;
 }
 .mid_wrapper {
   min-width: 750px;
   margin-left: 100px;
-  margin-left: 200px !important;
+  margin-left: 220px !important;
   margin: 10px 300px 0 0;
+  // padding-top: 140px;
+}
+.backtop:hover {
+    background-color: #f2f6fc;
+}
+.backtop {
+    position: fixed;
+    background-color: #fff;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: $fillBlueColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 0 6px rgba(0,0,0,.12);
+    cursor: pointer;
+    z-index: 5;
 }
 .post-container {
+  margin-top: 10px;
   margin-bottom: 5px;
-  background-color: #fff;
-  border-radius: 10px;
+  background-color: $whiteBgColor;
+  border-radius: 20px;
   padding-top: 20px;
+  z-index: 10;
+}
+.post-container:hover {
+  box-shadow: 0 0 30px 10px rgba(0, 0, 0, 0.1);
+}
+.article_list {
 }
 .post-topic-head {
   display: flex;
@@ -2958,7 +3380,7 @@ export default {
   padding: 20px;
   cursor: pointer;
   border-radius: 4px;
-  background: #f8f9fa;
+  background: $inputBgColor;
 }
 .tip {
   font-family: PingFangSC-Regular;
@@ -2973,7 +3395,7 @@ export default {
 }
 
 .post-topic-footer {
-  height: 60px;
+  height: 80px;
   margin: 0 20px;
   display: flex;
   justify-content: space-between;
@@ -3004,50 +3426,192 @@ export default {
   flex-direction: row;
   align-items: center;
 }
+.button-new-tag {
+  margin-left: 10px;
+  height: 26px;
+  line-height: 26px;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-radius: 20px;
+}
+.input-new-tag {
+  width: 90px;
+  margin-left: 10px;
+  vertical-align: bottom;
+}
+.tag {
+  margin-left: 10px;
+  height: 26px;
+  line-height: 26px;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-radius: 20px;
+}
 .post-action {
   display: flex;
   align-items: center;
 }
 .post-article {
-  position: relative;
-  padding: 0 10px;
-  margin-left: 16px;
-  height: 30px;
-  min-width: 60px;
-  line-height: 30px;
-  border-radius: 10px;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 700;
-  color: #8b8e9d;
-  cursor: pointer;
-}
-.post-article:hover {
-  background: #4fbdd4;
-  color: white;
-}
-.remove-article {
+  display: inline-block;
   margin-left: 16px;
   padding: 0 10px;
   height: 30px;
   min-width: 80px;
   line-height: 30px;
-  border-radius: 10px;
   text-align: center;
+  transition: all 0.2s ease-in;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  color: #090909;
+  // padding: 0.7em 1.7em;
   font-size: 14px;
-  font-weight: 700;
-  color: #8b8e9d;
-  cursor: pointer;
+  font-weight: bold;
+  border-radius: 0.5em;
+  background: #e8e8e8;
+  border: 1px solid #e8e8e8;
+  box-shadow: 6px 6px 12px #c5c5c5, -6px -6px 12px #ffffff;
 }
+.post-article:active {
+  color: #666;
+  box-shadow: inset 4px 4px 12px #c5c5c5, inset -4px -4px 12px #ffffff;
+}
+
+.post-article:before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) scaleY(1) scaleX(1.25);
+  top: 100%;
+  width: 140%;
+  height: 180%;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 50%;
+  display: block;
+  transition: all 0.5s 0.1s cubic-bezier(0.55, 0, 0.1, 1);
+  z-index: -1;
+}
+
+.post-article:after {
+  content: '';
+  position: absolute;
+  left: 55%;
+  transform: translateX(-50%) scaleY(1) scaleX(1.45);
+  top: 180%;
+  width: 160%;
+  height: 190%;
+  background-color: $mainColor;
+  border-radius: 50%;
+  display: block;
+  transition: all 0.5s 0.1s cubic-bezier(0.55, 0, 0.1, 1);
+  z-index: -1;
+}
+
+.post-article:hover {
+  color: #ffffff;
+  border: 1px solid $mainColor;
+}
+
+.post-article:hover:before {
+  top: -35%;
+  background-color: $mainColor;
+  transform: translateX(-50%) scaleY(1.3) scaleX(0.8);
+}
+
+.post-article:hover:after {
+  top: -45%;
+  background-color: $mainColor;
+  transform: translateX(-50%) scaleY(1.3) scaleX(0.8);
+}
+.remove-article {
+  display: inline-block;
+  margin-left: 16px;
+  padding: 0 10px;
+  height: 30px;
+  min-width: 80px;
+  line-height: 30px;
+  text-align: center;
+  transition: all 0.2s ease-in;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  color: #090909;
+  // padding: 0.7em 1.7em;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 0.5em;
+  background: #e8e8e8;
+  border: 1px solid #e8e8e8;
+  box-shadow: 6px 6px 12px #c5c5c5, -6px -6px 12px #ffffff;
+}
+.text-range {
+  font-size: 12px;
+  color: grey;
+  height: 24px;
+  line-height: 24px;
+  text-align: right;
+}
+.remove-article:active {
+  color: #666;
+  box-shadow: inset 4px 4px 12px #c5c5c5, inset -4px -4px 12px #ffffff;
+}
+
+.remove-article:before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) scaleY(1) scaleX(1.25);
+  top: 100%;
+  width: 140%;
+  height: 180%;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 50%;
+  display: block;
+  transition: all 0.5s 0.1s cubic-bezier(0.55, 0, 0.1, 1);
+  z-index: -1;
+}
+
+.remove-article:after {
+  content: '';
+  position: absolute;
+  left: 55%;
+  transform: translateX(-50%) scaleY(1) scaleX(1.45);
+  top: 180%;
+  width: 160%;
+  height: 190%;
+  background-color: $mainColor;
+  border-radius: 50%;
+  display: block;
+  transition: all 0.5s 0.1s cubic-bezier(0.55, 0, 0.1, 1);
+  z-index: -1;
+}
+
 .remove-article:hover {
-  background: #4fbdd4;
-  color: white;
+  color: #ffffff;
+  border: 1px solid $mainColor;
 }
+
+.remove-article:hover:before {
+  top: -35%;
+  background-color: $mainColor;
+  transform: translateX(-50%) scaleY(1.3) scaleX(0.8);
+}
+
+.remove-article:hover:after {
+  top: -45%;
+  background-color: $mainColor;
+  transform: translateX(-50%) scaleY(1.3) scaleX(0.8);
+}
+
 .topic-container {
   margin-top: 10px;
-  background: #fff;
+  background: $whiteBgColor;
+  // background: #fff;
   margin-bottom: 10px;
   border-radius: 10px;
+}
+.topic-container:hover {
+  box-shadow: 0 0 30px 10px rgba(0, 0, 0, 0.1);
 }
 
 .topic-container .header-container {
@@ -3078,30 +3642,31 @@ export default {
   line-height: 20px;
   cursor: pointer;
   font-size: 18px;
-  // color: #4fbdd4;
+  font-weight: bolder;
 }
 
 .info .date {
   display: flex;
   align-items: center;
   font-size: 12px;
-  color: #c5c6cb;
+  color: $textColor;
   margin-top: 5px;
 }
 .openOrFold {
-  position: absolute;
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 10;
   text-align: center;
-  height: 32px;
+  height: 24px;
   padding-top: 50px;
+  border-bottom-right-radius: 10px;
+  border-bottom-left-radius: 10px;
   background-image: linear-gradient(
     -180deg,
     rgba(255, 255, 255, 0) 0%,
-    #fff 100%
+    rgba(255, 255, 255, 0.5) 100%
   );
   .open {
     width: 60px;
@@ -3147,8 +3712,8 @@ export default {
 
 .topic-container .operation-icon-container {
   position: relative;
-  padding-left: 30px;
-  padding-right: 20px;
+  padding-left: 20px;
+  padding-right: 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -3161,15 +3726,20 @@ export default {
 .topic-container .operation-icon-container .operation-icon div {
   vertical-align: middle;
   width: auto;
-  height: 21px;
-  margin-right: 30px;
+  height: 30px;
+  margin-right: 40px;
+  display: flex;
+  align-items: center;
   cursor: pointer;
 }
 .steemLink {
-  color: #c5c6cb;
+  color: $textColor;
   font-size: 12px;
   position: absolute;
-  right: 120px;
+  right: 10px;
+}
+.steemLink:hover {
+  color: $mainColor;
 }
 .topic-container .operation-icon-container .details-container {
   display: flex;
@@ -3178,7 +3748,7 @@ export default {
 }
 .topic-container .operation-icon-container .details-container .text {
   font-size: 12px;
-  color: #c5c6cb;
+  color: $textColor;
 }
 
 .topic-container .operation-icon-container .details-container .icon {
@@ -3192,9 +3762,9 @@ export default {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  padding-left: 30px;
+  padding-left: 20px;
   padding-right: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   .vote_people {
     color: #567895;
     cursor: pointer;
@@ -3233,7 +3803,7 @@ export default {
 }
 @media screen and (max-width: 1600px) {
   .create-topic-container .create-topic-panel {
-    width: 80%;
+    width: 50%;
   }
 }
 
@@ -3259,8 +3829,8 @@ export default {
 }
 .create-topic-container .create-topic-panel .head .close-icon {
   position: absolute;
-  right: 0px;
-  top: calc(50% - 5px);
+  right: 10px;
+  top: calc(50% - 10px);
   /* background-image: url(assets/resources/sprite@1x.fb4b9063d37e9252.png); */
   background-position: -357px -197px;
   width: 10px;
@@ -3276,40 +3846,20 @@ export default {
   position: relative;
   margin: 10px 0;
   display: flex;
+  height: 120px;
 }
 
-.quill-editor .ql-container {
-  border: none;
-  font-family: PingFangSC-Regular;
-  font-size: 14px !important;
-}
-
-.quill-editor .ql-container .ql-editor {
-  padding: 0;
-  color: #2f3034;
-  line-height: 20px;
-}
-.ql-editor {
-  box-sizing: border-box;
-  counter-reset: list-0 list-1 list-2 list-3 list-4 list-5 list-6 list-7 list-8
-    list-9;
-  height: 100%;
-  outline: none;
-  overflow-y: auto;
-  tab-size: 4;
-  text-align: left;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
 .upload-container {
   position: relative;
+  margin-top: 20px;
 }
 .upload-container .operation-icon {
-  height: 80px;
+  height: 50px;
 }
 .create-topic-container .create-topic-panel .operation-icon {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
   -webkit-user-select: none;
   user-select: none;
 }
@@ -3318,13 +3868,14 @@ export default {
   align-items: center;
   position: relative;
   flex-flow: row wrap;
-  max-width: 600px;
+  max-width: 300px;
   .picture-list {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     position: relative;
-    border-radius: 10px;
+    border-radius: 15px;
     margin-left: 10px;
+    margin-bottom: 10px;
     .delete-pic {
       width: 16px;
       height: 16px;
@@ -3334,6 +3885,7 @@ export default {
       top: 2px;
       right: 2px;
       text-align: center;
+      z-index: 2001;
       &:hover {
         color: #4fbdd4;
         background: rgba(79, 189, 212, 0.1);
@@ -3342,9 +3894,9 @@ export default {
     }
 
     img {
-      width: 100px;
-      height: 100px;
-      border-radius: 10px;
+      width: 80px;
+      height: 80px;
+      border-radius: 15px;
       opacity: 0.7;
       object-fit: cover;
     }
@@ -3372,12 +3924,21 @@ export default {
 
 .middle {
   position: absolute;
-  right: 50px;
+  right: 60px;
   top: 30px;
+}
+.icon-biaoqing{
+  cursor: pointer;
+}
+.icon-biaoqing svg{
+  fill:$iconColor;
+}
+.icon-biaoqing svg:hover{
+  fill:$iconActiveColor;
 }
 ::v-deep .middle .el-input input {
   height: 30px;
-  width: 90px;
+  width: 80px;
   border: none;
   overflow: hidden;
   white-space: nowrap;
@@ -3385,26 +3946,20 @@ export default {
 }
 
 .create-topic-container .create-topic-panel .operation-icon .right .submit-btn {
-  min-width: 50px;
-  height: 24px;
+  min-width: 60px;
+  height: 30px;
   padding: 0 6px;
   box-sizing: border-box;
-  line-height: 24px;
+  line-height: 30px;
   text-align: center;
   background: #4fbdd4;
   box-shadow: 0 1px 2px #0000000d;
   border-radius: 2px;
   color: #fff;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 14px;
 }
 
-.topic-detail .content .topic-detail-panel {
-  background: #fff;
-  border-radius: 4px;
-  padding: 20px 30px 30px;
-  overflow-y: scroll;
-}
 .el-col {
   margin-bottom: 20px;
 }
@@ -3463,6 +4018,7 @@ export default {
   padding: 0 18px;
   /* position: absolute; */
 }
+
 .wbpro-side-card7 .con {
   position: relative;
   height: 40px;
@@ -3519,5 +4075,22 @@ export default {
 }
 .woo-box-flex {
   display: flex;
+}
+
+.like_animation {
+  animation: like_401 400ms ease;
+}
+@keyframes like_401 {
+  0% {
+    transform: scale(0);
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 </style>

@@ -64,11 +64,12 @@
           v-show="showIntro"
           class="profile"
           @blur="editIntro"
+          ref="intro_input"
         ></el-input>
         <span v-show="!showIntro" class="intro-text">{{
           userInfo.profile
         }}</span>
-        <span v-show="!userInfo.profile" @click="changeStatus">{{
+        <span v-show="!userInfo.profile && !showIntro" @click="changeStatus">{{
           $t('info.intro_tip')
         }}</span>
         <i
@@ -284,11 +285,11 @@ export default {
     },
     async handleInputConfirm() {
       let inputValue = this.inputValue
-      const reg = /^[\u4e00-\u9fa5_a-zA-Z0-9]+$/
-      if (!reg.test(inputValue.trim())) {
-        this.$message.error(this.$t('info.nick_tip'))
-        return
-      }
+      // const reg = /^[\u4e00-\u9fa5_a-zA-Z0-9]+$/
+      // if (!reg.test(inputValue.trim())) {
+      //   this.$message.error(this.$t('info.nick_tip'))
+      //   return
+      // }
       const arr = [inputValue]
       if (inputValue) {
         const res = await baseData({
@@ -309,12 +310,17 @@ export default {
           this.inputVisible = false
           this.inputValue = ''
         }
+      }else{
+        this.inputVisible = false
+          this.inputValue = ''
       }
     },
     async editIntro() {
+      
       if (this.profile.trim() === '') {
-        this.$message.error(this.$t('info.intro_tip'))
-        return
+        this.userInfo.profile = this.profile
+        localStorage.setItem('quhu-userInfo', JSON.stringify(this.userInfo))
+        this.showIntro = !this.showIntro
       } else {
         const res = await baseData({
           id:
@@ -335,7 +341,11 @@ export default {
       }
     },
     changeStatus() {
+
       this.showIntro = !this.showIntro
+      this.$nextTick(() => {
+      this.$refs.intro_input.focus()
+    })
     },
     judgeNone(v) {
       return v === 'none'

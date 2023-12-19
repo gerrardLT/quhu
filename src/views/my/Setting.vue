@@ -154,7 +154,7 @@
 <script>
 import Icon from '@/components/Icon/index'
 import Info from './component/info.vue'
-import MD5 from 'MD5'
+import MD5 from 'md5'
 import { bindEth, changePwd } from '@/api/user/user'
 import { getToken } from '@/utils/auth'
 import { Loading } from 'element-ui'
@@ -280,11 +280,7 @@ export default {
 
       if (this.safeInfoForm.newPassword === this.safeInfoForm.passwordAgain) {
         if (loginType === 'password') {
-          const loading = Loading.service({
-            text: this.$t('message.loading'),
-            spinner: 'el-icon-loading ElementLoading',
-            background: 'rgba(0, 0, 0, 0.2)'
-          })
+          this.$loading.show()
           changePwd({
             id: userInfo.user,
             token,
@@ -293,9 +289,7 @@ export default {
             sign: ''
           }).then((res) => {
             if (res && res.success === 'ok') {
-              if (loading) {
-                loading.close()
-              }
+              this.$loading.hide()
               self.$message.success(self.$t('setting.change_success'))
               this.safeInfoForm = {
                 oldPassword: '',
@@ -429,11 +423,7 @@ export default {
           if (err) {
             self.$message.error(self.$t('setting.sign_fail') + err.message)
           } else {
-            const loading = Loading.service({
-              text: this.$t('message.loading'),
-              spinner: 'el-icon-loading ElementLoading',
-              background: 'rgba(0, 0, 0, 0.2)'
-            })
+            this.$loading.show()
             const result = await bindEth({
               id: userInfo.user,
               token,
@@ -445,9 +435,7 @@ export default {
               self.$message.success(self.$t('setting.bind_success'))
               location.reload()
             }
-            if (loading) {
-              loading.close()
-            }
+            this.$loading.hide()
           }
         }, 'eth')
       }

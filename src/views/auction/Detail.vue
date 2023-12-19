@@ -404,11 +404,7 @@ export default {
         }
       }
 
-      const loading = Loading.service({
-        text: this.$t('message.loading'),
-        spinner: 'el-icon-loading ElementLoading',
-        background: 'rgba(0, 0, 0, 0.2)'
-      })
+      this.$loading.show()
 
       if (this.auctionDetail.effectiveness) {
         permlink = [
@@ -435,9 +431,7 @@ export default {
         }
         this.bidAmount = ''
       }
-      if (loading) {
-        loading.close()
-      }
+      this.$loading.hide()
     },
     initWebSocket() {
       if (window.WebSocket) {
@@ -891,7 +885,6 @@ export default {
             rgba(31, 34, 48, 0.75)
           ),
           url('../../assets/fox-login.png');
-        // background-image: url('../assets/quhu-bglogo.jpg');
         background-position: center;
         background-size: cover;
         background-repeat: no-repeat;

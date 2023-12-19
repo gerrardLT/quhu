@@ -31,6 +31,53 @@
         <el-col :span="18">
           <div class="sub_name">
             <span>{{ detail_info.subscriptions_name }}</span>
+            <div
+              class="tags"
+              style="margin-top: 10px; display: flex"
+              v-if="isMyColumn"
+            >
+              <el-tag
+                class="tag"
+                style="margin-left: 5px; min-width: 50px"
+                :type="tagTypes[i]"
+                v-for="(item, i) in detail_info.tags"
+                :key="i"
+                closable
+                :title="item"
+                @close="handleTagClose(item)"
+                >{{ item }}</el-tag
+              >
+
+              <input
+                type="text"
+                class="input-new-tag el-textarea__inner"
+                v-if="inputVisible"
+                v-model.lazy="inputValue"
+                maxlength="8"
+                ref="saveTagInput"
+                @keyup.enter="handleInputConfirm"
+                @blur="handleInputConfirm"
+              />
+              <el-button
+                v-else-if="detail_info.tags.length < 3"
+                class="button-new-tag"
+                size="small"
+                @click="showInput"
+                >{{ $t('info.add_label') }}</el-button
+              >
+            </div>
+            <div class="tags" style="margin-top: 10px; display: flex" v-else>
+              <el-tag
+                effect="plain"
+                class="tag"
+                style="margin-left: 5px; min-width: 50px"
+                :type="tagTypes[i]"
+                v-for="(item, i) in detail_info.tags"
+                :key="i"
+                :title="item"
+                >{{ item }}</el-tag
+              >
+            </div>
           </div>
           <div class="owner">
             <div class="owner_img">
@@ -93,6 +140,17 @@
               {{ detail_info.master.user_name }}
             </div>
           </div>
+          <div class="tags" style="margin-top: 10px; display: flex">
+              <el-tag
+                class="tag"
+                style="margin-left: 5px; min-width: 50px"
+                :type="tagTypes[i]"
+                v-for="(item, i) in detail_info.tags"
+                :key="i"
+                :title="item"
+                >{{ item }}</el-tag
+              >
+            </div>
           <div class="members">
             <span
               >{{ $t('column_detail.column_people') }}：{{
@@ -115,13 +173,10 @@
       </el-row>
       <el-row type="flex" class="introduce" v-if="isMyColumn">
         <el-col :span="24">
-          <div
-            class="intro_title"
-            @click="showIntro = !showIntro"
-            :title="$t('column_detail.intro_tip')"
-          >
-            <span>{{ $t('column_detail.intro') }} </span>
+          <div class="intro_title" :title="$t('column_detail.intro_tip')">
+            <span >{{ $t('column_detail.intro') }} </span>
             <svg
+              @click="showIntro = !showIntro"
               :style="{
                 fill: '#087790',
                 width: '15px',
@@ -136,13 +191,18 @@
           <el-input
             v-if="showIntro"
             type="textarea"
+            autosize
+            clearable
             :rows="2"
+            show-word-limit
+            maxlength="200"
+            minlength="0"
             :placeholder="$t('column_detail.content_tip')"
             v-model="detail_info.introduction"
             @blur="showIntro = false"
           >
           </el-input>
-          <div v-else>{{ detail_info.introduction }}</div>
+          <div v-else style="word-wrap: break-word;">{{ detail_info.introduction }}</div>
         </el-col>
       </el-row>
       <el-row type="flex" class="introduce" v-else>
@@ -150,7 +210,7 @@
           <div class="intro_title">
             <span>{{ $t('column_detail.intro') }} </span>
           </div>
-          <div>{{ detail_info.introduction }}</div>
+          <div style="word-wrap: break-word;">{{ detail_info.introduction }}</div>
         </el-col>
       </el-row>
       <el-row class="set" v-if="isMyColumn">
@@ -363,13 +423,16 @@ export default {
   },
   data() {
     return {
+      inputVisible: false,
+      inputValue: '',
+      tagTypes: ['success', 'warning', 'danger'],
       inviteType: this.$t('column_detail.share'),
       inviteCode: '',
       subscribeType: '',
       confirmVisible: false,
       actionUrl: '',
       showIntro: false,
-      payTypes: ['poys','op', 'ofc', 'usdt', 'bnb'],
+      payTypes: ['poys', 'op', 'ofc', 'usdt', 'bnb'],
       detail_info: {
         subscriptions_name: '',
         master: '',
@@ -380,7 +443,8 @@ export default {
         currency: '',
         allow: 'self',
         month: 12,
-        public: true
+        public: true,
+        tags: []
       },
       options: [
         this.$t('column_detail.share'),
@@ -430,17 +494,38 @@ export default {
   },
   methods: {
     transformTime,
+    async handleTagClose(tag) {
+      //   const arr = cloneDeep(this.tags)
+      this.detail_info.tags.splice(this.detail_info.tags.indexOf(tag), 1)
+      this.$forceUpdate()
+    },
+    showInput() {
+      this.inputVisible = true
+      this.$nextTick(() => {
+        this.$refs.saveTagInput.focus()
+      })
+    },
+    async handleInputConfirm() {
+      let inputValue = this.inputValue
+      // const reg = /^[\u4e00-\u9fa5_a-zA-Z0-9]+$/
+      // if (!reg.test(inputValue.trim())) {
+      //   this.$message.error(this.$t('info.nick_tip'))
+      //   return
+      // }
+      const arr = [inputValue]
+      if (inputValue) {
+        this.detail_info.tags = this.detail_info.tags.concat(arr)
+      }
+      this.inputVisible = false
+      this.inputValue = ''
+    },
     async dropDown() {
       const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
       const subscriptions_name = this.$route.query.subName
       if (this.isMyColumn) {
         if (this.inviteType === this.$t('column_detail.invite')) {
-          const loading = Loading.service({
-            text: this.$t('message.loading'),
-            spinner: 'el-icon-loading ElementLoading',
-            background: 'rgba(0, 0, 0, 0.2)'
-          })
+          this.$loading.show()
           const inviteCodeRes = await invite({
             id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
             token: getToken(),
@@ -450,9 +535,7 @@ export default {
             this.inviteCode = inviteCodeRes.data.invitedcode
             console.log(this.inviteCode)
           }
-          if (loading) {
-            loading.close()
-          }
+          this.$loading.hide()
         }
       }
     },
@@ -494,7 +577,7 @@ export default {
       return this.currentInfo
     },
     goBack() {
-      this.$EventBus.$emit('changeTab', { name: 'home' }, 0)
+      this.$router.go(-1)
     },
     uploadDispatch: function (url, fd, fn) {
       axios
@@ -572,7 +655,8 @@ export default {
         image,
         price,
         currency,
-        allow
+        allow,
+        tags
       } = this.detail_info
 
       const userInfo = this.userInfo
@@ -585,7 +669,8 @@ export default {
         subscriptions_name: subscriptions_name,
         introduction: introduction,
         image: image,
-        price: price + currency
+        price: price + currency,
+        tags
       }
       if (allow === 'all') {
         params.allow = 'all'
@@ -597,11 +682,7 @@ export default {
         params.public = false
       }
       // console.log(params)
-      const loading = Loading.service({
-        text: this.$t('message.loading'),
-        spinner: 'el-icon-loading ElementLoading',
-        background: 'rgba(0, 0, 0, 0.2)'
-      })
+      this.$loading.show()
       const res = await subscriptions(params)
 
       if (res && res.success === 'ok') {
@@ -609,9 +690,7 @@ export default {
       } else {
         this.$message.error(this.$t('column_detail.set_fail'))
       }
-      if (loading) {
-        loading.close()
-      }
+      this.$loading.hide()
     },
     removeSub() {
       this.removePopVisible = true
@@ -635,7 +714,7 @@ export default {
       }
       this.removePopVisible = false
 
-      this.$EventBus.$emit('changeTab', { name: 'home' }, 0)
+      this.goBack()
     },
     keepThreeNum(value) {
       let resValue = 0
@@ -669,6 +748,7 @@ export default {
 
       if (res && res.success === 'ok') {
         this.detail_info = res.data
+        this.detail_info.tags = this.detail_info.tags
         if (this.detail_info.allow !== 'all') {
           this.detail_info.allow = 'self'
         }
@@ -721,11 +801,7 @@ export default {
       if (inviteCode) {
         params.invitedcode = inviteCode
       }
-      const loading = Loading.service({
-        text: this.$t('message.loading'),
-        spinner: 'el-icon-loading ElementLoading',
-        background: 'rgba(0, 0, 0, 0.2)'
-      })
+      this.$loading.show()
 
       if (this.subscribeType === 'again') {
         const res = await add2Column(params)
@@ -744,9 +820,7 @@ export default {
         }
       }
       this.confirmVisible = false
-      if (loading) {
-        loading.close()
-      }
+      this.$loading.hide()
     }
   },
   watch: {
@@ -754,7 +828,18 @@ export default {
       handler(newVal, oldVal) {},
       deep: true,
       immediate: true
-    }
+    },
+    '$i18n.locale': {
+      handler(newVal, oldVal) {
+
+        this.options=[
+        this.$t('column_detail.share'),
+        this.$t('column_detail.invite')
+      ]
+      },
+      deep: true,
+      immediate: true
+    },
   }
 }
 </script>
@@ -780,10 +865,17 @@ export default {
   width: 50px;
   padding: 0;
 }
-::v-deep .el-tag {
+::v-deep .set .el-tag {
   background-color: #54bcbd;
   border-color: #54bcbd;
   color: white;
+}
+::v-deep .el-tag .el-icon-close{
+  width: 12px;
+  height: 12px;
+  line-height: 12px;
+  top:0;
+  right: -5px;
 }
 ::v-deep .el-radio__input.is-checked + .el-radio__label {
   color: #54bcbd;
@@ -792,6 +884,7 @@ export default {
   border-color: #54bcbd;
   background: #54bcbd;
 }
+
 .go_back {
   margin-bottom: 10px;
 }
@@ -803,9 +896,11 @@ export default {
   .subscriptions {
     border-bottom: 1px dashed #e4e4e4;
     padding: 10px 0;
+    font-size: 14px;
     .members {
       color: #c0c0c0;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
+
     }
     .create_time {
       color: #c0c0c0;
@@ -821,8 +916,9 @@ export default {
         flex-direction: column;
         img {
           border-radius: 50%;
-          width: 30px;
-          height: 30px;
+          padding-left: 2px;
+          width: 24px;
+          height: 24px;
           object-fit: cover;
         }
       }
@@ -833,6 +929,37 @@ export default {
       font-size: 20px;
       font-weight: bold;
       margin-bottom: 20px;
+      flex-direction: column;
+    }
+    .button-new-tag {
+      margin-left: 10px;
+      width: 80px;
+      height: 26px;
+      line-height: 26px;
+      padding-top: 0;
+      padding-bottom: 0;
+      border-radius: 20px;
+      font-size: 10px;
+    }
+    .tag {
+      display: inline-block;
+      margin-left: 10px;
+      height: 26px;
+      line-height: 26px;
+      min-width: 80px;
+      padding-top: 0;
+      padding-bottom: 0;
+      border-radius: 20px;
+      font-size: 10px;
+      display: flex;
+      justify-content: center;
+    }
+    .input-new-tag {
+      width: 80px;
+      height: 26px;
+      margin-left: 10px;
+      vertical-align: bottom;
+      font-size: 12px;
     }
     .sub_image {
       cursor: pointer;
@@ -849,7 +976,7 @@ export default {
   }
   .introduce {
     margin-top: 20px;
-    height: 200px;
+    height: 160px;
     border-bottom: 1px dashed #e4e4e4;
     margin-bottom: 20px;
     .intro_title {

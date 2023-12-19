@@ -7,7 +7,8 @@
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
-  <div class="wallet">
+  <div class="wallet_container" style="min-height: 1371px;">
+    <div class="wallet">
     <div class="operation">
       <el-button type="success" around @click="showTrade">{{
         $t('voucher.exchange')
@@ -15,7 +16,7 @@
       <el-button type="danger" around @click="showAddress">{{
         $t('voucher.recharge')
       }}</el-button>
-      <el-button type="primary" around @click="withdrawalVisible = true">{{
+      <el-button type="primary" around @click="()=> withdrawalVisible = true">{{
         $t('voucher.withdrawal')
       }}</el-button>
       <el-button type="warning" around @click="ask">{{
@@ -133,7 +134,7 @@
           v-model="withdrawalCoin"
           clearable
           :placeholder="$t('voucher.withdrawal_tip2')"
-          @change="$forceUpdate()"
+          @change="changeCoin"
         >
           <el-option
             v-for="item in balanceList"
@@ -144,12 +145,29 @@
           </el-option>
         </el-select>
       </div>
-
-      <el-input
+      <div class="withdrawal_dialog">
+        <el-input
         v-model="withdrawalAddress"
         autocomplete="off"
         :placeholder="$t('voucher.withdrawal_tip3')"
       ></el-input>
+      <el-select
+          class="net_select"
+          v-model="withdrawalNet"
+          :disabled="netDisabled"
+          :placeholder="$t('voucher.withdrawal_tip4')"
+          @change="$forceUpdate()"
+        >
+          <el-option
+            v-for="item in netTypes"
+            :key="item"
+            :label="item"
+            :value="item"
+          >
+          </el-option>
+        </el-select>
+      </div>
+
       <span slot="footer" class="withdrawal-dialog-footer">
         <div class="show-withdrawal">
           <div>{{ $t('voucher.received') }}</div>
@@ -171,7 +189,7 @@
         <el-button
           :disabled="withdrawalAmount === '0' || withdrawalAmount === ''"
           type="primary"
-          @click="spend"
+          @click="open"
           >{{ $t('voucher.withdrawal') }}</el-button
         >
       </span>
@@ -354,6 +372,8 @@
       </el-form>
     </el-dialog>
   </div>
+  </div>
+
 </template>
 
 <script>
@@ -373,6 +393,7 @@ import { Loading } from 'element-ui'
 export default {
   data() {
     return {
+      netDisabled:true,
       checkForm: {
         hash: ''
       },
@@ -416,6 +437,8 @@ export default {
       coinTradeVisible: false,
       withdrawalAmount: '',
       withdrawalCoin: 'ofc',
+      withdrawalNet:'BNB Smart Chain(BEP20)',
+      netTypes:['BNB Smart Chain(BEP20)','Optimism'],
       withdrawalAddress: '',
       dialogFormVisible: false,
       searchVisible: false,
@@ -461,7 +484,9 @@ export default {
         case 'ofc':
           coin = 1000
           break
-
+          case 'op':
+          coin = 0.3
+          break
         case 'poys':
           coin = 50
           break
@@ -496,6 +521,19 @@ export default {
   },
   mounted() {},
   methods: {
+    async changeCoin(v){
+      if(v === 'op'){
+        this.withdrawalNet = 'Optimism'
+        this.netDisabled = true
+      }else if(v === 'usdt' || v === 'eth'){
+        this.netDisabled = false
+      }else {
+        this.withdrawalNet = 'BNB Smart Chain(BEP20)'
+        this.netDisabled = true
+      }
+      
+      this.$forceUpdate()
+    },
     async getBalance() {
       const res = await balance({
         id:
@@ -712,7 +750,40 @@ export default {
     copy(key, e) {
       clipboard(key, e)
     },
-    async spend() {
+    open() {
+        const h = this.$createElement;
+        this.$msgbox({
+          title: this.$t('voucher.tip_title'),
+          message: h('p', null, [
+            h('span', null, this.$t('voucher.spend_tip1')+this.withdrawalNet+this.$t('voucher.spend_tip2')),
+            h('span', { style: 'color: #f56c6c' }, Number(this.withdrawalAmount)),
+            h('span', null, ' '+this.withdrawalCoin+ this.$t('voucher.spend_tip3')),
+            h('span', { style: 'color: #f56c6c' }, this.withdrawalAddress)
+          ]),
+          showCancelButton: true,
+          confirmButtonText: this.$t('voucher.confirm'),
+          cancelButtonText: this.$t('voucher.cancel'),
+          beforeClose: async (action, instance, done) => {
+            if (action === 'confirm') {
+              instance.confirmButtonLoading = true;
+              instance.confirmButtonText = this.$t('voucher.spending')+'...';
+              this.spend(instance,done)
+              // setTimeout(() => {
+              //   done();
+              //   setTimeout(() => {
+              //     instance.confirmButtonLoading = false;
+              //   }, 300);
+              // }, 3000);
+            } else {
+              done();
+            }
+          }
+        }).then(action => {
+          
+        });
+      },
+
+    async spend(instance,done) {
       const reg = /^[+]{0,1}(\d+)$/
       if (!(this.withdrawalCoin === 'btc' || this.withdrawalCoin === 'eth')) {
         if (!reg.test(Number(this.withdrawalAmount))) {
@@ -725,11 +796,7 @@ export default {
         this.$message.error(this.$t('voucher.withdrawal_tip3'))
         return
       }
-      const loading = Loading.service({
-        text: this.$t('message.loading'),
-        spinner: 'el-icon-loading ElementLoading',
-        background: 'rgba(0, 0, 0, 0.2)'
-      })
+      this.$loading.show()
       const params = {
         id:
           this.loginType === 'eth'
@@ -738,19 +805,21 @@ export default {
         token: getToken(),
         coins: this.withdrawalCoin,
         amount: Number(this.withdrawalAmount),
+        chains:this.withdrawalNet ==='Optimism'?'op':'bsc',
         address: this.withdrawalAddress
       }
       const res = await withdrawal(params)
       if (res && res.success === 'ok') {
+        done()
         this.$message.success(this.$t('voucher.withdrawal_success'))
         this.withdrawalVisible = false
         this.withdrawalCoin = 'ofc'
         this.withdrawalAmount = ''
         this.withdrawalAddress = ''
       }
-      if (loading) {
-        loading.close()
-      }
+      instance.confirmButtonLoading = false;
+      instance.confirmButtonText = this.$t('voucher.confirm')
+      this.$loading.hide()
     }
   },
   watch: {
@@ -767,6 +836,7 @@ export default {
 .wallet {
   padding: 50px;
   position: relative;
+  background-color: #f5f5f5;
 }
 .show-withdrawal {
   position: absolute;
@@ -905,25 +975,26 @@ export default {
   position: relative;
   width: 100%;
   font-size: 16px;
-  margin-top: 50px;
+  margin-top: 20px;
+  border-bottom:  1px solid #c0c0c0;
 }
 .coin-header {
   background-color: #fff;
   display: flex;
   justify-content: center;
   width: 100%;
-  height: 60px;
+  height: 40px;
   border: 1px solid #c0c0c0;
   font-weight: bold;
   .coin-title {
     flex: 1;
     text-align: center;
-    line-height: 60px;
+    line-height: 40px;
   }
   .balance-title {
     flex: 1;
     text-align: center;
-    line-height: 60px;
+    line-height: 40px;
   }
 }
 .coin {
@@ -934,7 +1005,7 @@ export default {
 .coin-item {
   background-color: #fff;
   width: 100%;
-  height: 50px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -945,9 +1016,9 @@ export default {
   border-top: none;
 }
 
-.coin div:last-child {
-  border-bottom: 1px solid #c0c0c0;
-}
+// .coin div:last-child {
+//   border-bottom: 1px solid #c0c0c0;
+// }
 .coin-name {
   flex: 1;
   text-align: center;

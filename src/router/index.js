@@ -27,11 +27,13 @@ import Voucher from '../views/my/Voucher.vue'
 import Recharge from '../views/my/Recharge.vue'
 import Interact from '../views/my/Interact.vue'
 import Search from '../views/my/Search.vue'
-import About from '../views/my/About.vue'
+import Upgrade from '../views/my/Upgrade.vue'
 import Invite from '../views/my/Invite.vue'
 import MySpecial from '../views/my/MySpecial.vue'
 import Benifit from '../views/my/Benifit.vue'
 import Introduce from '../views/my/Introduce.vue'
+import Information from '../views/home/Information.vue'
+import OfficialBanner from '../views/home/OfficialBanner.vue'
 import Mining from '../views/mining/Mining.vue'
 import Except from '../views/except/except.vue'
 import Raffle from '../views/raffle.vue'
@@ -72,6 +74,17 @@ const routes = [
     component: Article,
     meta: { isTabPage: true }
   },
+  {
+    path: '/information',
+    component: Information,
+    meta: { isTabPage: true }
+  },
+  {
+    path: '/official_banner',
+    component: OfficialBanner,
+    meta: { isTabPage: true }
+  },
+  
   {
     path: '/animation',
     component: Animation,
@@ -139,7 +152,7 @@ const routes = [
         meta: { isTabPage: true }
       },
       {
-        name: 'about', path: '/about', component: About,
+        name: 'upgrade', path: '/upgrade', component: Upgrade,
         meta: { isTabPage: true }
       },
       {

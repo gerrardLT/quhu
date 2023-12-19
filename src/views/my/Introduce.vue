@@ -77,6 +77,31 @@
       <el-col :span="6" class="report" v-loading="reportLoading">
         <div class="report_title">{{ $t('introduce.inform') }}</div>
         <div class="tag_container">
+          <!-- <el-badge :value="noticeLen['upvote']" :max="99">
+            <el-tag
+            type="info"
+            :class="{ tag: true, active: activeTagIndex === 0 }"
+            @click="toggleTag('upvote', 0)"
+            >{{ $t('introduce.star') }}</el-tag
+          >
+      </el-badge>
+<el-badge :value="noticeLen['replie']" :max="99">
+  <el-tag
+            type="info"
+            :class="{ tag: true, active: activeTagIndex === 1 }"
+            @click="toggleTag('replie', 1)"
+            >{{ $t('introduce.reply') }}</el-tag
+          >
+</el-badge>
+
+          <el-badge :value="noticeLen['mentions']" :max="99">
+            <el-tag
+            type="info"
+            :class="{ tag: true, active: activeTagIndex === 2 }"
+            @click="toggleTag('mentions', 2)"
+            >{{ $t('introduce.mention') }}</el-tag
+          >
+</el-badge> -->
           <el-tag
             type="info"
             :class="{ tag: true, active: activeTagIndex === 0 }"
@@ -162,16 +187,15 @@ export default {
     })
     if (reports && reports.success === 'ok') {
       this.reportList = reports.data
+
       this.filterReportList = this.reportList.filter((item) => {
+        this.noticeLen[item.type] += 1
         return item.type === 'upvote'
       })
-      console.log(this.reportList)
     }
     this.reportLoading = false
   },
-  mounted() {
-    // console.log(this.$store.state.userInfo)
-  },
+  mounted() {},
   computed: {
     userInfo() {
       return JSON.parse(localStorage.getItem('quhu-userInfo')) || {}
@@ -193,6 +217,11 @@ export default {
   },
   data() {
     return {
+      noticeLen: {
+        upvote: 0,
+        replie: 0,
+        mentions: 0
+      },
       trailList: [],
       favorites: [],
       reportList: [],
@@ -337,14 +366,14 @@ export default {
       console.log(v, i)
       if (type === 'trail') {
         if (v.type === 'replie') {
-          this.$EventBus.$emit('changeTab', { name: 'home' }, 0, {
+          this.$bus.$emit('changeTab', { name: 'home' }, 0, {
             author: v.perlink[0],
             permlink: v.perlink[1],
             isShowDetailDialog: true
           })
         }
       } else {
-        this.$EventBus.$emit('changeTab', { name: 'home' }, 0, {
+        this.$bus.$emit('changeTab', { name: 'home' }, 0, {
           author: type === 'trail' ? v.perlink[0] : v.permlink[0],
           permlink: type === 'trail' ? v.perlink[1] : v.permlink[1],
           isShowDetailDialog: true
@@ -352,7 +381,7 @@ export default {
       }
     },
     learnMoreSpecial() {
-      this.$EventBus.$emit('changeTab', { name: 'home' }, 0)
+      this.$bus.$emit('changeTab', { name: 'home' }, 0)
     },
     transformTime(v) {
       let timestamp = v
@@ -394,8 +423,8 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.box-card {
-  max-height: 400px;
+::v-deep .box-card {
+  max-height: 530px;
   overflow-y: scroll;
 }
 .box-card::-webkit-scrollbar {
@@ -532,11 +561,12 @@ export default {
     padding: 10px 20px;
     font-size: 14px;
     height: 350px;
-    overflow: auto;
     .collect_title {
       margin-bottom: 20px;
     }
     .collect_content {
+      height: 300px;
+      overflow: auto;
       .collect_item {
         height: 50px;
         display: flex;
@@ -593,10 +623,12 @@ export default {
   background-color: #fff;
   padding: 10px 20px;
   font-size: 14px;
-  height: 400px;
-  overflow: auto;
+  height: 530px;
+
   .report_content {
-    height: calc(100% - 19px);
+    margin-top: 10px;
+    height: calc(100% - 80px);
+    overflow: auto;
     .report_item {
       height: 50px;
       display: flex;
@@ -705,7 +737,7 @@ export default {
 }
 .box-card {
   margin-top: 10px;
-  min-height: 400px;
+  min-height: 530px;
 }
 .camera {
   width: 15px;

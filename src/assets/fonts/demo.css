@@ -69,7 +69,7 @@ margin: 0 auto;
   margin:10px 0;
   border:solid 1px #e7e1cd;
   background-color: #fffdef;
-  overflow: auto;
+  /* overflow: auto; */
 }
 
 .icon_lists{

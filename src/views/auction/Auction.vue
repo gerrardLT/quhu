@@ -155,6 +155,7 @@ export default {
 
 <style scoped lang="scss">
 .auction_container {
+  background-color: #f6f9f9;
   padding: 20px 20px;
 }
 .auction {

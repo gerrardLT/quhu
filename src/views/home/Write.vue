@@ -26,7 +26,7 @@
     </quill-editor>
     <div
       style="
-        color: #c0c0c0;
+        color: #EE9611;
         font-size: 14px;
         text-align: right;
         margin-top: 10px;
@@ -313,11 +313,7 @@ export default {
       const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
       const selectedColumn = this.$route.query.selectedColumn
-      const loading = Loading.service({
-        text: this.$t('message.loading'),
-        spinner: 'el-icon-loading ElementLoading',
-        background: 'rgba(0, 0, 0, 0.2)'
-      })
+      this.$loading.show()
       let formatContent = ''
       if (columnK) {
         formatContent = this.content
@@ -337,11 +333,11 @@ export default {
                     (600 / this.fileList[i - 1].width) *
                     this.fileList[i - 1].height
                   }px"` +
-                  ' src="https://cdn.steemitimages.com' +
+                  ' style="cursor:pointer;" src="https://cdn.steemitimages.com' +
                   item
               } else {
                 formatContent +=
-                  `preview=${this.fileList[0].url} class="img-container" width="100%" height="100%"` +
+                  `preview=${this.fileList[0].url} style="cursor:pointer;" class="img-container" width="100%" height="100%"` +
                   ' src="https://cdn.steemitimages.com' +
                   item
               }
@@ -351,8 +347,6 @@ export default {
           }
         })
       }
-
-      console.log(formatContent)
 
       const res = await post({
         type: columnK ? 'edit' : 'post',
@@ -369,21 +363,19 @@ export default {
       if (res && res.success === 'ok') {
         // console.log(res)
         // this.$store.commit('GET_POST_ARTICLE', res.result)
-        this.$EventBus.$emit('update-article', res.result)
+        this.$bus.$emit('update-article', res.result)
         setTimeout(() => {
           if (columnK) {
             this.$message.success(this.$t('write.edit_success'))
           } else {
             this.$message.success(this.$t('write.post_success'))
           }
-          this.$EventBus.$emit('changeTab', { name: 'home' }, 0)
+          this.$bus.$emit('changeTab', { name: 'home' }, 0)
         }, 1000)
       } else {
         this.$message.error(this.$t('write.post_fail'))
       }
-      if (loading) {
-        loading.close()
-      }
+      this.$loading.hide()
     }
   }
 }
@@ -391,7 +383,7 @@ export default {
 
 <style scoped lang="scss">
 ::v-deep .ql-container {
-  min-height: 600px;
+  min-height: 500px;
   background-color: #fff;
 }
 .title {
@@ -440,12 +432,19 @@ export default {
 }
 ::v-deep .footer .el-input input {
   height: 50px;
-  width: 100px;
+  width: 120px;
   border: none;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
   margin-right: 10px;
-  background-color: #f5f5f5;
+  background-color: #fff;
+  border-radius: 5px;
+}
+::v-deep .footer .el-input__suffix{
+  right: 10px;
+}
+::v-deep  .footer .btn.el-button{
+  border-radius: 5px;
 }
 </style>

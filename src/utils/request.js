@@ -58,13 +58,7 @@ service.interceptors.request.use((config) => {
   config.cancelToken = new axios.CancelToken(cancel => {
     window._axiosPromiseArr.push({ cancel })
   })
-  // console.log( window._axiosPromiseArr)
-// console.log(config.url)
-  // loading = Loading.service({
-  //   text: '加载中...',
-  //   spinner: 'el-icon-loading ElementLoading',
-  //   background: 'rgba(0, 0, 0, 0.2)'
-  // })
+
   return config
 },
   (error) => {
