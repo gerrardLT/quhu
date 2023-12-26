@@ -162,7 +162,7 @@ export default {
 ::v-deep .ql-toolbar.ql-snow {
   position: absolute;
   border: none;
-  bottom: -100px;
+  bottom: -120px;
   left: 30px;
   z-index: 999;
 }
@@ -199,7 +199,7 @@ export default {
 
 .icon-biaoqing {
   position: absolute;
-  bottom: -90px;
+  bottom: -110px;
   left: 0;
   z-index: 999;
   cursor: pointer;

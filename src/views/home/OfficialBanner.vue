@@ -8,13 +8,15 @@
           :key="tab.id"
           @click="tabClick(tab)"
         >
-          <span class="tab_text"><span class="text">{{ tab.text }}</span> </span>
+          <span class="tab_text"
+            ><span class="text">{{ tab.text }}</span>
+          </span>
         </div>
       </div>
 
       <div class="sort">
         <el-select v-model="sortType" @change="changeSort">
-          <el-option :label="'最新'" :value="'最新'" />
+          <el-option :label="$t('office_banner.newest')" :value="$t('office_banner.newest')" />
         </el-select>
       </div>
     </div>
@@ -55,13 +57,13 @@ export default {
         {
           index: 0,
           id: 'inform',
-          text: '官方公告'
+          text: this.$t('office_banner.offical_inform')
         },
-        // {
-        //   index: 1,
-        //   id: 'renew',
-        //   text: '最新更新'
-        // }
+        {
+          index: 1,
+          id: 'renew',
+          text: this.$t('office_banner.renew')
+        }
       ],
       noticeList: []
     }
@@ -91,16 +93,17 @@ export default {
       const Fn = Function
       return new Fn('return ' + fn)()
     },
-    goHome(){
+    goHome() {
       this.$router.push({
-            path: '/home'
-          })
+        path: '/home'
+      })
     },
     changeSort() {},
     tabClick(tab) {
       this.activeIndex = tab.index
     },
     async getNotice() {
+      this.$loading.show()
       const params = {
         id:
           this.loginType === 'eth'
@@ -117,10 +120,11 @@ export default {
       const columns = this.userInfo.article
       let columnK = 0
       columns.forEach((item) => {
-        if (item.name === '官方公告') {
+        if (item.name === this.$t('office_banner.offical_inform')) {
           columnK = item.k
         }
       })
+      this.$loading.hide()
       if (res && res.result) {
         res.result.forEach((element) => {
           element.body = this.eval(element.body)
@@ -128,27 +132,22 @@ export default {
             /<p>([\s\S]*?)<\/p>.*?<p>([\s\S]*?)<\/p>/
           )[2]
         })
-        console.log(res.result)
         this.noticeList = res.result
-        this.noticeList = [
-          ...res.result,
-          ...res.result,
-          ...res.result,
-          ...res.result
-        ]
       }
     }
+    
   },
   watch: {}
 }
 </script>
 <style lang="scss" scoped>
-::v-deep .el-input__inner{
+::v-deep .el-input__inner {
   width: 100px;
 }
 .official_banner {
   padding: 40px 120px 0 120px;
-  background-color: #f6f9f9;
+  // background-color: #f6f9f9;
+  background-color: $bgcolor;
   height: 100vh;
   .office_tab {
     display: flex;
@@ -163,21 +162,21 @@ export default {
         display: flex;
         align-items: center;
         font-size: 14px;
-        color: #BFBFBF;
+        color: #bfbfbf;
         cursor: pointer;
-        
-        .tab_text{
+
+        .tab_text {
           position: relative;
           &::before {
             position: absolute;
             top: -20px;
-          content: '\2022'; /* 使用 Unicode 代码表示小圆点 */
-          font-weight: bold; /* 可选，根据需要调整 */
-          font-size: 40px;
-        }
-        span.text{
-          padding-left: 20px;
-        }
+            content: '\2022'; /* 使用 Unicode 代码表示小圆点 */
+            font-weight: bold; /* 可选，根据需要调整 */
+            font-size: 40px;
+          }
+          span.text {
+            padding-left: 20px;
+          }
         }
         &:hover {
           color: $mainColor;
@@ -212,13 +211,16 @@ export default {
           margin-top: 6px;
         }
         .title {
-
           display: flex;
           justify-content: space-between;
           .left {
             cursor: pointer;
             font-size: 16px;
             color: #666666;
+            font-weight: bold;
+            &:hover {
+              color: $mainColor;
+            }
           }
         }
         .content {
@@ -228,11 +230,16 @@ export default {
           overflow: hidden;
           -webkit-line-clamp: 2;
         }
-        .name{
+        .name {
           width: 80px;
           text-align: center;
           border: 1px solid #999999;
           border-radius: 2px;
+          margin-top: 20px;
+          &:hover {
+            border: 1px solid $mainColor;
+            color: $mainColor;
+          }
         }
       }
     }

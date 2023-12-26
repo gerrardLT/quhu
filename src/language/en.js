@@ -156,6 +156,8 @@ export default {
     confirm_success_tip: 'Success!'
   },
   column_detail: {
+    tag_dupliate_error:'Duplicate',
+    tag_title:'Article Tag',
     go_back: 'back',
     click_copy: 'Copy',
     link: 'Link',
@@ -209,6 +211,10 @@ export default {
     apply_success: 'Success'
   },
   home: {
+    select_article_type_tip:'article tag',
+    go_column:'setting',
+    default:'default',
+    essence:'essence',
     short_corner: 'Playground',
     my_column: 'My',
     joined_column: 'Joined',
@@ -242,8 +248,10 @@ export default {
     delete: 'Delete',
     user_id: 'User ID',
     his_column: 'User Column',
+    your_column:'Your Column',
     column_tip: 'No columns or hidden',
     star: 'Vote',
+    office_inform:'Offical Inform',
     comment: 'Comment',
     view_detail: 'View',
     feel_nice: 'Like',
@@ -306,6 +314,30 @@ export default {
     post_fail_tip: 'Failed! Try again',
     have_no_right: 'No permission!',
     post_success: 'Success'
+  },
+  office_banner:{
+    newest:'Newest',
+    offical_inform:'Offical Inform',
+    renew:'Renew'
+  },
+  information:{
+    cancel_follow:'Cancel Follow',
+    follow:'Follow',
+    column:'Column',
+    favorite:'Favorite',
+    follow_list:'Follow List',
+    my_following:'Following',
+    all_following:'All',
+    my_follower: 'Followers',
+    jump_homepage:'Homepage',
+    profile: 'Profile',
+    already_follow:'Already Followed',
+    view:'View',
+    followers:'Followers',
+    articles_num:'Articles',
+    comment_num:'Comments',
+    follow_success:'Follow Success',
+    follow_canceled:'Follow Canceled'
   },
   write: {
     title_tip: 'Title',
@@ -402,6 +434,7 @@ export default {
     locked: 'Locked',
     exchange_report: 'Record',
     date: 'Date',
+    my_assets:'My Assets',
     order_number: 'Order id',
     goods_name: 'Name',
     pay_currency: 'Coins',

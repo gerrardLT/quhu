@@ -88,6 +88,7 @@ module.exports = {
   chainWebpack: (config) => {
     config.resolve.alias
       .set('@', resolve('src'))
+      .set('@fonts', resolve('src/assets/fonts'))
     //引入图标
     config.module.rule("svg").exclude.add(resolve("./src/assets/svg"));
     config.module.rule("icon").test(/\.svg$/)
@@ -97,7 +98,12 @@ module.exports = {
       .options({
         symbolId: 'icon-[name]'
       });
-
+      // 加载glsl文件
+      config.module.rule('raw')
+      .test(/\.(glsl|vs|fs|vert|frag)$/) 
+      .use('raw-loader')
+      .loader('raw-loader')
+      .end();
     config
       .plugin('html')
       .tap(args => {

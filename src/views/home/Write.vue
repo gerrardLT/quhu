@@ -14,6 +14,19 @@
           {{ $t('write.title_length') }}：{{ titleLength }}/60
         </div>
       </div>
+      <el-select
+        class="select_article_type"
+        :placeholder="$t('home.select_article_type_tip')"
+        v-model="ArticleTypeSelected"
+        @change="selectArticleType"
+      >
+        <el-option
+          v-for="article_type in articleTypeList"
+          :key="article_type"
+          :label="article_type"
+          :value="article_type"
+        />
+      </el-select>
     </div>
     <quill-editor
       v-model="content"
@@ -26,7 +39,7 @@
     </quill-editor>
     <div
       style="
-        color: #EE9611;
+        color: #ee9611;
         font-size: 14px;
         text-align: right;
         margin-top: 10px;
@@ -73,6 +86,7 @@ export default {
   name: 'Write',
   data() {
     return {
+      ArticleTypeSelected:'',
       articlePostType: this.$t('write.public'),
       fileUpload: {},
       fileList: [],
@@ -186,7 +200,6 @@ export default {
       })
       if (res && res.result) {
         const obj = res.result[author + '/' + permlink]
-        console.log(obj)
         this.content = decrypt(this.eval(obj.body).body, columnK)
         this.titleText = obj.title
       }
@@ -217,12 +230,26 @@ export default {
   computed: {
     userInfo() {
       return JSON.parse(localStorage.getItem('quhu-userInfo'))
-    }
+    },
+    articleTypeList(){
+      let arr =[]
+      this.userInfo.article.forEach((v)=>{
+        if(this.$route.query.selectedColumn=== v.name){
+          arr = v.item
+        }  
+      })
+
+      const newArray = arr.filter(item => item !== "")
+      return newArray
+    },
   },
   methods: {
     eval(fn) {
       const Fn = Function
       return new Fn('return ' + fn)()
+    },
+    selectArticleType(){
+
     },
     async onUploadHandler(e) {
       this.loadHandler(e.file, (v) => {
@@ -358,7 +385,8 @@ export default {
         permlink: columnK ? [author, permlink] : '',
         title: this.titleText,
         public: this.articlePostType === this.$t('write.public') ? 'yes' : 'no',
-        body: formatContent
+        body: formatContent,
+        tag:this.ArticleTypeSelected
       })
       if (res && res.success === 'ok') {
         // console.log(res)
@@ -386,7 +414,12 @@ export default {
   min-height: 500px;
   background-color: #fff;
 }
+.write_header {
+  display: flex;
+  align-items: center;
+}
 .title {
+  width: 90%;
   color: #2f3034;
   text-align: left;
   font-size: 16px;
@@ -395,6 +428,10 @@ export default {
   display: flex;
   align-items: center;
   position: relative;
+}
+.select_article_type {
+  margin-left: 5px;
+  width: 10%;
 }
 .limit {
   position: absolute;
@@ -441,10 +478,10 @@ export default {
   background-color: #fff;
   border-radius: 5px;
 }
-::v-deep .footer .el-input__suffix{
+::v-deep .footer .el-input__suffix {
   right: 10px;
 }
-::v-deep  .footer .btn.el-button{
+::v-deep .footer .btn.el-button {
   border-radius: 5px;
 }
 </style>

@@ -13,6 +13,7 @@ export default {
     change_success: '修改成功！',
     loading: '加载中...'
   },
+
   clip_board: {
     copy_success: '复制成功',
     copy_fail: '复制失败'
@@ -156,6 +157,8 @@ export default {
     confirm_success_tip: '确认收货成功！'
   },
   column_detail: {
+    tag_dupliate_error:'重复得文章分类标签',
+    tag_title:'专栏文章标签分类',
     go_back: '返回',
     click_copy: '点击复制',
     link: '链接',
@@ -209,6 +212,10 @@ export default {
     apply_success: '加入专栏成功'
   },
   home: {
+    select_article_type_tip:'文章标签',
+    go_column:'设置',
+    default:'默认',
+    essence:'精华',
     short_corner: '短文广场',
     my_column: '我的专栏',
     joined_column: '加入的专栏',
@@ -238,6 +245,7 @@ export default {
     delete: '删除',
     user_id: '用户ID',
     his_column: '他的专栏',
+    your_column:'你的专栏',
     column_tip: '他还没有专栏或专栏已隐藏',
     star: '点赞',
     comment: '评论',
@@ -264,6 +272,7 @@ export default {
     click_refresh: '点击刷新',
     hot: '热',
     hot_auction: '热门专栏竞拍',
+    office_inform:'官方通告',
     column_name_tip: '请输入专栏名称',
     column_price_tip: '请输入专栏价格',
     column_coin_tip: '请选择币种',
@@ -306,6 +315,30 @@ export default {
     post_fail_tip: '发文失败！ 请重新发文',
     have_no_right: '您未拥有该专栏编辑权限！',
     post_success: '发文成功'
+  },
+  office_banner:{
+    newest:'最新',
+    offical_inform:'官方公告',
+    renew:'最新更新'
+  },
+  information:{
+    cancel_follow:'取消关注',
+    follow:'关注',
+    column:'专栏',
+    favorite:'收藏',
+    follow_list:'关注列表',
+    my_following:'我的关注',
+    all_following:'全部关注',
+    my_follower: '我的粉丝',
+    jump_homepage:'点击跳转个人主页',
+    profile: '这个人没有填简介啊~~',
+    already_follow:'已关注',
+    view:'被访问量',
+    followers:'粉丝数',
+    articles_num:'文章数',
+    comment_num:'评论数',
+    follow_success:'关注成功',
+    follow_canceled:'关注已取消'
   },
   write: {
     title_tip: '请输入标题',
@@ -399,6 +432,7 @@ export default {
     to_address: '转入地址（bsc链）',
     coin_property: '币种资产',
     balance: '余额',
+    my_assets:'我的资产',
     locked: '锁仓额',
     exchange_report: '交易记录',
     date: '日期',

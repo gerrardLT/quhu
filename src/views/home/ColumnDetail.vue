@@ -132,6 +132,20 @@
           <div class="sub_name">
             <span>{{ detail_info.subscriptions_name }}</span>
           </div>
+          <div
+            class="tags"
+            style="margin-top: 10px; margin-bottom: 10px; display: flex"
+          >
+            <el-tag
+              class="tag"
+              style="margin-left: 5px; min-width: 50px"
+              :type="tagTypes[i]"
+              v-for="(item, i) in detail_info.tags"
+              :key="i"
+              :title="item"
+              >{{ item }}</el-tag
+            >
+          </div>
           <div class="owner">
             <div class="owner_img">
               <img :src="detail_info.master.avatar" alt="" />
@@ -140,17 +154,7 @@
               {{ detail_info.master.user_name }}
             </div>
           </div>
-          <div class="tags" style="margin-top: 10px; display: flex">
-              <el-tag
-                class="tag"
-                style="margin-left: 5px; min-width: 50px"
-                :type="tagTypes[i]"
-                v-for="(item, i) in detail_info.tags"
-                :key="i"
-                :title="item"
-                >{{ item }}</el-tag
-              >
-            </div>
+
           <div class="members">
             <span
               >{{ $t('column_detail.column_people') }}：{{
@@ -174,7 +178,7 @@
       <el-row type="flex" class="introduce" v-if="isMyColumn">
         <el-col :span="24">
           <div class="intro_title" :title="$t('column_detail.intro_tip')">
-            <span >{{ $t('column_detail.intro') }} </span>
+            <span>{{ $t('column_detail.intro') }} </span>
             <svg
               @click="showIntro = !showIntro"
               :style="{
@@ -202,7 +206,9 @@
             @blur="showIntro = false"
           >
           </el-input>
-          <div v-else style="word-wrap: break-word;">{{ detail_info.introduction }}</div>
+          <div v-else style="word-wrap: break-word">
+            {{ detail_info.introduction }}
+          </div>
         </el-col>
       </el-row>
       <el-row type="flex" class="introduce" v-else>
@@ -210,7 +216,63 @@
           <div class="intro_title">
             <span>{{ $t('column_detail.intro') }} </span>
           </div>
-          <div style="word-wrap: break-word;">{{ detail_info.introduction }}</div>
+          <div style="word-wrap: break-word">
+            {{ detail_info.introduction }}
+          </div>
+        </el-col>
+      </el-row>
+      <el-row type="flex" class="article_tag" v-if="isMyColumn">
+        <el-col :span="24">
+          <div class="article_tag_title">
+            <span>{{ $t('column_detail.tag_title') }} </span>
+          </div>
+          <div class="tag_container">
+            <div :key="tag.id" v-for="(tag, i) in articleTypes">
+              <el-tag
+                v-if="!tag.inputTagVisible"
+                class="tag_item"
+                type="info"
+                effect="dark"
+                :closable="tag.id !== $t('home.essence')"
+                @close="handleClose(tag, i)"
+                @click="showInputTag(tag, i)"
+              >
+                {{ tag.value }}
+              </el-tag>
+              <el-input
+                v-else
+                style="max-width: 135px; width: auto !important; margin-left: 10px"
+                maxlength="8"
+                :ref="'articleTag' + i"
+                class="input-tag"
+                v-model="tag.value"
+                size="small"
+                @keyup.enter.native="handleTagChange(tag, i)"
+                @blur="handleTagChange(tag, i)"
+              >
+              </el-input>
+            </div>
+            <el-input
+              maxlength="8"
+              style="max-width: 135px; width: auto; margin-left: 10px"
+              class="input-new-tag"
+              v-if="inputTagVisible"
+              v-model.trim="inputTagValue"
+              size="small"
+              @keyup.enter.native="handleTagInputConfirm"
+              @blur="handleTagInputConfirm"
+            >
+            </el-input>
+            <el-button
+              v-if="!inputTagVisible && articleTypes.length < 6"
+              style="margin-left: 10px"
+              class="button-new-tag"
+              ref="saveArticleTagInput"
+              size="small"
+              @click="showTagInput"
+              >+ New</el-button
+            >
+          </div>
         </el-col>
       </el-row>
       <el-row class="set" v-if="isMyColumn">
@@ -423,6 +485,9 @@ export default {
   },
   data() {
     return {
+      articleTypes: [],
+      inputTagVisible: false,
+      inputTagValue: '',
       inputVisible: false,
       inputValue: '',
       tagTypes: ['success', 'warning', 'danger'],
@@ -494,6 +559,66 @@ export default {
   },
   methods: {
     transformTime,
+    showInputTag(tag, i) {
+      if (tag.id !== this.$t('home.essence')) {
+        tag.inputTagVisible = true
+
+        this.articleTypes.forEach((item) => {
+          if (item.value !== tag.value) {
+            item.inputTagVisible = false
+          }
+        })
+        this.$nextTick((_) => {
+          this.$refs['articleTag' + i][0].$refs.input.focus()
+        })
+        this.$forceUpdate()
+      }
+    },
+    handleClose(tag, i) {
+      this.articleTypes.splice(i, 1)
+    },
+
+    showTagInput() {
+      this.inputTagVisible = true
+    },
+    handleTagChange(tag) {
+      let arr = []
+      this.articleTypes.forEach((item) => {
+        if (item.value !== tag.value) {
+          arr.push(item.value)
+        }
+      })
+      if (arr.indexOf(tag.value) !== -1) {
+        this.$message.error(this.$t('column_detail.tag_dupliate_error'))
+        return
+      }
+      if (tag.value) {
+        tag.inputTagVisible = false
+      }
+
+      this.$forceUpdate()
+    },
+    handleTagInputConfirm() {
+      let inputTagValue = this.inputTagValue
+      let arr = []
+      this.articleTypes.forEach((item) => {
+        arr.push(item.value)
+      })
+
+      if (arr.indexOf(inputTagValue) !== -1) {
+        this.$message.error(this.$t('column_detail.tag_dupliate_error'))
+        return
+      }
+      if (inputTagValue) {
+        this.articleTypes.push({
+          inputTagVisible: false,
+          value: inputTagValue,
+          id: inputTagValue
+        })
+      }
+      this.inputTagVisible = false
+      this.inputTagValue = ''
+    },
     async handleTagClose(tag) {
       //   const arr = cloneDeep(this.tags)
       this.detail_info.tags.splice(this.detail_info.tags.indexOf(tag), 1)
@@ -658,6 +783,10 @@ export default {
         allow,
         tags
       } = this.detail_info
+      const articleArr = []
+      this.articleTypes.forEach((item) => {
+        articleArr.push(item.value)
+      })
 
       const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
@@ -670,7 +799,8 @@ export default {
         introduction: introduction,
         image: image,
         price: price + currency,
-        tags
+        tags,
+        item: articleArr
       }
       if (allow === 'all') {
         params.allow = 'all'
@@ -749,6 +879,16 @@ export default {
       if (res && res.success === 'ok') {
         this.detail_info = res.data
         this.detail_info.tags = this.detail_info.tags
+        this.detail_info.item = this.detail_info.item.filter(
+          (item) => item !== ''
+        )
+        this.detail_info.item.forEach((item) => {
+          this.articleTypes.push({
+            inputTagVisible: false,
+            value: item,
+            id: item
+          })
+        })
         if (this.detail_info.allow !== 'all') {
           this.detail_info.allow = 'self'
         }
@@ -831,15 +971,14 @@ export default {
     },
     '$i18n.locale': {
       handler(newVal, oldVal) {
-
-        this.options=[
-        this.$t('column_detail.share'),
-        this.$t('column_detail.invite')
-      ]
+        this.options = [
+          this.$t('column_detail.share'),
+          this.$t('column_detail.invite')
+        ]
       },
       deep: true,
       immediate: true
-    },
+    }
   }
 }
 </script>
@@ -870,11 +1009,11 @@ export default {
   border-color: #54bcbd;
   color: white;
 }
-::v-deep .el-tag .el-icon-close{
+::v-deep .el-tag .el-icon-close {
   width: 12px;
   height: 12px;
   line-height: 12px;
-  top:0;
+  top: 0;
   right: -5px;
 }
 ::v-deep .el-radio__input.is-checked + .el-radio__label {
@@ -900,7 +1039,6 @@ export default {
     .members {
       color: #c0c0c0;
       margin-bottom: 10px;
-
     }
     .create_time {
       color: #c0c0c0;
@@ -985,6 +1123,25 @@ export default {
       font-weight: bold;
     }
   }
+  .article_tag {
+    margin-top: 20px;
+    border-bottom: 1px dashed #e4e4e4;
+    margin-bottom: 20px;
+    .article_tag_title {
+      margin-bottom: 20px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .tag_container {
+      display: flex;
+      margin-bottom: 20px;
+      .tag_item {
+        margin-left: 10px;
+        .input-tag {
+        }
+      }
+    }
+  }
   .book {
     display: flex;
     justify-content: space-between;
@@ -1029,14 +1186,15 @@ export default {
   .add_column {
     height: 200px;
     .add_btn {
-      width: 200px;
-      height: 80px;
+      width: 330px;
+      height: 50px;
       background-color: #54bcbd;
     }
     .remove_btn {
-      width: 200px;
-      height: 80px;
-      background-color: #54bcbd;
+      width: 330px;
+      height: 50px;
+      background-color: #bd3124;
+      opacity: 0.8;
     }
   }
 }

@@ -7,7 +7,7 @@
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
-  <div class="wallet_container" style="min-height: 1371px;">
+  <div class="wallet_container">
     <div class="wallet">
     <div class="operation">
       <el-button type="success" around @click="showTrade">{{
@@ -28,19 +28,16 @@
         $t('voucher.query_tip')
       }}</span>
     </div>
-    <!-- <div v-show="isShowAddress" class="address-container">
-
-      <span>{{ $t('voucher.to_address') }}：{{ address }}</span>
-      <i class="el-icon-copy-document" @click="copy(address, $event)"></i>
-    </div> -->
     <div class="coin-list">
+      <div class="assetes_title">{{ $t('voucher.my_assets') }}</div>
       <div class="coin-header">
         <div class="coin-title">{{ $t('voucher.coin_property') }}</div>
         <div class="balance-title">{{ $t('voucher.balance') }}</div>
         <div class="balance-title">{{ $t('voucher.locked') }}</div>
       </div>
-      <div class="coin">
-        <div class="coin-item" v-for="item in balanceList" :key="item.id">
+        <div class="coin">
+            <div class="coin-item" v-for="item in balanceList" :key="item.id">
+              <img :src="item.logo" class="coin-logo" alt="">
           <div class="coin-name">{{ item.name }}</div>
           <div class="balance">
             {{ Number(item.balance) === 0 ? 0 : item.balance.toFixed(8) }}
@@ -51,7 +48,9 @@
             }}
           </div>
         </div>
+
       </div>
+
     </div>
     <div class="cost-list">
       <div class="cost-title">{{ $t('voucher.exchange_report') }}</div>
@@ -545,11 +544,13 @@ export default {
       if (res && res.success === 'ok') {
         const arr = []
         Object.keys(res.data.token_num).forEach((key, i) => {
+          if(res.data.token_num)
           arr.push({
             name: key,
             balance: res.data.token_num[key],
             lock_balance: res.data.lock_token[key],
-            id: i
+            id: i,
+            logo: key!=='ofc' && key!=='poys' && key!=='nft'? require('../../assets/coin_logo/'+key+'.png'):''
           })
         })
         this.balanceList = arr
@@ -833,6 +834,12 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.wallet_container{
+  width: 80%;
+    padding-left: 80px;
+    min-height: 1000px;
+}
+
 .wallet {
   padding: 50px;
   position: relative;
@@ -969,64 +976,88 @@ export default {
 }
 .coin-list {
   display: flex;
-  align-items: center;
+  // align-items: center;
   // justify-content: center;
   flex-direction: column;
   position: relative;
-  width: 100%;
+  width: calc(100% - 40px) ;
   font-size: 16px;
   margin-top: 20px;
-  border-bottom:  1px solid #c0c0c0;
+  // border-bottom:  1px solid #c0c0c0;
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 20px 20px;
+
+  max-height: 390px;
+  height: auto;
+  .assetes_title{
+    margin-bottom: 10px;
+    font-size: 20px;
+    font-weight: bold;
+  }
 }
 .coin-header {
-  background-color: #fff;
+
   display: flex;
-  justify-content: center;
+  // justify-content: center;
   width: 100%;
   height: 40px;
-  border: 1px solid #c0c0c0;
-  font-weight: bold;
+  // border: 1px solid #c0c0c0;
+  font-size: 12px;
+  padding-left: 20px;
   .coin-title {
     flex: 1;
-    text-align: center;
+    // text-align: center;
     line-height: 40px;
   }
   .balance-title {
     flex: 1;
-    text-align: center;
+    // text-align: center;
     line-height: 40px;
   }
 }
+.coin_container{
+  
+}
 .coin {
   width: 100%;
-  transform: translate(-1px, 0);
+  overflow-y: scroll;
+  overflow-x: hidden;
+  color: #5E6673;
 }
-
 .coin-item {
+  padding-left: 20px;
   background-color: #fff;
   width: 100%;
-  height: 40px;
+  height: 50px;
+  font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #c0c0c0;
-  border-bottom: none;
+  // border: 1px solid #c0c0c0;
+  border-radius: 10px;
+  &:hover{
+    background-color: #F5F7FA;
+  }
 }
 .coin div:first-child {
   border-top: none;
 }
 
-// .coin div:last-child {
-//   border-bottom: 1px solid #c0c0c0;
-// }
+.coin-logo{
+  width: 25px;
+  height: 25px;
+  margin-right: 5px;
+}
 .coin-name {
   flex: 1;
-  text-align: center;
+  // text-align: center;
   line-height: 50px;
+  font-weight: bold;
 }
 .balance {
   flex: 1;
-  text-align: center;
+  // text-align: center;
   line-height: 50px;
 }
 .operation {
@@ -1053,5 +1084,6 @@ export default {
 }
 .cost-title {
   margin: 20px 0;
+  font-weight: bold;
 }
 </style>

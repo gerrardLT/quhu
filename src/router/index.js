@@ -10,6 +10,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Login from '../views/Login.vue'
 import Home from '../views/home/Home.vue'
+// import ThreeHome from '../views/3d_home/3d_home.vue'
 import My from '../views/my/My.vue'
 import Article from '../views/article/Article.vue'
 import Auction from '../views/auction/Auction.vue'
@@ -69,6 +70,12 @@ const routes = [
       }
     ]
   },
+  // {
+  //   path: '/3d_home',
+  //   component: ThreeHome,
+  //   meta: { isTabPage: false }
+  // },
+  
   {
     path: '/article',
     component: Article,

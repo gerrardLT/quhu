@@ -723,7 +723,7 @@ this.loginForm.user = (userInfo && userInfo.user) || ''
   border-radius: 3px;
   position: absolute;
   left: calc(50% - 250px);
-  top: calc(50% - 350px);
+  top: calc(50% - 270px);
   // backdrop-filter: blur(20px);
   box-shadow: 0 0 30px 10px rgba(0, 0, 0, 0.8);
   opacity: 0.8;
@@ -772,6 +772,7 @@ img {
   align-items: center;
   width: 13rem;
   overflow: hidden;
+  cursor: pointer;
   height: 3rem;
   background-size: 300% 300%;
   backdrop-filter: blur(1rem);

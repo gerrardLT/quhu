@@ -8,7 +8,7 @@
       "
     >
       <el-col
-        :span="3"
+        :span="2"
         class="nav_container"
         :style="currentPath === '/write' ? { top: '100px' } : { top: '95px' }"
       >
@@ -125,7 +125,7 @@
       >
         <router-view></router-view>
       </el-col>
-      <el-col :span="16" v-else class="mid_container">
+      <el-col :span="18" v-else class="mid_container">
         <div class="mid_wrapper">
           <div class="swiper" ref="swiper" v-show="currentPath === '/home'">
             <el-carousel height="100px">
@@ -142,6 +142,7 @@
                     class="advertise_image"
                     style="width: 100%; object-fit: cover"
                     :src="item.image"
+                    :title="item.title"
                     alt=""
                 /></router-link>
               </el-carousel-item>
@@ -199,6 +200,17 @@
                   </el-dialog>
                 </div>
               </div>
+            </div>
+          </div>
+          <div class="article_class" v-if="selectedMenu !== 'short-square' ">
+            <!-- <div :class="{'article_type_item':true,'active':typeSelected ===$t('home.default') }">
+              <div @click="filterArticle()">{{ $t('home.default') }}</div>
+            </div> -->
+            <div v-for="(typeItem,typeIndex) in articleTypeList" :key="typeItem" :class="{'article_type_item':true,'active':typeItem ===typeSelected }" >
+              <div @click="filterArticle(typeItem,typeIndex)">{{ typeItem }}</div>
+            </div>
+            <div class="go_column" v-if="userInfo.buy_article.my.indexOf(selectedColumn)!==-1">
+              <div @click="handleSelect({value:selectedColumn })" :title="$t('home.go_column')"><i class="el-icon-setting"></i></div>
             </div>
           </div>
           <el-dialog
@@ -362,7 +374,7 @@
                                   currentUserInfo.data.article &&
                                   currentUserInfo.data.article.length > 0
                                 "
-                                >{{ $t('home.his_column') }}：</span
+                                >{{ currentUserInfo.self?$t('home.your_column'): $t('home.his_column') }}：</span
                               >
 
                               <span
@@ -389,7 +401,7 @@
                                 $t('home.column_tip')
                               }}</span>
                             </div>
-                            <div class="follow">
+                            <div class="follow" v-if="!currentUserInfo.self">
                               <span
                                 v-if="!currentUserInfo.follow"
                                 @click="togglefollow(item)"
@@ -413,7 +425,7 @@
                         </el-popover>
                         <!-- <img class="avatar" :src="item.body.avatar" alt="" /> -->
                         <div class="info">
-                          <div class="role owner">{{ item.body.author }}</div>
+                          <div class="role owner" @click="goInfo(item)">{{ item.body.author }}</div>
                           <div class="date">
                             {{ transfromTimeZoom(item.created) }}
                           </div>
@@ -488,7 +500,7 @@
                             </div>
                             <div class="author-column-special">
                               <span v-if="searchUserColumn.length > 0"
-                                >{{ $t('home.his_column') }}：</span
+                                >{{currentUserInfo.self?$t('home.your_column'): $t('home.his_column') }}：</span
                               >
 
                               <span
@@ -515,7 +527,7 @@
                                 $t('home.column_tip')
                               }}</span>
                             </div>
-                            <div class="follow">
+                            <div class="follow" v-if="!currentUserInfo.self">
                               <span
                                 v-if="!currentUserInfo.follow"
                                 @click="togglefollow(item)"
@@ -538,7 +550,7 @@
                           />
                         </el-popover>
                         <div class="info">
-                          <div class="role owner">{{ item.body.author }}</div>
+                          <div class="role owner" @click="goInfo(item)">{{ item.body.author }}</div>
                           <div class="date">
                             {{ transfromTimeZoom(item.created) }}
                           </div>
@@ -869,6 +881,19 @@
                 <div @click="closeEditor" class="close-icon">
                   <Icon name="cancel" />
                 </div>
+                <el-select
+                    class="select_article_type"
+                    :placeholder="$t('home.select_article_type_tip')"
+                      v-model="ArticleTypeSelected"
+                      @change="selectArticleType"
+                    >
+                      <el-option
+                        v-for="article_type in articleTypeList"
+                        :key="article_type"
+                        :label="article_type"
+                        :value="article_type"
+                      />
+                    </el-select>
               </div>
               <div>
                 <div class="horizontal-line"></div>
@@ -879,6 +904,7 @@
                 <div class="horizontal-line"></div>
               </div>
               <div class="upload-container">
+                
                 <div
                   class="operation-icon"
                   ref="operation_icon"
@@ -915,6 +941,7 @@
                         :value="$t('home.only_self')"
                       />
                     </el-select>
+
                   </div>
                   <div class="right">
                     <div @click="submit()" class="submit-btn">
@@ -928,7 +955,7 @@
         </div>
       </el-col>
       <el-col
-        :span="5"
+        :span="4"
         class="recommend_container"
         v-if="currentPath === '/home'"
       >
@@ -1040,10 +1067,11 @@
                   src="../../assets/radio.png"
                   style="width: 25px; height: 25px"
                   alt=""
+                  class="animate__animated animate__heartBeat animate__slower"
                 />
 
                 <span
-                  class="hot_text animate__animated animate__heartBeat animate__slower"
+                  class="hot_text"
                   >{{ $t('home.hot_auction') }}</span
                 >
               </div>
@@ -1052,7 +1080,6 @@
           </div>
         </div>
       </el-col>
-
     </el-row>
 
     <el-dialog
@@ -1251,6 +1278,8 @@ export default {
   },
   data() {
     return {
+      typeSelected: this.$t('home.default'),
+      typeSelectedIndex:0,
       isBottom:false,
       createAvatarLoading: false,
       emojiIndex: emojiIndex,
@@ -1291,6 +1320,7 @@ export default {
       inputVisible: false,
       inputValue: '',
       tagList: [],
+      ArticleTypeSelected: '',
       tagTypes: ['success', 'warning', 'danger'],
       searchResult: [],
       articleList: [],
@@ -1415,13 +1445,31 @@ export default {
       searchUserColumnLoading: false,
       advertisementList: [
         {
-          image:
-            'https://cdn.steemitimages.com/DQmf189yTK4HE9cFdVnQnTLKtnwrT9QvmR3AXcLXFFGch9d/banner.png'
+          image: require('@/assets/planet.jpg'),
+          title: this.$t('home.office_inform')
         }
       ]
     }
   },
   computed: {
+    userInfo() {
+      return JSON.parse(localStorage.getItem('quhu-userInfo'))
+    },
+    articleTypeList(){
+      let arr =[this.$t('home.default')]
+      if(this.currentInfo.article){
+        this.currentInfo.article.forEach((v)=>{
+        if(this.selectedColumn === v.name){
+          v.item.forEach((item)=>{
+            arr.push(item)
+          })
+        }   
+      })
+      }
+
+      const newArray = arr.filter(item => item !== "")
+      return newArray
+    },
     currentPath() {
       // console.log(this.$route)
       return this.$route.path
@@ -1429,9 +1477,7 @@ export default {
     userAvatar() {
       return JSON.parse(localStorage.getItem('quhu-userInfo')).avatar
     },
-    userInfo() {
-      return JSON.parse(localStorage.getItem('quhu-userInfo'))
-    },
+
     loginType() {
       return localStorage.getItem('login-type')
     }
@@ -1455,6 +1501,14 @@ export default {
   },
   methods: {
     decrypt,
+    selectArticleType(v){
+      console.log(v)
+    },
+    filterArticle(v,i){
+      this.typeSelected = v
+      this.typeSelectedIndex = i
+      this.getArticlesByColumn(this.selectedColumn,this.selectedMenu.split('-')[1],'filter','')
+    },
     scrolltoTop(){
       window.scrollTo({ top: 0, behavior: 'smooth' })
     },
@@ -1537,7 +1591,7 @@ export default {
       this.$forceUpdate()
     },
     goInfo(v) {
-      console.log(v)
+      console.log(v,this.currentUserInfo)
       this.$router.push({
         path: '/information',
         query: {
@@ -2198,6 +2252,19 @@ export default {
       }
 
       if (localStorage.getItem('quhu-userInfo')) {
+        let tag =''
+        if(type === 'all') {
+          tag = 'd-onlyfun'
+        } else if(type ==='filter'){
+          if(this.typeSelectedIndex ===0){
+            tag = 's' + MD5(v).substring(0, 10)
+          }else {
+            tag = 's' + MD5(v).substring(0, 10)+ '_tag' + this.typeSelectedIndex
+          }
+         
+        }else {
+          tag = 's' + MD5(v).substring(0, 10)
+        }
         const params = {
           id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
           jsonrpc: '2.0',
@@ -2205,7 +2272,7 @@ export default {
           params: {
             limit: 20,
             sort: 'created',
-            tag: type === 'all' ? 'd-onlyfun' : 's' + MD5(v).substring(0, 10)
+            tag
           }
         }
         if (this.pageListStart.author) {
@@ -2589,7 +2656,8 @@ export default {
         permlink: '',
         title: this.titleText,
         public: this.articlePostType === this.$t('home.public') ? 'yes' : 'no',
-        body: this.$refs.short_post.postText + imgHtml
+        body: this.$refs.short_post.postText + imgHtml,
+        tag:this.ArticleTypeSelected
       })
 
       if (res && res.success === 'ok') {
@@ -2750,32 +2818,32 @@ export default {
           const my_picker = document.querySelector('.short_post .my-picker')
           if (newVal.length === 0) {
             operation_icon.style.height = '50px'
-            biaoqing.style.bottom = '-90px'
-            ql_toolbar.style.bottom = '-100px'
-            middle.style.top = '30px'
-            right.style.top = '30px'
-            my_picker.style.top = '225px'
+            biaoqing.style.bottom = '-110px'
+            ql_toolbar.style.bottom = '-120px'
+            middle.style.top = '10px'
+            right.style.top = '10px'
+            my_picker.style.top = '205px'
           } else if (newVal.length <= 3) {
             operation_icon.style.height = '130px'
-            biaoqing.style.bottom = '-170px'
-            ql_toolbar.style.bottom = '-180px'
+            biaoqing.style.bottom = '-190px'
+            ql_toolbar.style.bottom = '-200px'
             middle.style.top = '110px'
             right.style.top = '110px'
-            my_picker.style.top = '305px'
+            my_picker.style.top = '285px'
           } else if (newVal.length <= 6) {
             operation_icon.style.height = '210px'
-            biaoqing.style.bottom = '-250px'
-            ql_toolbar.style.bottom = '-260px'
+            biaoqing.style.bottom = '-270px'
+            ql_toolbar.style.bottom = '-280px'
             middle.style.top = '190px'
             right.style.top = '190px'
-            my_picker.style.top = '385px'
+            my_picker.style.top = '365px'
           } else if (newVal.length <= 9) {
             operation_icon.style.height = '310px'
-            biaoqing.style.bottom = '-340px'
-            ql_toolbar.style.bottom = '-350px'
+            biaoqing.style.bottom = '-370px'
+            ql_toolbar.style.bottom = '-380px'
             middle.style.top = '280px'
             right.style.top = '280px'
-            my_picker.style.top = '475px'
+            my_picker.style.top = '445px'
           }
         }
       },
@@ -2939,6 +3007,9 @@ export default {
         font-size: 14px;
         font-weight: bolder;
       }
+      &:hover {
+        color: $menuTextColor;
+      }
       .date {
         margin: 0;
       }
@@ -2994,8 +3065,8 @@ export default {
   text-align: center;
 }
 .avatar-img {
-  width: 178px;
-  height: 178px;
+  width: 120px;
+  height: 120px;
   display: block;
   object-fit: cover;
 }
@@ -3105,6 +3176,7 @@ export default {
   width: 100%;
   border-radius: 20px;
   min-width: 190px;
+  padding: 0 1px;
   /* display: flex;
   justify-content: center; */
   .nav_menu {
@@ -3256,7 +3328,7 @@ export default {
   height: 50px;
 }
 .author-column-name {
-  color: $mainColor;
+  color: $menuTextColor;
   text-align: center;
   margin-bottom: 10px;
   cursor: pointer;
@@ -3371,6 +3443,56 @@ export default {
 .post-container:hover {
   box-shadow: 0 0 30px 10px rgba(0, 0, 0, 0.1);
 }
+
+.article_class{
+  position: relative;
+  width: calc(100% - 20px) ;
+  height: 44px;
+  margin: 10px 0;
+  background-color: $whiteBgColor;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  padding: 2px 10px;
+  justify-content: flex-start;
+  flex-wrap:wrap;
+  font-size: 14px;
+  .active{
+    color:  #fff;
+    background: #3B4159 !important;
+    border-color:#3b4159 !important;
+  }
+  .article_type_item{
+    width: auto;
+    max-width: 120px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    padding: 0 10px;
+    border-radius: 5px;
+    background-color: #F8F9FA;
+    margin-right: 5px;
+    border: 1px solid #F8F9FA;
+    cursor: pointer;
+    transition: all 0s ease-in;
+    &:hover{
+      background-color: rgba(80,166,192,0.1);
+      border-color: $menuTextColor;
+      color: $menuTextColor;
+    }
+  }
+  .go_column{
+    font-size: 20px;
+    color: $iconColor;
+    position: absolute;
+    right: 20px;
+    top: calc(50% - 12px);
+    cursor: pointer;
+  }
+}
+// .article_class:hover {
+//   box-shadow: 0 0 30px 10px rgba(0, 0, 0, 0.1);
+// }
 .article_list {
 }
 .post-topic-head {
@@ -3645,6 +3767,9 @@ export default {
   font-weight: bolder;
 }
 
+.owner:hover {
+  color: $menuTextColor;
+}
 .info .date {
   display: flex;
   align-items: center;
@@ -3829,8 +3954,8 @@ export default {
 }
 .create-topic-container .create-topic-panel .head .close-icon {
   position: absolute;
-  right: 10px;
-  top: calc(50% - 10px);
+  right: 0;
+  top: calc(50% - 20px);
   /* background-image: url(assets/resources/sprite@1x.fb4b9063d37e9252.png); */
   background-position: -357px -197px;
   width: 10px;
@@ -3849,12 +3974,21 @@ export default {
   height: 120px;
 }
 
-.upload-container {
+.upload-container  {
   position: relative;
-  margin-top: 20px;
+  margin-top: 40px;
 }
-.upload-container .operation-icon {
+.upload-container  .operation-icon {
   height: 50px;
+}
+.select_article_type{
+  width: 100px;
+  position: absolute;
+  right: 10px;
+  top: calc(50% - 17px);
+}
+::v-deep .select_article_type .el-input__inner{
+  border: none;
 }
 .create-topic-container .create-topic-panel .operation-icon {
   display: flex;
@@ -3952,12 +4086,15 @@ export default {
   box-sizing: border-box;
   line-height: 30px;
   text-align: center;
-  background: #4fbdd4;
+  background: $mainColor;
   box-shadow: 0 1px 2px #0000000d;
   border-radius: 2px;
   color: #fff;
   cursor: pointer;
   font-size: 14px;
+  &:hover {
+    background: $menuTextColor;
+  }
 }
 
 .el-col {

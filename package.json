@@ -43,6 +43,7 @@
     "quill-emoji": "^0.2.0",
     "quill-image-drop-module": "^1.0.3",
     "quill-image-resize-module": "^3.0.0",
+    "raw-loader": "^4.0.2",
     "sass-loader": "10.4.1",
     "secure-random": "^1.1.2",
     "svg-sprite-loader": "^6.0.11",

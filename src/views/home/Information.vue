@@ -6,12 +6,12 @@
           <img :src="currentInfo.data.avatar" alt="" />
         </div>
         <div class="name">
-          <span class="text">{{ currentInfo.data.user_name }}</span>
+          <span class="text" style="cursor: pointer;">{{ currentInfo.data.user_name }}</span>
           <span
             v-if="!currentInfo.self"
             @click="togglefollow"
             class="follow_btn"
-            >{{ currentInfo.follow ? '取消关注' : '关注' }}</span
+            >{{ currentInfo.follow ? $t('information.cancel_follow') : $t('information.follow') }}</span
           >
         </div>
       </div>
@@ -27,7 +27,7 @@
         <div class="infor_user_article">
           <el-tabs v-model="activeName" @tab-click="handleChoosed">
             <!-- <el-tab-pane label="最新动态" name="first"> </el-tab-pane> -->
-            <el-tab-pane label="专栏" name="first">
+            <el-tab-pane :label="$t('information.column')" name="first">
               <el-col class="my_special" v-loading="specialLoading">
                 <!-- <div class="special_top">
                   <span>{{ $t('introduce.my_column') }}</span>
@@ -56,7 +56,7 @@
                 ></el-empty>
               </el-col>
             </el-tab-pane>
-            <el-tab-pane label="收藏" name="second">
+            <el-tab-pane :label="$t('information.favorite')" name="second">
               <el-col class="collect" v-loading="favoriteLoading">
                 <div v-if="favorites.length > 0" class="collect_content">
                   <div
@@ -88,7 +88,7 @@
                 ></el-empty>
               </el-col>
             </el-tab-pane>
-            <el-tab-pane label="关注列表" name="third">
+            <el-tab-pane v-if="currentInfo.self" :label="$t('information.follow_list')" name="third">
               <div class="follow">
                 <div class="follow_menu">
                   <div
@@ -101,7 +101,7 @@
                     <div
                       style="cursor: pointer; color: #909399; font-size: 16px"
                     >
-                      我的关注
+                      {{$t('information.my_following')}}
                     </div>
                     <div
                       style="
@@ -129,7 +129,7 @@
                           rel="external nofollow"
                         />
                       </svg>
-                      <span>全部关注</span>
+                      <span> {{$t('information.all_following')}}</span>
                     </div>
                   </div>
                   <div
@@ -147,7 +147,7 @@
                         font-size: 16px;
                       "
                     >
-                      我的粉丝
+                     {{ $t('information.my_follower') }} 
                     </div>
                     <div
                       style="
@@ -175,7 +175,7 @@
                           rel="external nofollow"
                         />
                       </svg>
-                      <span>我的粉丝</span>
+                      <span>{{ $t('information.my_follower') }} </span>
                     </div>
                   </div>
                 </div>
@@ -186,7 +186,7 @@
                       style="height: 40px; border-bottom: 1px solid #909399"
                     >
                       <span>{{
-                        followerActive ? '我的粉丝' : '全部关注'
+                        followerActive ?   $t('information.my_follower')  :  $t('information.all_following') 
                       }}</span>
                     </div>
                     <div
@@ -197,7 +197,7 @@
                         v-for="(v, i) in followers"
                         :key="i"
                         class="trail_item"
-                        title="点击跳转个人主页"
+                        :title="$t('information.jump_homepage')"
                       >
                         <img :src="v.avatar" alt="" />
                         <div class="content">
@@ -205,7 +205,7 @@
                             {{ v.user_name }}
                           </div>
                           <div class="detail">
-                            {{ v.profile || '这个人没有填简介啊~~' }}
+                            {{ v.profile || $t('information.profile') }}
                           </div>
                         </div>
                         <div
@@ -214,7 +214,7 @@
                           @click="follow(v)"
                         >
                           <span>>&check;</span>
-                          <span>关注</span>
+                          <span>{{ $t('information.follow') }}</span>
                         </div>
                         <el-dropdown trigger="hover" v-else>
                           <div class="operation">
@@ -231,14 +231,15 @@
                                 rel="external nofollow"
                               />
                             </svg>
-                            <span style="font-size: 12px">已关注</span>
+                            <span style="font-size: 12px">{{ $t('information.already_follow') }}</span>
                           </div>
                           <el-dropdown-menu slot="dropdown">
                             <el-dropdown-item
                               class="clearfix"
                               @click.native="unFollow(v)"
                             >
-                              取消关注
+                            {{ $t('information.cancel_follow') }}
+                              
                             </el-dropdown-item>
                           </el-dropdown-menu>
                         </el-dropdown>
@@ -252,7 +253,7 @@
                         v-for="(v, i) in following"
                         :key="i"
                         class="trail_item"
-                        :title="'点击跳转个人主页'"
+                        :title="$t('information.jump_homepage')"
                       >
                         <img :src="v.avatar" alt="" />
                         <div class="content">
@@ -260,7 +261,7 @@
                             {{ v.user_name }}
                           </div>
                           <div class="detail">
-                            {{ v.profile || '这个人没有填简介啊~~' }}
+                            {{ v.profile || $t('information.profile') }}
                           </div>
                         </div>
                         <el-dropdown trigger="hover" v-if="v.isFollowing">
@@ -278,14 +279,14 @@
                                 rel="external nofollow"
                               />
                             </svg>
-                            <span style="font-size: 12px">已关注</span>
+                            <span style="font-size: 12px">{{ $t('information.already_follow') }}</span>
                           </div>
                           <el-dropdown-menu slot="dropdown">
                             <el-dropdown-item
                               class="clearfix"
                               @click.native="unFollow(v)"
                             >
-                              取消关注
+                            {{ $t('information.cancel_follow') }}
                             </el-dropdown-item>
                           </el-dropdown-menu>
                         </el-dropdown>
@@ -295,7 +296,7 @@
                           @click="follow(v)"
                         >
                           <span>&check;</span>
-                          <span>关注</span>
+                          <span>{{ $t('information.follow') }}</span>
                         </div>
                       </div>
                     </div>
@@ -307,8 +308,8 @@
                 </div>
               </div>
             </el-tab-pane>
-            <el-tab-pane v-if="currentInfo.self" label="管理" name="fourth">
-            </el-tab-pane>
+            <!-- <el-tab-pane v-if="currentInfo.self" label="管理" name="fourth">
+            </el-tab-pane> -->
           </el-tabs>
         </div>
       </div>
@@ -500,26 +501,26 @@ export default {
       filterReportList: [],
       activeTagIndex: 0,
       detailList: [
-        {
-          text: '被访问量',
-          num: 0,
-          id: 'view'
-        },
-        {
-          text: '粉丝数',
-          num: 0,
-          id: 'followers'
-        },
-        {
-          text: '文章数',
-          num: 0,
-          id: 'articles_num'
-        },
-        {
-          text: '评论数',
-          num: 0,
-          id: 'comment_num'
-        }
+        // {
+        //   text: this.$t('information.view'),
+        //   num: 0,
+        //   id: 'view'
+        // },
+        // {
+        //   text: this.$t('information.followers'),
+        //   num: 0,
+        //   id: 'followers'
+        // },
+        // {
+        //   text: this.$t('information.articles_num'),
+        //   num: 0,
+        //   id: 'articles_num'
+        // },
+        // {
+        //   text: this.$t('information.comment_num'),
+        //   num: 0,
+        //   id: 'comment_num'
+        // }
       ]
     }
   },
@@ -578,7 +579,9 @@ export default {
       this.reportLoading = true
       const id = this.$route.query.id
       const reports = await notifications({
-        id,
+        id: this.loginType === 'eth'
+            ? this.userInfo.eth_account
+            : this.userInfo.user,
         token: getToken()
       })
       if (reports && reports.success === 'ok') {
@@ -609,8 +612,11 @@ export default {
       })
       if (res && res.success === 'ok') {
         this.currentInfo.follow = !this.currentInfo.follow
-        v.isFollowing = true
-        this.$message.success('关注成功')
+        if(v){
+          v.isFollowing = true
+        }
+        
+        this.$message.success( this.$t('information.follow_success'))
       }
     },
     async unFollow(v) {
@@ -626,8 +632,10 @@ export default {
       })
       if (res && res.success === 'ok') {
         this.currentInfo.follow = !this.currentInfo.follow
-        v.isFollowing = false
-        this.$message.success('关注已取消')
+        if(v){
+          v.isFollowing = false
+        }
+        this.$message.success(this.$t('information.follow_canceled'))
       }
     },
     async getFollowers() {
@@ -672,7 +680,9 @@ export default {
     async getFavorites() {
       const id = this.$route.query.id
       const favorites = await getfavorites({
-        id,
+        id :this.loginType === 'eth'
+            ? this.userInfo.eth_account
+            : this.userInfo.user,
         token: getToken()
       })
       if (favorites && favorites.success === 'ok') {
@@ -689,6 +699,7 @@ export default {
       })
     },
     async getOtherUserInfo() {
+      this.$loading.show()
       const id =
         this.loginType === 'eth'
           ? this.userInfo.eth_account
@@ -699,6 +710,7 @@ export default {
         steem_id: steemId,
         token: getToken()
       })
+      this.$loading.hide()
       if (res && res.success === 'ok') {
         if (res.self) {
           this.getFavorites()
@@ -748,6 +760,38 @@ export default {
     goLink() {
       this.$bus.$emit('changeTab', { name: 'auction' }, 2)
     }
+  },
+  watch: {
+
+    '$i18n.locale': {
+      handler(newVal, oldVal) {
+        this.detailList = [
+        {
+          text: this.$t('information.view'),
+          num: 0,
+          id: 'view'
+        },
+        {
+          text: this.$t('information.followers'),
+          num: 0,
+          id: 'followers'
+        },
+        {
+          text: this.$t('information.articles_num'),
+          num: 0,
+          id: 'articles_num'
+        },
+        {
+          text: this.$t('information.comment_num'),
+          num: 0,
+          id: 'comment_num'
+        }
+      ]
+      },
+      deep: true,
+      immediate: true
+    },
+
   }
 }
 </script>
@@ -820,10 +864,10 @@ export default {
       .forest {
         width: 100%;
         height: 200px;
-        background-image: url('../../assets/forest.png');
+        background-image: url('../../assets/random5.jpg');
         background-repeat: no-repeat;
         background-position: center;
-        background-size: cover;
+        background-size: 100%;
         border-top-left-radius: 10px;
         border-top-right-radius: 10px;
         img {
@@ -832,6 +876,7 @@ export default {
           border-radius: 50%;
           margin-top: 50px;
           margin-left: 30px;
+          box-shadow: 0 1px 1px rgba(0,0,0,0.15);
         }
       }
 
@@ -839,7 +884,7 @@ export default {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background: #8f8f8f;
+        background: #606060;
         // width: 100%;
         height: 100px;
         border-bottom-left-radius: 10px;
@@ -849,19 +894,24 @@ export default {
         font-size: 18px;
         font-weight: bold;
         .follow_btn {
+          font-size: 16px;
+          font-weight: 400;
           cursor: pointer;
           display: inline-block;
           width: 100px;
           height: 40px;
           text-align: center;
           line-height: 40px;
+          &:hover {
+            color: $iconActiveColor;
+          }
         }
       }
     }
     .infor_user_detail {
       width: 100%;
       height: 120px;
-      background: #8f8f8f;
+      background: #606060;
       margin-top: 10px;
       border-radius: 10px;
       .detail_lists {
@@ -1200,7 +1250,7 @@ export default {
       }
       .recommend_wrapper {
         height: 100%;
-        background-color: $whiteBgColor;
+        background-color: #606060;
         margin-left: 20px;
         width: 250px;
         position: relative;
@@ -1209,6 +1259,7 @@ export default {
         .hot_container {
           overflow: scroll;
           height: 350px;
+          color: #fff;
         }
         .hot_auction {
           position: absolute;
@@ -1242,7 +1293,7 @@ export default {
         margin-top: 10px;
         width: calc(100% - 60px);
         margin-left: 20px;
-        background-color: #8f8f8f;
+        background-color: #606060;
         padding: 10px 20px;
         font-size: 14px;
         height: 530px;
