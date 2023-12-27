@@ -7,7 +7,10 @@ export default {
     nft: 'NFT',
     mining: 'Mining',
     auction: 'Auction',
-    introduce: 'My'
+    introduce: 'My',
+    column_title:'Related Column',
+    tag_title:'Tag Related Column',
+    user_title:'Related User'
   },
   message: {
     change_success: 'Success!',
@@ -157,6 +160,7 @@ export default {
   },
   column_detail: {
     tag_dupliate_error:'Duplicate',
+    tag_error:'Limited 1 ~ 8 letter,number or Chinese character',
     tag_title:'Article Tag',
     go_back: 'back',
     click_copy: 'Copy',
@@ -211,9 +215,9 @@ export default {
     apply_success: 'Success'
   },
   home: {
-    select_article_type_tip:'article tag',
+    select_article_type_tip:'article type',
     go_column:'setting',
-    default:'default',
+    default:'all',
     essence:'essence',
     short_corner: 'Playground',
     my_column: 'My',

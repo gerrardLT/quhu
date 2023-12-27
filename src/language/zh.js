@@ -7,7 +7,10 @@ export default {
     nft: 'nft',
     mining: '矿池',
     auction: '竞拍',
-    introduce: '我的'
+    introduce: '我的',
+    column_title:'相关专栏',
+    tag_title:'标签相关专栏',
+    user_title:'相关用户'
   },
   message: {
     change_success: '修改成功！',
@@ -158,6 +161,7 @@ export default {
   },
   column_detail: {
     tag_dupliate_error:'重复得文章分类标签',
+    tag_error:'请输入1到8位字母数字或汉字',
     tag_title:'专栏文章标签分类',
     go_back: '返回',
     click_copy: '点击复制',
@@ -212,9 +216,9 @@ export default {
     apply_success: '加入专栏成功'
   },
   home: {
-    select_article_type_tip:'文章标签',
+    select_article_type_tip:'文章分类',
     go_column:'设置',
-    default:'默认',
+    default:'全部',
     essence:'精华',
     short_corner: '短文广场',
     my_column: '我的专栏',

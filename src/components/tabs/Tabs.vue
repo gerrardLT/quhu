@@ -10,9 +10,7 @@ e
 <template>
   <div class="Frame_top">
     <div class="Nav_wrap">
-      <div
-        class="woo-panel-main woo-panel-bottom Nav_panel"
-      >
+      <div class="woo-panel-main woo-panel-bottom Nav_panel">
         <div class="woo-box-flex woo-box-alignCenter Nav_main">
           <el-col :span="4" class="nav_logo">
             <div class="woo-box-flex woo-box-alignCenter Nav_left">
@@ -57,36 +55,145 @@ e
           </el-col>
           <el-col :span="4">
             <div class="Nav_right">
-              <el-autocomplete
+              <el-input
                 class="searchBar"
                 clearable
-                highlight-first-item
                 v-model="searchValue"
-                :fetch-suggestions="querySearch"
+                @input="querySearch"
+                @focus="focusSearch"
+                @blur="blurSearch"
                 :placeholder="$t('tab.input_column_name')"
-                @select="handleSelect"
                 :popper-append-to-body="false"
                 popper-class="complete_list"
               >
-              <svg
-                    :style="{
-                      width: '20px',
-                      height: '20px',
-                      marginTop:'10px',
-                      position: 'absolute',
-                      right:'0'
-                    }"
-                    slot="suffix"
-                  >
-                    <use
-                      :xlink:href="'#icon-' + 'search_multiple'"
-                      rel="external nofollow"
-                    />
-                  </svg>
-                <template slot-scope="{ item }">
-                  <div class="name">{{ item.value }}</div>
-                </template>
-              </el-autocomplete>
+                <svg
+                  :style="{
+                    width: '20px',
+                    height: '20px',
+                    marginTop: '10px',
+                    position: 'absolute',
+                    right: '0'
+                  }"
+                  slot="suffix"
+                >
+                  <use
+                    :xlink:href="'#icon-' + 'search_multiple'"
+                    rel="external nofollow"
+                  />
+                </svg>
+                <!-- <template slot-scope="{ item }">
+                 
+                  <div class="column_tag">
+                    <div class="column_title"></div>
+                    <div class="column_item" v-for="column in item[0]" :key="column">
+                      {{ column }}
+                    </div>
+                  </div>
+                  <div class="tag">
+                    <div class="tag_title"></div>
+                    <div class="tag_item" v-for="tag in item[1]" :key="tag">
+                      {{ tag }}
+                    </div>
+                  </div>
+                  <div class="user_tag">
+                    <div class="tag_title"></div>
+                    <div class="tag_item" v-for="user in item[2]" :key="user">
+                      {{ user }}
+                    </div>
+                  </div>
+                </template> -->
+              </el-input>
+              <div >
+                <div class="search_result" v-show="!isBlur" v-if="isSearchFocus && isSearchResult">
+                  <div class="search_scroll" v-loading="searchLoading">
+                  <div class="column_tag" :style="(searchResult.user_name.length>0 ||searchResult.tags.length>0)? {borderBottom: '1px dashed #838383',marginBottom: '10px'}:{}" v-if="searchResult.subscriptions.length>0">
+                    <div class="column_title">
+                     <span style="color: #50a6c0;">{{ '“'+searchValue+'”' }}</span> {{  $t('tab.column_title') }}
+                    </div>
+                    <div
+                      class="column_item item"
+                      v-for="column in searchResult.subscriptions"
+                      :title="column"
+                      :key="column"
+                      @click="handleColumnSelect(column)"
+                    >
+                      <svg
+                        :style="{
+                          width: '20px',
+                          height: '20px',
+                          marginTop: '10px',
+                          position: 'absolute',
+                          left: '5px'
+                        }"
+                        slot="suffix"
+                      >
+                        <use
+                          :xlink:href="'#icon-' + 'search'"
+                          rel="external nofollow"
+                        /></svg><span >{{ column }}</span>
+                    </div>
+                  </div>
+                  <div class="user_tag" :style="searchResult.tags.length>0? {borderBottom: '1px dashed #838383',marginBottom: '10px'}:{}" v-if="searchResult.user_name.length>0">
+                    <div class="user_title">
+                      <span style="color: #50a6c0;">{{ '“'+searchValue+'”' }}</span> {{$t('tab.user_title') }}
+                    </div>
+                    <div
+                      class="tag_item item"
+                      v-for="user in searchResult.user_name"
+                      @click="handleTagSelect(user)"
+                      :title="user"
+                      :key="user"
+                    >
+                      <svg
+                        :style="{
+                          width: '20px',
+                          height: '20px',
+                          marginTop: '10px',
+                          position: 'absolute',
+                          left: '5px'
+                        }"
+                        slot="suffix"
+                      >
+                        <use
+                          :xlink:href="'#icon-' + 'search'"
+                          rel="external nofollow"
+                        /></svg><span>{{ user }}</span>
+                    </div>
+                  </div>
+                  <div class="tag"  v-if="searchResult.tags.length>0">
+                    <div class="tag_title">
+                      <span style="color: #50a6c0;">{{ '“'+searchValue+'”' }}</span> {{ $t('tab.tag_title') }}
+                    </div>
+                    <div
+                      class="tag_item item"
+                      v-for="tag in searchResult.tags"
+                      @click="handleColumnSelect(tag)"
+                      :title="tag"
+                      :key="tag"
+                    >
+                      <svg
+                        :style="{
+                          width: '20px',
+                          height: '20px',
+                          marginTop: '10px',
+                          position: 'absolute',
+                          left: '5px'
+                        }"
+                        slot="suffix"
+                      >
+                        <use
+                          :xlink:href="'#icon-' + 'search'"
+                          rel="external nofollow"
+                        /></svg><span >{{ tag }}</span>
+                    </div>
+                  </div>
+
+                </div>
+                </div>
+                <div class="search_result" v-show="!isBlur" v-else>
+                  <el-empty  v-loading="searchLoading" :description="$t('home.no_data')"></el-empty>
+                </div>
+              </div>
             </div>
           </el-col>
         </div>
@@ -137,6 +244,8 @@ export default {
   // },
   data() {
     return {
+      searchLoading:false,
+      isBlur:true,
       list: [
         {
           id: 0,
@@ -172,40 +281,76 @@ export default {
       nameList: ['home', 'nft', 'mining', 'auction', 'introduce'],
       activeName: 'home',
       color: '',
-      searchValue: ''
+      searchValue: '',
+      searchResult: {
+        subscriptions:[],
+        user_name:[],
+        tags:[]
+      },
+      isSearchFocus:false
     }
   },
   computed: {
     isLogin() {
       return getToken()
+    },
+    isSearchResult(){
+      return this.searchResult.subscriptions.length >0 || this.searchResult.user_name.length >0 || this.searchResult.tags.length >0
     }
   },
   methods: {
-    handleSelect(item) {
-      // const arr = this.subscriptionsList.my.concat(this.subscriptionsList.join)
-      // console.log(arr)
-      // this.getArticlesByColumn(item.value)
+    focusSearch(v){
+
+      this.isSearchFocus = true
+      if(this.searchValue.trim()){
+        this.querySearch(this.searchValue.trim())
+      }
+    },
+    blurSearch(){
+      setTimeout(()=>{
+        this.isBlur = true
+      },100)
+      
+    },
+    handleTagSelect(item) {
+      this.$router.push({
+        path: '/information',
+        query: {
+          id: item.split('(')[0],
+          steemId:item.split('(')[1].split(')')[0]
+        }
+      })
+      this.isSearchFocus = false
+    },
+    handleColumnSelect(item) {
       this.$router.push({
         path: '/columnDetail',
         query: {
-          subName: item.value
+          subName: item
         }
       })
+      this.isSearchFocus = false
     },
-    async querySearch(queryString, cb) {
-      if (queryString) {
+    async querySearch(queryString) {
+      this.isBlur = false
+      this.searchLoading = true
+      if (queryString.trim()) {
         const res = await searchColumn({
           subscriptions_name: this.searchValue.trim()
         })
-
+        this.searchLoading = false
         if (res && res.success === 'ok') {
-          this.searchResult = res.data.map((v, i) => {
-            v = { value: v }
-            return v
-          })
-          cb(this.searchResult)
+          this.searchResult = res
+        }
+        
+      }else {
+        this.searchResult = {
+          subscriptions:[],
+          user_name:[],
+          tags:[]
         }
       }
+      this.searchLoading = false
     },
     tabClick(v, i, query) {
       // console.log(v, i, query)
@@ -266,19 +411,19 @@ export default {
     right: 10px;
   }
 }
-::v-deep .Nav_right .el-input__inner{
+::v-deep .Nav_right .el-input__inner {
   border-radius: 30px;
   background-color: #f0f1f4;
 }
-::v-deep .Nav_right .el-input__inner:hover{
-  border: 1px solid rgba(0,0,0,0.4);
+::v-deep .Nav_right .el-input__inner:hover {
+  border: 1px solid rgba(0, 0, 0, 0.4);
 }
-::v-deep .Nav_right .el-input__inner:focus{
+::v-deep .Nav_right .el-input__inner:focus {
   outline: none;
-  border: 0.5px solid rgba(0,0,0,0.4);
-  box-shadow: -3px -3px 0px rgba(0,0,0,0.8);
+  border: 0.5px solid rgba(0, 0, 0, 0.4);
+  box-shadow: -3px -3px 0px rgba(0, 0, 0, 0.8);
 }
-::v-deep .el-input .el-input__clear{
+::v-deep .el-input .el-input__clear {
   position: absolute;
   right: 20px;
 }
@@ -316,7 +461,7 @@ export default {
   background-position: 50%;
   background-size: contain;
   background-image: none;
-  border-color: $whiteBgColor; 
+  border-color: $whiteBgColor;
   background-color: $whiteBgColor;
 }
 .woo-panel-bottom {
@@ -342,7 +487,51 @@ export default {
   display: -ms-flexbox;
   display: flex;
 }
+.search_result {
+  padding: 10px 0;
+  transform-origin: center top;
+  z-index: 2109;
+  width: 240px;
+  margin: 5px 0;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  border: 1px solid #e4e7ed;
+  box-sizing: border-box;
+  background-color: #fff;
+  position: absolute;
+  top: 60px;
+  overflow: hidden;
+  max-height: 400px;
+    overflow-y: auto;
+  .search_scroll {
+    .column_title,
+    .tag_title,
+    .user_title {
+      margin-bottom: 10px;
+      color: $textColor;
+      cursor: pointer;
+      color: #606266;
+    }
+    .item {
+      padding: 0 30px;
+      margin: 0;
+      height: 40px;
+      line-height: 40px;
+      cursor: pointer;
+      font-size: 16px;
+      list-style: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+      &:hover {
+        background-color: #f8f8fb;
+      }
+    }
+  }
 
+  // position: absolute;
+}
 .Nav_left {
   width: 200px;
   margin-right: 8px;

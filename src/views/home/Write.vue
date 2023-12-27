@@ -386,7 +386,7 @@ export default {
         title: this.titleText,
         public: this.articlePostType === this.$t('write.public') ? 'yes' : 'no',
         body: formatContent,
-        tag:this.ArticleTypeSelected
+        [this.ArticleTypeSelected && 'tag']:this.ArticleTypeSelected
       })
       if (res && res.success === 'ok') {
         // console.log(res)

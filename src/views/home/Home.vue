@@ -888,7 +888,7 @@
                       @change="selectArticleType"
                     >
                       <el-option
-                        v-for="article_type in articleTypeList"
+                        v-for="article_type in articleTypeList.filter(type=>type!==$t('home.default'))"
                         :key="article_type"
                         :label="article_type"
                         :value="article_type"
@@ -2623,6 +2623,7 @@ export default {
     submit: debounce(async function () {
       const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
+
       let imgHtml = ''
       if (this.fileList.length === 1) {
         imgHtml = `<img src="${this.fileList[0].url}" preview=${
@@ -2645,7 +2646,7 @@ export default {
       }
 
       this.$loading.show()
-
+      const tag = this.ArticleTypeSelected
       const res = await post({
         type: 'post',
         id: loginType === 'password' ? userInfo.user : userInfo.eth_account,
@@ -2657,7 +2658,7 @@ export default {
         title: this.titleText,
         public: this.articlePostType === this.$t('home.public') ? 'yes' : 'no',
         body: this.$refs.short_post.postText + imgHtml,
-        tag:this.ArticleTypeSelected
+        [tag !=='' && 'tag' ]:tag
       })
 
       if (res && res.success === 'ok') {

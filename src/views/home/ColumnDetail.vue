@@ -582,6 +582,11 @@ export default {
       this.inputTagVisible = true
     },
     handleTagChange(tag) {
+      const reg = /^[a-zA-Z0-9_\u4e00-\u9fa5]{1,8}$/
+      if(!reg.test(tag.value.trim())){
+        this.$message.error(this.$t('column_detail.tag_error'))
+        return 
+      }
       let arr = []
       this.articleTypes.forEach((item) => {
         if (item.value !== tag.value) {
@@ -599,7 +604,13 @@ export default {
       this.$forceUpdate()
     },
     handleTagInputConfirm() {
+      const reg = /^[a-zA-Z0-9_\u4e00-\u9fa5]{0,8}$/
       let inputTagValue = this.inputTagValue
+
+      if(!reg.test(inputTagValue.trim())){
+        this.$message.error(this.$t('column_detail.tag_error'))
+        return 
+      }
       let arr = []
       this.articleTypes.forEach((item) => {
         arr.push(item.value)

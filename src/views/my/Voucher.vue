@@ -337,6 +337,7 @@
                 v-model="tradeForm.convertCurrency"
                 class="convertCurrency"
                 popper-class="convertCurrency_select_down"
+                @change="changeTo"
               >
                 <el-option
                   v-for="item in convertCurrencyArr"
@@ -385,6 +386,7 @@ import {
   swap,
   balance
 } from '@/api/user/user'
+import { debounce } from 'lodash'
 import { getToken } from '@/utils/auth'
 import { transformTime } from '@/utils/tool'
 import { Loading } from 'element-ui'
@@ -550,13 +552,13 @@ export default {
             balance: res.data.token_num[key],
             lock_balance: res.data.lock_token[key],
             id: i,
-            logo: key!=='ofc' && key!=='poys' && key!=='nft'? require('../../assets/coin_logo/'+key+'.png'):''
+            logo:require('../../assets/coin_logo/'+key+'.png')
           })
         })
         this.balanceList = arr
       }
     },
-    async exchange() {
+    exchange: debounce(async function () {
       console.log(this.tradeForm.exchangeAmount)
 
       this.tradeLoading = true
@@ -574,15 +576,15 @@ export default {
       }
 
       this.tradeLoading = false
-    },
+    }, 500),
     maxAmount() {
       this.tradeForm.exchangeAmount =
         this.userInfo.token_num[this.tradeForm.exchangeCurrency]
       switch (this.tradeForm.exchangeCurrency) {
         case 'poys':
-          if (this.tradeForm.convertCurrency === 'usdt') {
-            this.tradeForm.convertAmount = this.tradeForm.exchangeAmount * 0.02
-          }
+          // if (this.tradeForm.convertCurrency === 'usdt') {
+          //   this.tradeForm.convertAmount = this.tradeForm.exchangeAmount * 0.02
+          // }
           if (this.tradeForm.convertCurrency === 'usdt') {
             this.tradeForm.convertAmount = this.tradeForm.exchangeAmount * 0.02
           } else if (this.tradeForm.convertCurrency === 'ofc') {
@@ -590,6 +592,14 @@ export default {
           }
           break
 
+          case 'usdt':
+          // if (this.tradeForm.convertCurrency === 'usdt') {
+          //   this.tradeForm.convertAmount = this.tradeForm.exchangeAmount * 0.02
+          // }
+          if (this.tradeForm.convertCurrency === 'ofc') {
+            this.tradeForm.convertAmount = this.tradeForm.exchangeAmount * 100
+          }
+          break
         default:
           break
       }
@@ -654,6 +664,11 @@ export default {
           }
         ]
       }
+    },
+    changeTo(v){
+      // this.tradeForm.convertAmount = 0
+      // this.tradeForm.exchangeAmount = 0
+      this.amountChange()
     },
     showTrade() {
       this.coinTradeVisible = true
