@@ -22,7 +22,7 @@
     </div>
     <div class="office_content">
       <div v-show="activeIndex === 0">
-        <div v-for="item in noticeList" :key="item.post_id" class="notice">
+        <div @click="goLink(item)" v-for="item in noticeList" :key="item.post_id" class="notice">
           <img class="avatar" :src="item.body.avatar" alt="" />
           <div class="square-title">
             <div class="title">
@@ -82,6 +82,12 @@ export default {
   mounted() {},
   methods: {
     decrypt,
+    goLink(v){
+      console.log(v)
+      this.$bus.$emit('changeTab', { name: 'home' }, 0, {
+        selectedColumn:v.body.subscriptions_name
+        })
+    },
     transfromTimeZoom(v) {
       const dateStr = v
       const date = new Date(dateStr)

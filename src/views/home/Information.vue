@@ -539,13 +539,8 @@ export default {
   mounted() {},
   methods: {
     jumpInfo(v) {
-      this.$router.replace({
-        path: '/information',
-        query: {
-          id: v.user_name,
-          steemId: v.steem_id
-        }
-      })
+
+      window.open(this.$router.resolve({ path: `/information?steemId=${v.steem_id}` }).href, '_blank')
     },
     transformTime(v) {
       let timestamp = v
@@ -577,7 +572,6 @@ export default {
     },
     async getNotifications() {
       this.reportLoading = true
-      const id = this.$route.query.id
       const reports = await notifications({
         id: this.loginType === 'eth'
             ? this.userInfo.eth_account
@@ -600,7 +594,6 @@ export default {
       }
     },
     async follow(v) {
-      const id = this.$route.query.id
       const steemId = this.$route.query.steemId
       const res = await follow({
         id:
@@ -620,7 +613,6 @@ export default {
       }
     },
     async unFollow(v) {
-      const id = this.$route.query.id
       const steemId = this.$route.query.steemId
       const res = await unfollow({
         id:
@@ -678,7 +670,6 @@ export default {
       }
     },
     async getFavorites() {
-      const id = this.$route.query.id
       const favorites = await getfavorites({
         id :this.loginType === 'eth'
             ? this.userInfo.eth_account

@@ -61,7 +61,6 @@ e
                 v-model="searchValue"
                 @input="querySearch"
                 @focus="focusSearch"
-                @blur="blurSearch"
                 :placeholder="$t('tab.input_column_name')"
                 :popper-append-to-body="false"
                 popper-class="complete_list"
@@ -104,7 +103,7 @@ e
                 </template> -->
               </el-input>
               <div >
-                <div class="search_result" v-show="!isBlur" v-if="isSearchFocus && isSearchResult">
+                <div class="search_result" v-show="showResults" v-if="isSearchFocus && isSearchResult">
                   <div class="search_scroll" v-loading="searchLoading">
                   <div class="column_tag" :style="(searchResult.user_name.length>0 ||searchResult.tags.length>0)? {borderBottom: '1px dashed #838383',marginBottom: '10px'}:{}" v-if="searchResult.subscriptions.length>0">
                     <div class="column_title">
@@ -190,7 +189,7 @@ e
 
                 </div>
                 </div>
-                <div class="search_result" v-show="!isBlur" v-else>
+                <div class="search_result" v-show="showResults" v-else>
                   <el-empty  v-loading="searchLoading" :description="$t('home.no_data')"></el-empty>
                 </div>
               </div>
@@ -205,6 +204,7 @@ e
 <script>
 import { getToken } from '@/utils/auth'
 import { searchColumn } from '@/api/special/special'
+import { debounce } from 'lodash'
 
 export default {
   name: 'Tabs',
@@ -230,6 +230,7 @@ export default {
       },
       false
     )
+    document.addEventListener('click', this.handleDocumentClick);
     if (sessionStorage.getItem('tabName')) {
       // console.log(this.$route)
       this.activeName = this.$route.query.user
@@ -239,13 +240,14 @@ export default {
     this.toggleStyle(this.nameList.indexOf(path))
     // this.$bus.$off('changeTab')
   },
-  // beforeRouteEnter(to, from, next) {
-  //   console.log(to, from)
-  // },
+  beforeDestroy() {
+    // 在组件销毁前移除文档点击事件监听器，防止内存泄漏
+    document.removeEventListener('click', this.handleDocumentClick);
+  },
   data() {
     return {
       searchLoading:false,
-      isBlur:true,
+      showResults:false,
       list: [
         {
           id: 0,
@@ -299,24 +301,22 @@ export default {
     }
   },
   methods: {
-    focusSearch(v){
+    handleDocumentClick(event) {
 
-      this.isSearchFocus = true
-      if(this.searchValue.trim()){
-        this.querySearch(this.searchValue.trim())
+      const resultsContainer = this.$el.querySelector('.search_result'); // 根据实际情况替换选择器
+      const searchBarContainer = this.$el.querySelector('.searchBar')
+      if (resultsContainer && !resultsContainer.contains(event.target) && !searchBarContainer.contains(event.target)) {
+        this.showResults = false
       }
     },
-    blurSearch(){
-      setTimeout(()=>{
-        this.isBlur = true
-      },100)
-      
+    focusSearch(v){
+      this.isSearchFocus = true
+      this.showResults = true
     },
     handleTagSelect(item) {
       this.$router.push({
         path: '/information',
         query: {
-          id: item.split('(')[0],
           steemId:item.split('(')[1].split(')')[0]
         }
       })
@@ -331,8 +331,8 @@ export default {
       })
       this.isSearchFocus = false
     },
-    async querySearch(queryString) {
-      this.isBlur = false
+    querySearch:debounce(async function(queryString){
+      this.showResults = true
       this.searchLoading = true
       if (queryString.trim()) {
         const res = await searchColumn({
@@ -351,7 +351,7 @@ export default {
         }
       }
       this.searchLoading = false
-    },
+    },300),
     tabClick(v, i, query) {
       // console.log(v, i, query)
       this.activeName = v.name

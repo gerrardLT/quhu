@@ -528,7 +528,8 @@ export default {
         this.balanceAmount.ofc >
         Number(this.currentPool.transaction.split('ofc')[0])
       ) {
-        this.callContractMethod(async (hashs) => {
+        this.callContractMethod(async () => {
+          this.dialogLoading = true
           const res = await nft_lock({
             id:
               this.loginType === 'eth'
@@ -536,12 +537,12 @@ export default {
                 : this.userInfo.user,
             token: getToken(),
             nft_id: this.choosedNftId,
-            hashs,
             nonce: this.nonce,
             sign: this.sign,
             address: this.address,
             pool: this.currentPool.pool
           })
+          
           if (res && res.success === 'ok') {
             this.$message.success(this.$t('mining.stake_success_tip'))
           }
@@ -587,68 +588,70 @@ export default {
               } else {
                 self.sign = res
                 self.address = accounts[0]
-                const fromAddress = accounts[0]
-                console.log(fromAddress)
-                if (!fromAddress) {
-                  return
-                }
-                const chainId = await web3.eth.getChainId()
-                if (chainId !== BSC_CHAIN_ID) {
-                  self.$message.error(this.$t('mining.bsc_tip'))
-                  return
-                }
-                const gasPrice = await web3.eth.getGasPrice() // 获取gas费
+                callback(self.currentPool.tradeHash)
+                
+                // const fromAddress = accounts[0]
 
-                const str1 = fromAddress
-                  .substring(2, fromAddress.length)
-                  .toLowerCase()
-                const len1 = str1.length
-                let s1 = ''
-                for (let index = 0; index < 64 - len1; index++) {
-                  s1 += '0'
-                }
-                const finalStr1 = s1 + str1
-                const str2 =
-                  '888888843C86aB23a33e3511da8A2471Af10cFC6'.toLowerCase()
-                const len2 = str2.length
-                let s2 = ''
-                for (let index = 0; index < 64 - len2; index++) {
-                  s2 += '0'
-                }
-                const finalStr2 = s2 + str2
-                const tokenId = Number(self.choosedNftId)
-                console.log(tokenId)
-                const hexId = tokenId.toString(16)
-                const len3 = hexId.length
-                let s3 = ''
-                for (let index = 0; index < 64 - len3; index++) {
-                  s3 += '0'
-                }
-                const finalTokenId = s3 + hexId
-                const optionData =
-                  '0x42842e0e' + finalStr1 + finalStr2 + finalTokenId
-                let options = {
-                  from: fromAddress.toLowerCase(),
-                  to: '0x525A4964162738c1010e1998AbA190964d95fA9a',
-                  value: 0,
-                  data: optionData,
-                  gasPrice: gasPrice
-                }
-                self.dialogLoading = true
-                web3.eth
-                  .sendTransaction(options)
-                  .on('error', function (error) {
-                    console.error('error', error)
-                    // callback && callback(false)
-                  })
-                  .on('transactionHash', function (hash) {
-                    self.currentPool.tradeHash = hash
-                  })
-                  .then(function () {
-                    setTimeout(() => {
-                      callback(self.currentPool.tradeHash)
-                    }, 5000)
-                  })
+                // if (!fromAddress) {
+                //   return
+                // }
+                // const chainId = await web3.eth.getChainId()
+                // if (chainId !== BSC_CHAIN_ID) {
+                //   self.$message.error(this.$t('mining.bsc_tip'))
+                //   return
+                // }
+                // const gasPrice = await web3.eth.getGasPrice() // 获取gas费
+
+                // const str1 = fromAddress
+                //   .substring(2, fromAddress.length)
+                //   .toLowerCase()
+                // const len1 = str1.length
+                // let s1 = ''
+                // for (let index = 0; index < 64 - len1; index++) {
+                //   s1 += '0'
+                // }
+                // const finalStr1 = s1 + str1
+                // const str2 =
+                //   '888888843C86aB23a33e3511da8A2471Af10cFC6'.toLowerCase()
+                // const len2 = str2.length
+                // let s2 = ''
+                // for (let index = 0; index < 64 - len2; index++) {
+                //   s2 += '0'
+                // }
+                // const finalStr2 = s2 + str2
+                // const tokenId = Number(self.choosedNftId)
+                // console.log(tokenId)
+                // const hexId = tokenId.toString(16)
+                // const len3 = hexId.length
+                // let s3 = ''
+                // for (let index = 0; index < 64 - len3; index++) {
+                //   s3 += '0'
+                // }
+                // const finalTokenId = s3 + hexId
+                // const optionData =
+                //   '0x42842e0e' + finalStr1 + finalStr2 + finalTokenId
+                // let options = {
+                //   from: fromAddress.toLowerCase(),
+                //   to: '0xa30cC38d83aFD3B499E76f47b784D08505749564',
+                //   value: 0,
+                //   data: optionData,
+                //   gasPrice: gasPrice
+                // }
+                
+                // web3.eth
+                //   .sendTransaction(options)
+                //   .on('error', function (error) {
+                //     console.error('error', error)
+                //     // callback && callback(false)
+                //   })
+                //   .on('transactionHash', function (hash) {
+                //     self.currentPool.tradeHash = hash
+                //   })
+                //   .then(function () {
+                //     setTimeout(() => {
+                //       callback(self.currentPool.tradeHash)
+                //     }, 5000)
+                //   })
               }
             }
           )
@@ -660,11 +663,11 @@ export default {
       }
     },
     async getNftIds() {
-      const web3 = new this.Web3('https://1rpc.io/bnb')
+      const web3 = new this.Web3('https://api.onlyfun.city')
 
       const contractABI = NFT
 
-      const contractAddress = '0x525A4964162738c1010e1998AbA190964d95fA9a' // 合约地址
+      const contractAddress = '0xa30cC38d83aFD3B499E76f47b784D08505749564' // 合约地址
 
       const contract = new web3.eth.Contract(contractABI, contractAddress)
 

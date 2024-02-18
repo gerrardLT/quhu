@@ -1,0 +1,19 @@
+export default {
+    ethereum:'https://cdn.steemitimages.com/DQmf5SqqMkSZnAY61bBWBLp2u4djD8PPTZoXB9fviRUjWQn/icon_ETH.png',
+    binance:'https://cdn.steemitimages.com/DQmd1wGnDuvxas8wXmZ2o9GqPoavRwXYUacL6iSVazBiv85/icon_BNB.png',
+    avalanche:'https://cdn.steemitimages.com/DQmcuYVMaFjKZ4eqic9U1q2P7hUfQxBJ8D94Zq9xVK4gLUh/icon_Avalanche_network.png',
+    polygon:'https://cdn.steemitimages.com/DQmZ896XVRaHoZPDBsiLXNTQQ2z9HEuXPrzJM6YUyGCUPNb/icon_Polygon_network.png',
+    arbitrum:'https://cdn.steemitimages.com/DQmNmbGG2kSXG2Z8J6pT7rcCDZrJSP4WGMcmbsTzKFdh3cu/icon_Arbitrum_network.png',
+    optimism:'https://cdn.steemitimages.com/DQmNMxjfCwKQ61n3F2gGvGi8Jyft821rCzKTecFckHtEidp/icon_Optimism_network.png',
+    aptos:'https://cdn.steemitimages.com/DQmSKUUJh2tU2gXVLTu6wDbfLkG7dDAqLU4YCor8Yx7yPuA/aptos.png',
+    zksync:'https://cdn.steemitimages.com/DQmYo52GqhVxpsZFV8kL1PEKGQ4QWCPG2rsZoiq7Mvf7EVr/base.png',
+    sui:'https://cdn.steemitimages.com/DQmcW4zfmzidHyx6PMDmyP5oyjWnJhNAsYx9N1afxApLkJB/sui.svg',
+    select:'https://cdn.steemitimages.com/DQmYo52GqhVxpsZFV8kL1PEKGQ4QWCPG2rsZoiq7Mvf7EVr/base.png',
+    starknet:'https://cdn.steemitimages.com/DQmSdSRyQZ1Jncd2wHkR1UV2G2AtnE5NwQFiEo8HFS4KsUY/starknet.png',
+    linea:'https://cdn.steemitimages.com/DQmNiveemE4xReLXJ82WPwrVo6Udj516emZLicinPH6Dgqb/linea.png',
+    base:'https://cdn.steemitimages.com/DQmYo52GqhVxpsZFV8kL1PEKGQ4QWCPG2rsZoiq7Mvf7EVr/base.png',
+    solana:'https://cdn.steemitimages.com/DQmQ5qgfyxSbmgLPzdK6qkDzbTaqcHXRx6CPna7bAPvsxUD/icon_solana_network.png',
+    scroll:'https://cdn.steemitimages.com/DQmVcgMXuuGosPnJjwz7YaY5m3MahXNW2Grf4pyGjkwHG8Q/scroll.png',
+    bevm:'https://cdn.steemitimages.com/DQmV8JGbeR517WGWmVofzmTSLr3gXRYUXZe7BGiK8oKDrF2/bevm.png',
+    manta:'https://cdn.steemitimages.com/DQmRMQZdUv8zVDsRSDqT1eoW4qh2NWLzwLhe1KurAFXHwEe/manta.png'
+}

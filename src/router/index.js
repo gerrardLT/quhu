@@ -10,7 +10,6 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Login from '../views/Login.vue'
 import Home from '../views/home/Home.vue'
-// import ThreeHome from '../views/3d_home/3d_home.vue'
 import My from '../views/my/My.vue'
 import Article from '../views/article/Article.vue'
 import Auction from '../views/auction/Auction.vue'
@@ -20,6 +19,7 @@ import AuctionDetail from '../views/auction/Detail.vue'
 import Nft from '../views/nft/Nft.vue'
 import Inventory from '../views/nft/Inventory.vue'
 import Animation from '../views/nft/animation.vue'
+import Treasure from '../views/nft/treasure.vue'
 import ColumnDetail from '../views/home/ColumnDetail.vue'
 import Write from '../views/home/Write.vue'
 import Activation from '../views/my/Activation.vue'
@@ -38,6 +38,7 @@ import OfficialBanner from '../views/home/OfficialBanner.vue'
 import Mining from '../views/mining/Mining.vue'
 import Except from '../views/except/except.vue'
 import Raffle from '../views/raffle.vue'
+import Bridge from '../views/chain_bridge/bridge.vue'
 import { getToken } from '@/utils/auth'
 
 Vue.use(VueRouter)
@@ -45,90 +46,100 @@ Vue.use(VueRouter)
 const routes = [
   {
     path: '/',
-    redirect: '/home'
+    redirect: '/home',
+    meta: { showSwitch: true }
   },
   {
     path: '/login',
-    component: Login
+    component: Login,
+    meta: { showSwitch: true }
   },
   {
     path: '/except',
-    component: Except
+    component: Except,
+    meta: { showSwitch: true }
   },
   {
     path: '/raffle',
-    component: Raffle
+    component: Raffle,
+    meta: { showSwitch: true }
   },
   {
     path: '/home',
     component: Home,
-    meta: { isTabPage: true },
+    meta: { isTabPage: true,showSwitch: true },
     children: [
       {
         name: 'write', path: '/write', component: Write,
-        meta: { isTabPage: true }
+        meta: { isTabPage: true,showSwitch: true }
       }
     ]
   },
-  // {
-  //   path: '/3d_home',
-  //   component: ThreeHome,
-  //   meta: { isTabPage: false }
-  // },
   
   {
     path: '/article',
     component: Article,
-    meta: { isTabPage: true }
+    meta: { isTabPage: true,showSwitch: true }
+  },
+  {
+    path: '/bridge',
+    component: Bridge,
+    meta: { isTabPage: false,showSwitch: false }
   },
   {
     path: '/information',
     component: Information,
-    meta: { isTabPage: true }
+    meta: { isTabPage: true,showSwitch: true }
   },
   {
     path: '/official_banner',
     component: OfficialBanner,
-    meta: { isTabPage: true }
+    meta: { isTabPage: true,showSwitch: true }
   },
   
   {
     path: '/animation',
     component: Animation,
-    meta: { isTabPage: true }
+    meta: { isTabPage: true,showSwitch: true }
   },
+  {
+    path: '/treasure',
+    component: Treasure,
+    meta: { isTabPage: false,showSwitch: true }
+  },
+  
   {
     path: '/nft',
     component: Nft,
-    meta: { isTabPage: true },
+    meta: { isTabPage: true,showSwitch: true },
     children: [
       {
         name: 'inventory', path: '/inventory', component: Inventory,
-        meta: { isTabPage: true }
+        meta: { isTabPage: true,showSwitch: true }
       }
     ]
   },
   {
     path: '/mining',
     component: Mining,
-    meta: { isTabPage: true }
+    meta: { isTabPage: true,showSwitch: true }
   },
   {
     path: '/auction',
     component: Auction,
-    meta: { isTabPage: true },
+    meta: { isTabPage: true,showSwitch: true },
     children: [
       {
         name: 'myauction', path: '/myauction', component: MyAuction,
-        meta: { isTabPage: true }
+        meta: { isTabPage: true,showSwitch: true }
       },
       {
         name: 'auctiondetail', path: '/auctiondetail', component: AuctionDetail,
-        meta: { isTabPage: true }
+        meta: { isTabPage: true,showSwitch: true }
       },
       {
         name: 'Publish', path: '/publish', component: Publish,
-        meta: { isTabPage: true }
+        meta: { isTabPage: true,showSwitch: true }
       }
     ]
   },
@@ -136,47 +147,47 @@ const routes = [
     name: 'my',
     path: '/my',
     component: My,
-    meta: { isTabPage: true },
+    meta: { isTabPage: true,showSwitch: true },
     children: [
       {
         name: 'activation', path: '/activation', component: Activation,
-        meta: { isTabPage: true }
+        meta: { isTabPage: true,showSwitch: true }
       },
       {
         name: 'setting', path: '/setting', component: Setting,
-        meta: { isTabPage: true }
+        meta: { isTabPage: true,showSwitch: true }
       },
       {
         name: 'voucher', path: '/voucher', component: Voucher,
-        meta: { isTabPage: true }
+        meta: { isTabPage: true,showSwitch: true }
       },
       {
         name: 'invite', path: '/invite', component: Invite,
-        meta: { isTabPage: true }
+        meta: { isTabPage: true,showSwitch: true }
       },
       {
         name: 'interact', path: '/interact', component: Interact,
-        meta: { isTabPage: true }
+        meta: { isTabPage: true,showSwitch: true }
       },
       {
         name: 'upgrade', path: '/upgrade', component: Upgrade,
-        meta: { isTabPage: true }
+        meta: { isTabPage: true,showSwitch: true }
       },
       {
         name: 'introduce', path: '/introduce', component: Introduce,
-        meta: { isTabPage: true }
+        meta: { isTabPage: true,showSwitch: true }
       },
       {
         name: 'benifit', path: '/benifit', component: Benifit,
-        meta: { isTabPage: true }
+        meta: { isTabPage: true,showSwitch: true }
       },
       {
         name: 'recharge', path: '/recharge', component: Recharge,
-        meta: { isTabPage: true }
+        meta: { isTabPage: true,showSwitch: true }
       },
       {
         name: 'search', path: '/search', component: Search,
-        meta: { isTabPage: true }
+        meta: { isTabPage: true,showSwitch: true }
       }
     ]
   },

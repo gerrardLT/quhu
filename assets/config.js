@@ -9,5 +9,4 @@
 window.globalVar = {
   baseUrlDev: '', //
   indexPath: '/', // 服务器地址根路径
-  // logoUrl: './images/logo.png', // logo图片地址
 }

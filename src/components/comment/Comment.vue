@@ -202,7 +202,6 @@ export default {
       this.$router.push({
         path: '/information',
         query: {
-          id: v.body.author,
           steemId: v.json_metadata.steem_id
         }
       })
@@ -217,7 +216,7 @@ export default {
     showEmoji(comment, emoji) {
       console.log(comment.reply, emoji)
       comment.reply += emoji.native
-      this.$set(comment, 'reply', comment.reply)
+     (comment, 'reply', comment.reply)
       this.$forceUpdate()
     },
     toggleEmojione() {

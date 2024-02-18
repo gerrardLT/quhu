@@ -15,6 +15,7 @@
         </div>
       </div>
       <el-select
+        :disabled="Boolean($route.query.columnK)"
         class="select_article_type"
         :placeholder="$t('home.select_article_type_tip')"
         v-model="ArticleTypeSelected"
@@ -386,7 +387,7 @@ export default {
         title: this.titleText,
         public: this.articlePostType === this.$t('write.public') ? 'yes' : 'no',
         body: formatContent,
-        [this.ArticleTypeSelected && 'tag']:this.ArticleTypeSelected
+        [this.ArticleTypeSelected && 'tag']:[this.ArticleTypeSelected]
       })
       if (res && res.success === 'ok') {
         // console.log(res)

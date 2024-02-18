@@ -389,7 +389,7 @@ export default {
       }
       this.stakeFailQueryVisible = false
     },
-    async stakeFailQuery() {
+    stakeFailQuery: debounce(async function () {
       const self = this
       if (window.ethereum) {
         try {
@@ -435,7 +435,7 @@ export default {
       } else {
         alert('Please install MetaMask to interact with this dApp.')
       }
-    },
+    }, 500),
     refresh(type) {
       if (type === this.$t('mining.nft')) {
         this.getPool()

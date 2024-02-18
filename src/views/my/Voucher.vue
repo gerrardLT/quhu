@@ -37,8 +37,8 @@
       </div>
         <div class="coin">
             <div class="coin-item" v-for="item in balanceList" :key="item.id">
-              <img :src="item.logo" class="coin-logo" alt="">
-          <div class="coin-name">{{ item.name }}</div>
+              
+          <div class="coin-name"><img :src="item.logo" class="coin-logo" alt="">{{ item.name }}</div>
           <div class="balance">
             {{ Number(item.balance) === 0 ? 0 : item.balance.toFixed(8) }}
           </div>
@@ -701,7 +701,7 @@ export default {
       }
       this.searchLoading = false
     },
-    async handleCheck() {
+    handleCheck: debounce(async function () {
       if (!this.checkForm.hash.trim()) {
         this.$message.error(this.$t('voucher.hash_tip'))
         return
@@ -724,7 +724,8 @@ export default {
       }
       this.dialogFormVisible = false
       this.checkForm.hash = ''
-    },
+    }, 500),
+
     handleCurrentChangeSearch(v) {
       this.getSearchData(v)
     },
@@ -791,6 +792,7 @@ export default {
               //   }, 300);
               // }, 3000);
             } else {
+              instance.confirmButtonLoading = false;
               done();
             }
           }
@@ -1065,9 +1067,10 @@ export default {
   margin-right: 5px;
 }
 .coin-name {
+  display: flex;
+  align-items: center;
   flex: 1;
   // text-align: center;
-  line-height: 50px;
   font-weight: bold;
 }
 .balance {

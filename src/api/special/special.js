@@ -160,6 +160,15 @@ export async function removeCollect (data) {
   })
 }
 
+// 移动文章分类
+export async function move (data) {
+  return request({
+    url: '/subscriptions/move',
+    method: 'post',
+    data
+  })
+}
+
 // 邀请进圈
 export async function invite (data) {
   return request({

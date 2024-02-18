@@ -368,15 +368,13 @@ export default {
         if (v.type === 'replie') {
           this.$bus.$emit('changeTab', { name: 'home' }, 0, {
             author: v.perlink[0],
-            permlink: v.perlink[1],
-            isShowDetailDialog: true
+            permlink: v.perlink[1]
           })
         }
       } else {
         this.$bus.$emit('changeTab', { name: 'home' }, 0, {
           author: type === 'trail' ? v.perlink[0] : v.permlink[0],
-          permlink: type === 'trail' ? v.perlink[1] : v.permlink[1],
-          isShowDetailDialog: true
+          permlink: type === 'trail' ? v.perlink[1] : v.permlink[1]
         })
       }
     },

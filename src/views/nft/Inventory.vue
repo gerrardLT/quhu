@@ -285,11 +285,11 @@ export default {
   },
   methods: {
     async getNftIds() {
-      const web3 = new this.Web3('https://1rpc.io/bnb')
+      const web3 = new this.Web3('https://api.onlyfun.city')
 
       const contractABI = NFT
 
-      const contractAddress = '0x525A4964162738c1010e1998AbA190964d95fA9a' // 合约地址
+      const contractAddress = '0xa30cC38d83aFD3B499E76f47b784D08505749564' // 合约地址
 
       const contract = new web3.eth.Contract(contractABI, contractAddress)
 

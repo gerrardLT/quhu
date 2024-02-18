@@ -322,6 +322,8 @@ import { Loading } from 'element-ui'
 import baseUrl from '@/config/baseUrl'
 import { debounce } from 'lodash'
 
+import connectWallet from '@/utils/connectwallet'
+
 export default {
   name: 'Nft',
   components: {
@@ -389,6 +391,19 @@ export default {
         id: '',
         name: ''
       },
+      networkList:[
+            {
+                name:'Only Network Mainnet',
+                rpc:['https://api.onlyfun.city'],
+                chainId:12345,
+                nativeCurrency: {
+          name: 'ONLY',
+          symbol: 'ONLY', // 2-6 characters long
+          decimals: 18,
+        },
+        explorers:[{url:'https://app.onlyfun.city'}]
+            }
+        ],
       showDes: false,
       showMenu: false
     }
@@ -435,6 +450,9 @@ export default {
     // })
   },
   methods: {
+    toHex (num) {
+  return "0x" + num.toString(16);
+},
     handleMouseOver() {
       this.showMenu = false
     },
@@ -476,26 +494,77 @@ export default {
         console.error(this.$t('nft.metamask_tip'))
       }
     },
-    async connectWallet() {
-      const self = this
-      const web3 = new self.Web3(window.ethereum)
-      if (window.ethereum) {
-        try {
-          // 请求用户授权
-          const res = await window.ethereum.enable()
-          self.account = res[0]
-          sessionStorage.setItem('walletAccount', res[0])
-          console.log(res)
-        } catch (error) {
-          // 用户拒绝授权，或者发生其他错误
-          console.error(error)
+    async addToNetwork({ address, chain, rpc }) {
+  try {
+    if (window.ethereum) {
+      if (!address) {
+        const account =  await connectWallet();
+      if(account.address){
+        this.account = account.address
+          sessionStorage.setItem('walletAccount',account.address)
         }
-      } else {
-        // MetaMask未安装，或者未在浏览器中启用以太坊提供程序
-        console.error(this.$t('nft.metamask_tip'))
-        this.$message.error(this.$t('nft.metamask_tip'))
       }
-    },
+
+      const rpcUrls = rpc ? [rpc] : chain.rpc.map((r) => r?.url ?? r)
+
+      const params = {
+        chainId: this.toHex(chain.chainId), // A 0x-prefixed hexadecimal string
+        chainName: chain.name,
+        nativeCurrency: {
+          name: chain.nativeCurrency.name,
+          symbol: chain.nativeCurrency.symbol, // 2-6 characters long
+          decimals: chain.nativeCurrency.decimals,
+        },
+        rpcUrls,
+        blockExplorerUrls: [
+          chain.explorers && chain.explorers.length > 0 && chain.explorers[0].url
+            ? chain.explorers[0].url
+            : chain.infoURL,
+        ],
+      };
+
+      const result = await window.ethereum.request({
+        method: "wallet_addEthereumChain",
+        params: [params, address],
+      });
+
+      // the 'wallet_addEthereumChain' method returns null if the request was successful
+      // if (result === null ) {
+      //   this.$message.success(this.$t('nft.switchTip'))
+      // }
+
+      return result;
+    } else {
+      throw new Error("No Ethereum Wallet");
+    }
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+},
+async connectWallet(){
+  await this.addToNetwork({address:this.account.address,chain:this.networkList[0]})
+},
+    // async connectWallet() {
+    //   const self = this
+    //   const web3 = new self.Web3(window.ethereum)
+    //   if (window.ethereum) {
+    //     try {
+    //       // 请求用户授权
+    //       const res = await window.ethereum.enable()
+    //       self.account = res[0]
+    //       sessionStorage.setItem('walletAccount', res[0])
+    //       console.log(res)
+    //     } catch (error) {
+    //       // 用户拒绝授权，或者发生其他错误
+    //       console.error(error)
+    //     }
+    //   } else {
+    //     // MetaMask未安装，或者未在浏览器中启用以太坊提供程序
+    //     console.error(this.$t('nft.metamask_tip'))
+    //     this.$message.error(this.$t('nft.metamask_tip'))
+    //   }
+    // },
     async openMint() {
       this.dialogMintVisible = true
     },

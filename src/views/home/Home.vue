@@ -1,6 +1,13 @@
 <template>
   <div class="main-content-container">
-    <div class="backtop" @click="scrolltoTop" v-show="isBottom" style="right: 30px; bottom: 50px;"><i class="el-icon-caret-top"></i></div>
+    <div
+      class="backtop"
+      @click="scrolltoTop"
+      v-show="isBottom"
+      style="right: 30px; bottom: 50px"
+    >
+      <i class="el-icon-caret-top"></i>
+    </div>
     <el-row
       class="tab"
       :style="
@@ -202,15 +209,32 @@
               </div>
             </div>
           </div>
-          <div class="article_class" v-if="selectedMenu !== 'short-square' ">
+          <div class="article_class" v-if="selectedMenu !== 'short-square'">
             <!-- <div :class="{'article_type_item':true,'active':typeSelected ===$t('home.default') }">
               <div @click="filterArticle()">{{ $t('home.default') }}</div>
             </div> -->
-            <div v-for="(typeItem,typeIndex) in articleTypeList" :key="typeItem" :class="{'article_type_item':true,'active':typeItem ===typeSelected }" >
-              <div @click="filterArticle(typeItem,typeIndex)">{{ typeItem }}</div>
+            <div
+              v-for="(typeItem, typeIndex) in articleTypeList"
+              :key="typeItem"
+              :class="{
+                article_type_item: true,
+                active: typeItem === typeSelected
+              }"
+            >
+              <div @click="filterArticle(typeItem, typeIndex)">
+                {{ typeItem }}
+              </div>
             </div>
-            <div class="go_column" v-if="userInfo.buy_article.my.indexOf(selectedColumn)!==-1">
-              <div @click="handleSelect({value:selectedColumn })" :title="$t('home.go_column')"><i class="el-icon-setting"></i></div>
+            <div
+              class="go_column"
+              v-if="userInfo.buy_article.my.indexOf(selectedColumn) !== -1"
+            >
+              <div
+                @click="handleSelect({ value: selectedColumn })"
+                :title="$t('home.go_column')"
+              >
+                <i class="el-icon-setting"></i>
+              </div>
             </div>
           </div>
           <el-dialog
@@ -309,7 +333,6 @@
                           >{{ $t('home.cancel_top') }}</el-dropdown-item
                         >
                         <!-- <el-dropdown-item>置底</el-dropdown-item> -->
-
                         <el-dropdown-item
                           @click.native="articleSet(item, index, 'collect')"
                           v-show="!item.favorites"
@@ -343,6 +366,16 @@
                           class="deleteColor"
                           >{{ $t('home.delete') }}</el-dropdown-item
                         >
+                        <el-dropdown-item
+                        v-if="userInfo.buy_article.my.indexOf(selectedColumn) !== -1"
+                          @click.native="openMoveDialog(item)"
+                          > {{typeSelected ===$t('home.default')?$t('home.add_to'): $t('home.move') }}</el-dropdown-item
+                        >
+                        <el-dropdown-item
+                        v-if="userInfo.buy_article.my.indexOf(selectedColumn) !== -1 && typeSelected !==$t('home.default')"
+                          @click.native="articleSet(item, index, 'move')"
+                          > {{$t('home.move_out') }}</el-dropdown-item
+                        >
                       </el-dropdown-menu>
                     </el-dropdown>
                     <div class="square-title">
@@ -374,7 +407,11 @@
                                   currentUserInfo.data.article &&
                                   currentUserInfo.data.article.length > 0
                                 "
-                                >{{ currentUserInfo.self?$t('home.your_column'): $t('home.his_column') }}：</span
+                                >{{
+                                  currentUserInfo.self
+                                    ? $t('home.your_column')
+                                    : $t('home.his_column')
+                                }}：</span
                               >
 
                               <span
@@ -425,7 +462,9 @@
                         </el-popover>
                         <!-- <img class="avatar" :src="item.body.avatar" alt="" /> -->
                         <div class="info">
-                          <div class="role owner" @click="goInfo(item)">{{ item.body.author }}</div>
+                          <div class="role owner" @click="goInfo(item)">
+                            {{ item.body.author }}
+                          </div>
                           <div class="date">
                             {{ transfromTimeZoom(item.created) }}
                           </div>
@@ -500,7 +539,11 @@
                             </div>
                             <div class="author-column-special">
                               <span v-if="searchUserColumn.length > 0"
-                                >{{currentUserInfo.self?$t('home.your_column'): $t('home.his_column') }}：</span
+                                >{{
+                                  currentUserInfo.self
+                                    ? $t('home.your_column')
+                                    : $t('home.his_column')
+                                }}：</span
                               >
 
                               <span
@@ -550,7 +593,9 @@
                           />
                         </el-popover>
                         <div class="info">
-                          <div class="role owner" @click="goInfo(item)">{{ item.body.author }}</div>
+                          <div class="role owner" @click="goInfo(item)">
+                            {{ item.body.author }}
+                          </div>
                           <div class="date">
                             {{ transfromTimeZoom(item.created) }}
                           </div>
@@ -575,6 +620,7 @@
                             @click.native="articleSet(item, index, '+')"
                             >{{ $t('home.top') }}</el-dropdown-item
                           >
+ 
                           <el-dropdown-item
                             v-show="
                               item.body.status === 'top' &&
@@ -701,6 +747,7 @@
                           name="discuss"
                           :color="item.mouseActiveComment ? '#087790' : 'grey'"
                         />
+                        <span><span class="comment-num">{{ item.comment_count || '' }}</span></span>
                       </div>
                       <div
                         v-if="!item.favorites"
@@ -882,18 +929,18 @@
                   <Icon name="cancel" />
                 </div>
                 <el-select
-                    class="select_article_type"
-                    :placeholder="$t('home.select_article_type_tip')"
-                      v-model="ArticleTypeSelected"
-                      @change="selectArticleType"
-                    >
-                      <el-option
-                        v-for="article_type in articleTypeList.filter(type=>type!==$t('home.default'))"
-                        :key="article_type"
-                        :label="article_type"
-                        :value="article_type"
-                      />
-                    </el-select>
+                  class="select_article_type"
+                  :placeholder="$t('home.select_article_type_tip')"
+                  v-model="ArticleTypeSelected"
+                  @change="selectArticleType"
+                >
+                  <el-option
+                    v-for="article_type in articleTypeList"
+                    :key="article_type"
+                    :label="article_type"
+                    :value="article_type"
+                  />
+                </el-select>
               </div>
               <div>
                 <div class="horizontal-line"></div>
@@ -904,7 +951,6 @@
                 <div class="horizontal-line"></div>
               </div>
               <div class="upload-container">
-                
                 <div
                   class="operation-icon"
                   ref="operation_icon"
@@ -941,7 +987,6 @@
                         :value="$t('home.only_self')"
                       />
                     </el-select>
-
                   </div>
                   <div class="right">
                     <div @click="submit()" class="submit-btn">
@@ -1070,10 +1115,7 @@
                   class="animate__animated animate__heartBeat animate__slower"
                 />
 
-                <span
-                  class="hot_text"
-                  >{{ $t('home.hot_auction') }}</span
-                >
+                <span class="hot_text">{{ $t('home.hot_auction') }}</span>
               </div>
               <div class="woo-divider-main woo-divider-x"></div>
             </div>
@@ -1081,7 +1123,26 @@
         </div>
       </el-col>
     </el-row>
-
+    <el-dialog
+  :title="typeSelected ===$t('home.default')?$t('home.add_to'): $t('home.move')"
+  :visible.sync="moveDialogVisible"
+  width="30%"
+  :close="handleCheckedTypesClose"
+>
+<el-divider></el-divider>
+   <div class="article_type_list">
+    <el-radio-group style="display:flex;flex-direction: column;" v-model="moveTypeRadio">
+    <el-radio style="margin-bottom: 10px;" v-for="(typeItem) in articleTypeList" :disabled="alreadyCheckedTypes.indexOf(typeItem)!==-1" :label="typeItem" :key="typeItem">{{typeItem}}</el-radio>
+  </el-radio-group>
+  <!-- <el-checkbox-group style="display:flex;flex-direction: column;" v-model="checkedTypes" @change="handleCheckedTypesChange">
+    <el-checkbox style="margin-bottom: 10px;" v-for="typeItem in articleTypeList.filter((ele,index)=>index!==0)" :disabled="alreadyCheckedTypes.indexOf(typeItem)!==-1" :label="typeItem" :key="typeItem">{{typeItem}}</el-checkbox>
+  </el-checkbox-group> -->
+              </div>
+              <el-divider></el-divider>
+  <span slot="footer" class="dialog-footer">
+    <el-button type="primary" @click="articleSet('','','move')">{{$t('home.confirm')}}</el-button>
+  </span>
+</el-dialog>
     <el-dialog
       :title="$t('home.create_column')"
       :visible.sync="dialogVisible"
@@ -1127,7 +1188,7 @@
         class="el-textarea__inner margin-top-10"
         v-model.lazy="subscriptionsInfo.introduction"
         :placeholder="$t('home.intro_tip')"
-        style="resize: none;"
+        style="resize: none"
       ></textarea>
       <div class="tag_tips">
         {{ $t('home.tag_tip') }}
@@ -1157,7 +1218,7 @@
           @blur="handleInputConfirm"
         />
         <el-button
-          v-else-if="tagList.length < 3"
+          v-else-if="tagList.length < 4"
           class="button-new-tag"
           size="small"
           @click="showInput"
@@ -1196,13 +1257,11 @@
         <div>{{ $t('home.column_rule_tip') }}：</div>
         <div>
           <div class="rule_item">{{ $t('home.column_rule1') }}</div>
-          <div class="rule_item">{{ $t('home.column_rule2')+'20 usdt' }}</div>
-          <div class="rule_item">{{ $t('home.column_rule3')+'80 usdt' }}</div>
+          <div class="rule_item">{{ $t('home.column_rule2') + '20 usdt' }}</div>
+          <div class="rule_item">{{ $t('home.column_rule3') + '80 usdt' }}</div>
         </div>
-          
-        </div>
+      </div>
       <span slot="footer" class="dialog-footer create-footer">
-
         <el-button @click="handleSubscriptionsClose">{{
           $t('home.cancel')
         }}</el-button>
@@ -1243,7 +1302,8 @@ import {
   hotColumn,
   goTop,
   collect,
-  removeCollect
+  removeCollect,
+  move
 } from '@/api/special/special'
 import MD5 from 'md5'
 import { getUser, follow, unfollow, getOtherUser } from '@/api/user/user'
@@ -1278,9 +1338,14 @@ export default {
   },
   data() {
     return {
+      selectedDetail:{},
+      moveTypeRadio:'',
+      alreadyCheckedTypes:[],
+      checkedTypes:[],
+      moveDialogVisible:false,
       typeSelected: this.$t('home.default'),
-      typeSelectedIndex:0,
-      isBottom:false,
+      typeSelectedIndex: 0,
+      isBottom: false,
       createAvatarLoading: false,
       emojiIndex: emojiIndex,
       emojisOutput: '',
@@ -1455,19 +1520,19 @@ export default {
     userInfo() {
       return JSON.parse(localStorage.getItem('quhu-userInfo'))
     },
-    articleTypeList(){
-      let arr =[this.$t('home.default')]
-      if(this.currentInfo.article){
-        this.currentInfo.article.forEach((v)=>{
-        if(this.selectedColumn === v.name){
-          v.item.forEach((item)=>{
-            arr.push(item)
-          })
-        }   
-      })
+    articleTypeList() {
+      let arr = [this.$t('home.default')]
+      if (this.currentInfo.article) {
+        this.currentInfo.article.forEach((v) => {
+          if (this.selectedColumn === v.name) {
+            v.item.forEach((item) => {
+              arr.push(item)
+            })
+          }
+        })
       }
 
-      const newArray = arr.filter(item => item !== "")
+      const newArray = arr.filter((item) => item !== '')
       return newArray
     },
     currentPath() {
@@ -1501,15 +1566,31 @@ export default {
   },
   methods: {
     decrypt,
-    selectArticleType(v){
+    openMoveDialog(v){
+      this.selectedDetail = v
+      this.moveDialogVisible = true
+      this.alreadyCheckedTypes = [this.typeSelected]
+    },
+    handleCheckedTypesChange(v){
+      console.log(this.checkedTypes)
+    },
+    handleCheckedTypesClose(){
+      this.moveDialogVisible =false
+    },
+    selectArticleType(v) {
       console.log(v)
     },
-    filterArticle(v,i){
+    filterArticle(v, i) {
       this.typeSelected = v
       this.typeSelectedIndex = i
-      this.getArticlesByColumn(this.selectedColumn,this.selectedMenu.split('-')[1],'filter','')
+      this.getArticlesByColumn(
+        this.selectedColumn,
+        this.selectedMenu.split('-')[1],
+        'filter',
+        ''
+      )
     },
-    scrolltoTop(){
+    scrolltoTop() {
       window.scrollTo({ top: 0, behavior: 'smooth' })
     },
     getOtherUserInfo: debounce(async function (steemId) {
@@ -1591,11 +1672,10 @@ export default {
       this.$forceUpdate()
     },
     goInfo(v) {
-      console.log(v,this.currentUserInfo)
+      console.log(v, this.currentUserInfo)
       this.$router.push({
         path: '/information',
         query: {
-          id: v.body.author,
           steemId: v.json_metadata.steem_id
         }
       })
@@ -1643,7 +1723,15 @@ export default {
     },
     updateArticle(res) {
       const result = this.formatPostArticle(res)
-      // console.log(result)
+      let arr =[]
+      console.log(this.articleList,result)
+      this.articleList.forEach(ele=>{
+        if(ele.permlink !== result.permlink) {
+          arr.push(ele)
+        }   
+      })
+      console.log(arr)
+      this.articleList = arr
       this.articleList.unshift(result)
     },
     editLimt(time) {
@@ -1782,6 +1870,7 @@ export default {
       return tree
     },
     articleSet: debounce(async function (v, i, type) {
+      // console.log(v,i,type)
       const userInfo = this.userInfo
       const token = getToken()
       const loginType = localStorage.getItem('login-type')
@@ -1845,12 +1934,6 @@ export default {
             this.$message.success(this.$t('home.favorite_success'))
             v.favorites = true
             this.$forceUpdate()
-            // this.articleList.forEach((item) => {
-            //   if (item.permlink === v.currentDetail.permlink) {
-            //     v.currentDetail.isFavorite = true
-            //     this.$set(v.currentDetail,'favorites',true)
-            //   }
-            // })
           }
           break
         case 'removeCollect':
@@ -1864,11 +1947,31 @@ export default {
             this.$message.success(this.$t('home.cancel_favorite_success'))
             v.favorites = false
             this.$forceUpdate()
-            // this.articleList.forEach((item) => {
-            //   if (item.permlink === v.currentDetail.permlink) {
-            //     v.currentDetail.isFavorite = false
-            //   }
-            // })
+          }
+          break
+          case 'move':
+            this.$loading.show()
+            if(v){
+              this.selectedDetail = v
+            }
+          const result2 = await move({
+            tag:v?[]:[this.moveTypeRadio],
+            id: loginType === 'eth' ? userInfo.eth_account : userInfo.user,
+            token: token,
+            permlink: [this.selectedDetail.author || v.author, this.selectedDetail.permlink || v.permlink],
+            subscriptions_name:this.selectedColumn
+          })
+          this.$loading.hide()
+          this.moveDialogVisible = false
+          if (result2 && result2.success === 'ok') {
+            this.$message.success(this.$t('home.move_success'))
+          await  this.getArticlesByColumn(
+        this.selectedColumn,
+        this.selectedMenu.split('-')[1],
+        'filter',
+        ''
+      )
+
           }
           break
         default:
@@ -1942,7 +2045,7 @@ export default {
       // console.log(this.fileList)
     },
     editArticle(article) {
-      console.log(this.columnK)
+      console.log(article,this.typeSelected)
       setTimeout(() => {
         this.$router.push({
           path: '/write',
@@ -1950,7 +2053,8 @@ export default {
             author: article.author,
             permlink: article.permlink,
             columnK: this.columnK,
-            selectedColumn: this.selectedColumn
+            selectedColumn: this.selectedColumn,
+            typeSelected:this.typeSelected
           }
         })
       }, 500)
@@ -1972,7 +2076,7 @@ export default {
           fn(response)
         })
     },
-    async loadHandler(file, cb,type) {
+    async loadHandler(file, cb, type) {
       let dataUrl = ''
 
       if (file) {
@@ -1995,7 +2099,7 @@ export default {
             height: height,
             loading: true
           }
-          if(type!=='sub_img'){
+          if (type !== 'sub_img') {
             cb(fileOption)
           }
           dataUrl = reader.result
@@ -2025,10 +2129,10 @@ export default {
                 if (res.status === 200) {
                   imageUrl = res.data.url
                 }
-                
+
                 fileOption.url = imageUrl
                 fileOption.loading = false
-                if(type==='sub_img'){
+                if (type === 'sub_img') {
                   cb(fileOption)
                 }
                 this.createAvatarLoading = false
@@ -2041,9 +2145,13 @@ export default {
     },
     async onUploadSubImgHandler(e) {
       this.createAvatarLoading = true
-      this.loadHandler(e.file, (v) => {
-        this.subscriptionsInfo.image = v.url
-      },'sub_img')
+      this.loadHandler(
+        e.file,
+        (v) => {
+          this.subscriptionsInfo.image = v.url
+        },
+        'sub_img'
+      )
     },
     async onUploadHandler(e) {
       this.loadHandler(e.file, (v) => {
@@ -2108,14 +2216,24 @@ export default {
         if (sessionStorage.getItem('selectedMenu') === 'short-square') {
           this.getArticlesByColumn('', '', 'all')
         } else {
-          this.getArticlesByColumn(
-            sessionStorage.getItem('selectedColumn') ||
-              this.subscriptionsList.my[0] ||
-              '',
-            (sessionStorage.getItem('selectedMenu') &&
-              sessionStorage.getItem('selectedMenu').split('-')[1]) ||
-              0
-          )
+          if (this.$route.query.selectedColumn) {
+            this.getArticlesByColumn(
+              this.$route.query.selectedColumn ||
+                this.subscriptionsList.my[0] ||
+                '',
+                this.subscriptionsList.join.indexOf(this.$route.query.selectedColumn) ||
+                0
+            )
+          } else {
+            this.getArticlesByColumn(
+              sessionStorage.getItem('selectedColumn') ||
+                this.subscriptionsList.my[0] ||
+                '',
+              (sessionStorage.getItem('selectedMenu') &&
+                sessionStorage.getItem('selectedMenu').split('-')[1]) ||
+                0
+            )
+          }
         }
       }
     },
@@ -2132,12 +2250,12 @@ export default {
         const containerScrollHeight = document.body.scrollHeight
         const debounceLoad = debounce(self.loadMoreArticle)
         // console.log('containerScrollHeight==',containerScrollHeight,'containerHeight===',containerHeight,'scrollTop===',scrollTop)
-        if(scrollTop >2500){
+        if (scrollTop > 2500) {
           self.isBottom = true
-        }else {
+        } else {
           self.isBottom = false
         }
-        
+
         if (containerHeight + scrollTop >= containerScrollHeight) {
           // 标记正在加载数据
           // console.log('调用了')
@@ -2151,8 +2269,6 @@ export default {
 
       res.isEditReply = false
       res.reply = ''
-
-      res.isShowDetailDialog = false
 
       res.isPraised = false
       res.isFavorite = false
@@ -2173,6 +2289,10 @@ export default {
       return res
     },
     getArticlesByColumn: debounce(async function (v, i, type, loadType) {
+      // if(this.$route.query.selectedColumn){
+      //   v = this.$route.query.selectedColumn
+      //   this.selectedColumn = this.$route.query.selectedColumn
+      // }
       const isSameColumn = sessionStorage.getItem('selectedColumn') === v
       if (!isSameColumn || (isSameColumn && loadType !== 'load')) {
         this.pageListStart = {}
@@ -2238,31 +2358,29 @@ export default {
           }
         }
         this.activeMenuId = selectedMenu
-        // console.log(this.activeMenuId)
         sessionStorage.setItem('selectedColumn', v)
         sessionStorage.setItem('selectedMenu', selectedMenu)
       } else {
         this.activeMenuId = ''
         this.selectedColumn = ''
         this.activeMenuIndex = 0
-        // this.$set(this, 'activeMenuId', '')
         this.selectedMenu = 'short-square'
         sessionStorage.setItem('selectedMenu', 'short-square')
         sessionStorage.setItem('selectedColumn', v)
       }
 
       if (localStorage.getItem('quhu-userInfo')) {
-        let tag =''
-        if(type === 'all') {
+        let tag = ''
+        if (type === 'all') {
           tag = 'd-onlyfun'
-        } else if(type ==='filter'){
-          if(this.typeSelectedIndex ===0){
+        } else if (type === 'filter') {
+          if (this.typeSelectedIndex === 0) {
             tag = 's' + MD5(v).substring(0, 10)
-          }else {
-            tag = 's' + MD5(v).substring(0, 10)+ '_tag' + this.typeSelectedIndex
+          } else {
+            tag =
+              's' + MD5(v).substring(0, 10) + '_tag' + this.typeSelectedIndex
           }
-         
-        }else {
+        } else {
           tag = 's' + MD5(v).substring(0, 10)
         }
         const params = {
@@ -2287,7 +2405,12 @@ export default {
           let arr = []
           let newRes = formatRes.filter((ele, index) => {
             if (this.subscriptionsList.my.indexOf(this.selectedColumn) !== -1) {
-              return this.eval(ele.body).status !== 'delete'
+              if(this.selectedDetail.permlink === ele.permlink){
+                return this.eval(ele.body).status !== 'delete' && this.selectedDetail.permlink !== ele.permlink
+              }else {
+                return this.eval(ele.body).status !== 'delete'
+              }
+               
             } else {
               return (
                 this.eval(ele.body).status !== 'delete' &&
@@ -2303,14 +2426,12 @@ export default {
             element.isArticleActive = true
             element.openOrFoldFlag = 'down_article'
             element.showPicker = false
-            element.isShowDetailDialog = false
             element.replyLoading = false
             element.isPraised = element.voted
             element.mouseActivePraise = false
             element.mouseActiveComment = false
             element.mouseActiveFavorites = false
             element.isFavorite = element.favorites
-            // element.isFavorite = false
             element.voteNum = element.vote
             if (this.favorites.length > 0) {
               this.favorites.forEach((ele) => {
@@ -2322,13 +2443,9 @@ export default {
               })
             }
             if (element.body.status === 'top') {
-              // arr.push(element)
-              // formatRes.splice(index, 1)
-              // index = index - 1
               newRes.unshift(newRes.splice(index, 1)[0])
             }
             if (author === element.author && permlink === element.permlink) {
-              element.isShowDetailDialog = false
               this.goDetail(
                 {
                   author,
@@ -2369,7 +2486,7 @@ export default {
           // console.log(this.articleList, newRes, this.pageListStart)
           // this.articleList = newRes
         }
-
+        this.selectedDetail ={}
         const articleTimeout = setTimeout(() => {
           this.setContentStatus()
         }, 100)
@@ -2505,30 +2622,29 @@ export default {
       if (res && res.success === 'ok') {
         this.$message.success(this.$t('home.reply_success'))
         if (type === 'ownReply') {
-          if(v.currentDetail){
+          if (v.currentDetail) {
             v.currentDetail.commentList.unshift({
-            author: res.data.author,
-            permlink: res.data.permlink,
-            body: Object.assign({}, body, {
-              body: this.textareaConetent,
-              avatar: this.userAvatar,
-              author: this.userInfo.user_name,
-              created: res.result.created
-            }),
-            parent_author,
-            parent_permlink,
-            created,
-            reply: this.textareaConetent,
-            child: []
-          })
-          let commentList = v.currentDetail.commentList
-          this.$set(v.currentDetail, 'commentList', commentList)
-          this.textareaConetent = ''
-          v.showPicker = false
-          }else {
+              author: res.data.author,
+              permlink: res.data.permlink,
+              body: Object.assign({}, body, {
+                body: this.textareaConetent,
+                avatar: this.userAvatar,
+                author: this.userInfo.user_name,
+                created: res.result.created
+              }),
+              parent_author,
+              parent_permlink,
+              created,
+              reply: this.textareaConetent,
+              child: []
+            })
+            let commentList = v.currentDetail.commentList
+            this.$set(v.currentDetail, 'commentList', commentList)
+            this.textareaConetent = ''
+            v.showPicker = false
+          } else {
             this.$message.error(this.$t('home.edit_comment_tip'))
           }
-
         } else if (type === 'articleReply') {
           v.isEditReply = false
         } else {
@@ -2572,7 +2688,6 @@ export default {
         this.$message.error(this.$t('home.post_fail_tip'))
         this.closeEditor()
       }
-
     },
 
     postArticle() {
@@ -2658,7 +2773,7 @@ export default {
         title: this.titleText,
         public: this.articlePostType === this.$t('home.public') ? 'yes' : 'no',
         body: this.$refs.short_post.postText + imgHtml,
-        [tag !=='' && 'tag' ]:tag
+        tag: tag === this.$t('home.default')?'':[tag]
       })
 
       if (res && res.success === 'ok') {
@@ -2686,7 +2801,6 @@ export default {
         res.result.voteNum = 0
         res.result.vote = 0
         res.result.list = []
-        res.result.isShowDetailDialog = false
 
         if (this.favorites.length > 0) {
           this.favorites.forEach((ele) => {
@@ -2697,20 +2811,18 @@ export default {
             }
           })
         }
-
         
         this.articleList.unshift(res.result)
         console.log(res)
-        this.goDetail(
-                {
-                  author:res.result.author,
-                  permlink:res.result.permlink
-                }
-              )
+        this.goDetail({
+          author: res.result.author,
+          permlink: res.result.permlink
+        })
       } else {
         this.$message.error(this.$t('home.post_fail_tip'))
         this.closeEditor()
       }
+      this.typeSelected = this.$t('home.default')
       this.$refs.short_post.textLength = 0
       this.$loading.hide()
       // window.location.reload()
@@ -2722,12 +2834,7 @@ export default {
       this.titleText = ''
       this.fileList = []
     },
-    closeDetail(val) {
-      // console.log(val)
-      val.isShowDetailDialog = false
-    },
     async goDetail(val, ele) {
-
       const userInfo = this.userInfo
       const loginType = localStorage.getItem('login-type')
       const token = getToken()
@@ -2763,7 +2870,6 @@ export default {
       // console.log(commentTree)
       if (obj) {
         obj.body = this.eval(obj.body)
-
         obj.commentList = commentTree
         val.currentDetail = obj
       }
@@ -2771,19 +2877,6 @@ export default {
     eval(fn) {
       const Fn = Function
       return new Fn('return ' + fn)()
-    },
-    getReply(arr, detail) {
-      // let replyList = arr
-      // if (arr.children && arr.children !== 0) {
-      //   replyList.forEach((v, i) => {
-      //     if (v.startsWith('onlyfun-data', 0)) {
-      //       replyList.children = this.getReply(detail[v], detail)
-      //     }
-      //   })
-      //   return replyList
-      // } else {
-      //   return []
-      // }
     },
     getDistance(start, stop) {
       // Math.hypot()计算参数的平方根
@@ -2878,7 +2971,7 @@ export default {
   .write_container {
     margin-left: 10px !important;
   }
-   .rule {
+  .rule {
     font-size: 12px;
     max-width: 250px;
     white-space: wrap;
@@ -3017,16 +3110,15 @@ export default {
     }
   }
 }
-  .rule {
-    display: flex;
-    margin-top: 40px;
-    color: $menuTextColor;
-    font-size: 14px;
-    .rule_item{
-      margin-bottom: 5px;
-
-    }
+.rule {
+  display: flex;
+  margin-top: 40px;
+  color: $menuTextColor;
+  font-size: 14px;
+  .rule_item {
+    margin-bottom: 5px;
   }
+}
 
 ::v-deep .el-dropdown {
   position: absolute;
@@ -3375,6 +3467,12 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  .comment{
+    .comment-num {
+      margin-left: 5px;
+      color: grey;
+    }
+  }
   .like {
     display: flex;
     margin-right: 20px !important;
@@ -3416,22 +3514,22 @@ export default {
   // padding-top: 140px;
 }
 .backtop:hover {
-    background-color: #f2f6fc;
+  background-color: #f2f6fc;
 }
 .backtop {
-    position: fixed;
-    background-color: #fff;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    color: $fillBlueColor;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    box-shadow: 0 0 6px rgba(0,0,0,.12);
-    cursor: pointer;
-    z-index: 5;
+  position: fixed;
+  background-color: #fff;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: $fillBlueColor;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  z-index: 5;
 }
 .post-container {
   margin-top: 10px;
@@ -3445,9 +3543,9 @@ export default {
   box-shadow: 0 0 30px 10px rgba(0, 0, 0, 0.1);
 }
 
-.article_class{
+.article_class {
   position: relative;
-  width: calc(100% - 20px) ;
+  width: calc(100% - 20px);
   height: 44px;
   margin: 10px 0;
   background-color: $whiteBgColor;
@@ -3456,14 +3554,14 @@ export default {
   align-items: center;
   padding: 2px 10px;
   justify-content: flex-start;
-  flex-wrap:wrap;
+  flex-wrap: wrap;
   font-size: 14px;
-  .active{
-    color:  #fff;
-    background: #3B4159 !important;
-    border-color:#3b4159 !important;
+  .active {
+    color: #fff;
+    background: #3b4159 !important;
+    border-color: #3b4159 !important;
   }
-  .article_type_item{
+  .article_type_item {
     width: auto;
     max-width: 120px;
     height: 30px;
@@ -3471,18 +3569,18 @@ export default {
     text-align: center;
     padding: 0 10px;
     border-radius: 5px;
-    background-color: #F8F9FA;
+    background-color: #f8f9fa;
     margin-right: 5px;
-    border: 1px solid #F8F9FA;
+    border: 1px solid #f8f9fa;
     cursor: pointer;
     transition: all 0s ease-in;
-    &:hover{
-      background-color: rgba(80,166,192,0.1);
+    &:hover {
+      background-color: rgba(80, 166, 192, 0.1);
       border-color: $menuTextColor;
       color: $menuTextColor;
     }
   }
-  .go_column{
+  .go_column {
     font-size: 20px;
     color: $iconColor;
     position: absolute;
@@ -3975,20 +4073,20 @@ export default {
   height: 120px;
 }
 
-.upload-container  {
+.upload-container {
   position: relative;
   margin-top: 40px;
 }
-.upload-container  .operation-icon {
+.upload-container .operation-icon {
   height: 50px;
 }
-.select_article_type{
+.select_article_type {
   width: 100px;
   position: absolute;
   right: 10px;
   top: calc(50% - 17px);
 }
-::v-deep .select_article_type .el-input__inner{
+::v-deep .select_article_type .el-input__inner {
   border: none;
 }
 .create-topic-container .create-topic-panel .operation-icon {
@@ -4062,14 +4160,14 @@ export default {
   right: 60px;
   top: 30px;
 }
-.icon-biaoqing{
+.icon-biaoqing {
   cursor: pointer;
 }
-.icon-biaoqing svg{
-  fill:$iconColor;
+.icon-biaoqing svg {
+  fill: $iconColor;
 }
-.icon-biaoqing svg:hover{
-  fill:$iconActiveColor;
+.icon-biaoqing svg:hover {
+  fill: $iconActiveColor;
 }
 ::v-deep .middle .el-input input {
   height: 30px;

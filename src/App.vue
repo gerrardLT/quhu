@@ -13,7 +13,7 @@
     <Tabs v-if="isTabP">
     </Tabs>
     <only-switch
-      v-show="showSwitch"
+      v-show="isShowSwitch"
       ref="language"
       class="language"
       v-model="langValue"
@@ -21,15 +21,6 @@
       :inactive-text="inactive_text"
       @change="translate"
     />
-    <!-- <el-switch
-      v-show="showSwitch"
-      ref="language"
-      class="language"
-      v-model="langValue"
-      :active-text="active_text"
-      :inactive-text="inactive_text"
-      @change="translate"
-    /> -->
   </div>
 </template>
 
@@ -59,6 +50,7 @@ export default {
     this.setSwitch()
   },
   mounted() {
+    this.isShowSwitch = this.showSwitch
     if (!this.isTabP) {
       this.$refs.app.style.paddingTop = 0
     }
@@ -70,23 +62,26 @@ export default {
       lang: '',
       active_text: '',
       inactive_text: '',
-      showSwitch: true
+      isShowSwitch: false
     }
   },
   computed: {
     isTabP() {
       return this.$route.meta.isTabPage
+    },
+    showSwitch() {
+      return this.$route.meta.showSwitch
     }
   },
   methods: {
     scroll(){
       const scrollTop =
           document.documentElement.scrollTop || document.body.scrollTop
-          if(scrollTop>50){
-            this.showSwitch =false
-          }else {
-            this.showSwitch =true
-          }
+          // if(scrollTop>50){
+          //   this.isShowSwitch =false
+          // }else {
+          //   this.isShowSwitch =true
+          // }
     },
     setSwitch() {
       this.active_text =

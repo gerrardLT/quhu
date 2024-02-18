@@ -59,7 +59,7 @@
                 @blur="handleInputConfirm"
               />
               <el-button
-                v-else-if="detail_info.tags.length < 3"
+                v-else-if="detail_info.tags.length < 4"
                 class="button-new-tag"
                 size="small"
                 @click="showInput"
@@ -470,6 +470,7 @@ export default {
     Dropdown
   },
   async created() {
+    this.getMembers()
     this.getDetail()
     this.userInfo.article.forEach((item) => {
       if (item.name === this.$route.query.subName) {
@@ -869,6 +870,18 @@ export default {
         resValue = value
       }
       return resValue
+    },
+    async getMembers(){
+      const subscriptions_name = this.$route.query.subName
+      const params = {
+        type: 'member',
+        subscriptions_name
+      }
+
+      const res = await subscriptions(params)
+      if(res && res.success === 'ok'){
+        console.log(res)
+      }
     },
     async getDetail() {
       const userInfo = JSON.parse(localStorage.getItem('quhu-userInfo'))

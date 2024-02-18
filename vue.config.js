@@ -14,7 +14,6 @@ const CompressionWebpackPlugin = require('compression-webpack-plugin')
 const webpack = require('webpack')
 const productionGzipExtensions = ['js', 'css']
 const resolve = (dir) => path.join(__dirname, '.', dir)
-// const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   productionSourceMap: process.env.NODE_ENV === 'production'?false:true,
@@ -63,7 +62,9 @@ module.exports = {
     port: 8888,
     host: '0.0.0.0',
     https: false,
-    open: true
+    open: true,
+    hot:true,
+    hotOnly:true
   },
   css: {
     loaderOptions: {
@@ -86,6 +87,12 @@ module.exports = {
   },
   // lintOnSave: false,
   chainWebpack: (config) => {
+    config
+    .plugin('html')
+    .tap(args => {
+      args[0].title = 'onlyfun'
+      return args
+    })
     config.resolve.alias
       .set('@', resolve('src'))
       .set('@fonts', resolve('src/assets/fonts'))
@@ -104,19 +111,7 @@ module.exports = {
       .use('raw-loader')
       .loader('raw-loader')
       .end();
-    config
-      .plugin('html')
-      .tap(args => {
-        // try {
-        //   console.log(args)
-        //   throw new Error('123')
-        // } catch (error) {
-        //   throw new Error(error)
-        // }
-       
-        args[0].title = 'onlyfun'
-        return args
-      })
+
     config.plugin('define').tap(args => [{
       ...args,
       "window.isDefine": JSON.stringify(true),

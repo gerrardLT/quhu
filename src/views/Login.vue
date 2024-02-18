@@ -185,8 +185,8 @@ export default {
     }),
     init3d() {
       this.container = document.getElementById('login-three-container')
-      this.width = this.container.clientWidth
-      this.height = this.container.clientHeight
+      this.width = this.container.clientWidth+5
+      this.height = this.container.clientHeight+10
       this.initScene()
       this.initSceneBg()
       this.initCamera()
